@@ -409,6 +409,9 @@ async function play({ title, skills, mixed, length, mission, world }) {
   // Redoing an area: re-teach (worked example first) the topics she missed, and practise them first
   const reteach = world && areaStatus(world) === 'retry' ? (dayRec().missed?.[world.id] || []) : [];
   for (const id of reteach) gameMisses[id] = 2;
+  // Failed this area twice today already: easiest questions, with a worked example for every topic
+  const easyMode = !!(world && areaStatus(world) === 'retry' && (dayRec().fails?.[world.id] || 0) >= 2);
+  if (easyMode) for (const sk of skills) gameMisses[sk.id] = 2;
   const firstUp = skills.filter(sk => reteach.includes(sk.id)).slice(0, 3); // asked first, with a worked example
   for (const sk of firstUp) if (!pool.includes(sk)) pool.push(sk);
   const strongest = [...pool].filter(sk => store.skills[sk.id]?.seen >= 3).sort((a, b) => mastery(b.id) - mastery(a.id))[0];
@@ -431,11 +434,11 @@ async function play({ title, skills, mixed, length, mission, world }) {
       sk = chooseSkill(open.length ? open : pool, last);
     }
     timesAsked[sk.id] = (timesAsked[sk.id] || 0) + 1;
-    if (mode === 'normal' && challengeNext) { mode = 'challenge'; challengeNext = false; }
+    if (mode === 'normal' && challengeNext && !easyMode) { mode = 'challenge'; challengeNext = false; }
     last = sk.id;
     count++;
     const lvl = skill(sk.id).level;
-    const q = makeQuestion(sk, mode === 'boost' ? 1 : mode === 'challenge' ? Math.min(3, lvl + 1) : lvl);
+    const q = makeQuestion(sk, mode === 'boost' || easyMode ? 1 : mode === 'challenge' ? Math.min(3, lvl + 1) : lvl);
     if (mode === 'challenge') {
       toast('⭐ Challenge question! Bonus coins! ⭐');
       q.say = 'Challenge time! ' + q.say;
@@ -446,7 +449,8 @@ async function play({ title, skills, mixed, length, mission, world }) {
     const st = store.skills[sk.id];
     if (mode !== 'challenge' && (!st || !st.seen || (gameMisses[sk.id] || 0) >= 2)) {
       const demo = makeQuestion(sk, 1);
-      if (canDemo(demo)) { await runDemo(demo, stage); gameMisses[sk.id] = 0; if (quit) break; }
+      if (canDemo(demo)) { await runDemo(demo, stage); if (quit) break; }
+      gameMisses[sk.id] = 0;
     }
     // Listening reminders: start of the game, every third question, and before listening questions
     if (count === 1) q.preSay = `${pick(['Let\'s go', 'Here we go', 'Ready'])}, ${name()}! Remember to listen carefully to every question.`;
@@ -503,6 +507,7 @@ async function play({ title, skills, mixed, length, mission, world }) {
     if (tl.n < 3) continue; // too few questions in this area to judge
     if (tl.right / tl.n < PASS_MARK) {
       dr2.areas[wid] = 'retry'; dr2.missed[wid] = tl.missed;
+      dr2.fails ||= {}; dr2.fails[wid] = (dr2.fails[wid] || 0) + 1;
       retryArea = retryArea || WORLDS.find(w => w.id === wid);
     } else {
       dr2.areas[wid] = 'pass'; delete dr2.missed[wid];
@@ -620,7 +625,7 @@ function dayReport(d) {
     const es = byW[w.id] || [];
     const right = es.filter(e => e.f).length;
     const st = rec?.areas?.[w.id];
-    html += `<tr><td>${w.emo} ${w.name}</td><td>${es.length}${perWorld() ? ' / ' + perWorld() : ''}</td><td>${es.length ? Math.round((right / es.length) * 100) + '%' : '—'}</td><td>${st === 'retry' ? '🔁 must redo' : st === 'pass' ? '✅ passed' : es.length ? '' : 'not done'}</td></tr>`;
+    html += `<tr><td>${w.emo} ${w.name}</td><td>${es.length}${perWorld() ? ' / ' + perWorld() : ''}</td><td>${es.length ? Math.round((right / es.length) * 100) + '%' : '—'}</td><td>${st === 'retry' ? '🔁 must redo' : st === 'pass' ? '✅ passed' : es.length ? '' : 'not done'}${rec?.fails?.[w.id] ? `<br><small>had to redo ${rec.fails[w.id]}×</small>` : ''}</td></tr>`;
   }
   html += '</table><details style="margin-top:8px"><summary><b>Every question</b> (tap to open)</summary><table class="ptable" style="margin-top:6px">';
   const skName = id => ALL_SKILLS.find(k => k.id === id)?.name || id;
