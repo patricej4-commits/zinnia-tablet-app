@@ -2,7 +2,7 @@
 // shapes, patterns, ordering, partitioning, tens & ones, addition and
 // subtraction (take away, ten frames, number bonds, number sentences).
 import { rnd, pick, shuffle, numOptions, textOptions, NUM_WORDS, cap, sample } from '../util.js';
-import { tenFrames, numberBond, tensOnes, group, equation, lineSVG, vertical, numberLine } from '../visuals.js';
+import { tenFrames, numberBond, tensOnes, group, equation, lineSVG, vertical, numberLine, clockSVG, tally, miniFrame, bar } from '../visuals.js';
 
 const THINGS = [
   ['🥭', 'mangoes'], ['🍌', 'bananas'], ['🐟', 'fish'], ['🌺', 'flowers'], ['🐢', 'turtles'],
@@ -105,13 +105,13 @@ export const mathSkills = [
     gen(l) {
       const count = l === 1 ? 3 : 4;
       const nums = sample(Array.from({ length: maxFor(l) + 1 }, (_, i) => i), count);
-      const big = l === 3 && Math.random() < 0.5;
+      const big = l > 1 && Math.random() < 0.5;
       const sorted = [...nums].sort((a, b) => (big ? b - a : a - b));
       return {
         type: 'order',
-        say: big ? 'Tap the numbers from biggest to smallest.' : 'Tap the numbers from smallest to biggest.',
+        say: big ? 'Descending order! Tap the numbers from biggest to smallest.' : 'Ascending order! Tap the numbers from smallest to biggest.',
         items: shuffle(nums), answer: sorted,
-        explain: `In order: ${sorted.join(', ')}.`,
+        explain: `${big ? 'Descending means going down' : 'Ascending means going up'}: ${sorted.join(', ')}.`,
       };
     },
   },
@@ -551,6 +551,167 @@ export const mathSkills = [
         say: `Spell the number word for ${n}. ${word}.`, text: `Spell the number word for ${n}`,
         visual: `<div class="eq">${n}</div>`,
         explain: `${n} is spelled ${word.split('').join(' ')}.`,
+      };
+    },
+  },
+
+  // ================= From the Christmas term revision guide =================
+  {
+    id: 'm-ordinal', name: '1st, 2nd, 3rd', emoji: '🏁',
+    gen(l) {
+      const ORD = ['1st', '2nd', '3rd', '4th', '5th', '6th', '7th', '8th', '9th', '10th'];
+      const ORDW = ['first', 'second', 'third', 'fourth', 'fifth', 'sixth', 'seventh', 'eighth', 'ninth', 'tenth'];
+      const racers = sample(['🐢', '🐰', '🐶', '🐱', '🐸', '🐥', '🐷', '🐮', '🦊', '🐼'], l === 1 ? 5 : l === 2 ? 7 : 10);
+      const i = rnd(0, racers.length - 1);
+      const row = `<div style="display:flex;align-items:center;gap:6px;font-size:clamp(34px,6vw,56px)"><span style="font-size:.5em">🏁 Start</span>${racers.join('')}</div>`;
+      if (Math.random() < 0.5) return {
+        say: `The animals are in a line. The start is on the left. Who is ${ORDW[i]}?`, text: `Who is ${l === 3 ? ORDW[i] : ORD[i]}?`,
+        visual: row,
+        options: shuffle([racers[i], ...sample(racers.filter((_, j) => j !== i), 2)]).map(r => ({ html: `<span class="pic">${r}</span>`, value: r })), answer: racers[i],
+        explain: `Count from the start: ${ORDW.slice(0, i + 1).join(', ')}. ${racers[i]} is ${ORDW[i]}.`,
+      };
+      const opts = [i, ...sample([...Array(racers.length).keys()].filter(j => j !== i), 2)];
+      return {
+        say: `What place is the ${racers[i]} in the line? Count from the start.`,
+        visual: row,
+        options: shuffle(opts).map(j => ({ html: l === 3 ? ORDW[j] : ORD[j], value: j, say: ORDW[j] })), answer: i,
+        explain: `Count from the start: ${ORDW.slice(0, i + 1).join(', ')}.`,
+      };
+    },
+  },
+  {
+    id: 'm-skip', name: 'Number patterns', emoji: '🦘',
+    gen(l) {
+      const step = pick(l === 1 ? [1, 2] : l === 2 ? [2, 5, 10] : [2, 5, 10, -1, -2]);
+      const start = step > 0 ? (step === 1 ? rnd(0, 12) : step === 2 ? pick([0, 1, 2, 4]) : 0) : rnd(10, 19);
+      const seq = Array.from({ length: 5 }, (_, i) => start + step * i);
+      const gap = rnd(2, 4);
+      const ans = seq[gap];
+      return {
+        say: step > 0 ? `What is the missing number? This pattern counts by ${step}s.` : `What is the missing number? This pattern counts back by ${-step}.`,
+        visual: equation(seq.flatMap((v, i) => (i ? [',', i === gap ? '?' : v] : [v]))),
+        options: numOptions(ans, 0, 50), answer: ans,
+        explain: `The rule is ${step > 0 ? 'add ' + step : 'take away ' + -step} each time: ${seq.join(', ')}.`,
+      };
+    },
+  },
+  {
+    id: 'm-represent', name: 'Show a number', emoji: '🎲',
+    gen(l) {
+      const n = rnd(2, l === 1 ? 10 : 19);
+      const others = new Set();
+      while (others.size < 3) { const v = Math.max(1, Math.min(19, n + rnd(-3, 3))); if (v !== n) others.add(v); }
+      const ways = [v => miniFrame(v), v => tally(v), v => `<span class="lbl">${NUM_WORDS[v]}</span>`, v => (v >= 10 ? `<span class="lbl">1 ten ${v - 10} ones</span>` : `<span style="font-size:28px">${'●'.repeat(v)}</span>`)];
+      const opts = shuffle([n, ...others]).map(v => ({ html: pick(ways)(v), value: v }));
+      return {
+        say: `Which one shows ${n}? Numbers can be shown in different ways!`,
+        visual: `<div class="eq">${n}</div>`,
+        options: opts, answer: n,
+        explain: `${n} can be shown with dots, a ten frame, tally marks, or the word ${NUM_WORDS[n]}.`,
+      };
+    },
+  },
+  {
+    id: 'm-symbols', name: 'Maths signs', emoji: '⚖️',
+    gen(l) {
+      const mode = pick(l === 1 ? ['cmp'] : l === 2 ? ['cmp', 'cmp', 'op'] : ['cmp', 'op', 'eq']);
+      const SIGN = { '>': 'greater than', '<': 'less than', '=': 'equal to', '≠': 'not equal to', '+': 'add', '−': 'minus' };
+      const opt = list => list.map(x => ({ html: x, value: x, say: SIGN[x] }));
+      if (mode === 'cmp') {
+        const a = rnd(0, 19); let b = rnd(0, 19);
+        if (l === 1 && a === b) b = (a + 3) % 20;
+        const ans = a > b ? '>' : a < b ? '<' : '=';
+        return {
+          say: `Which sign goes in the box? ${a} and ${b}.`,
+          visual: equation([a, '?', b]),
+          options: opt(l === 1 ? ['>', '<'] : ['>', '<', '=']), cols: l === 1 ? 'two' : '', answer: ans,
+          explain: ans === '=' ? `${a} is equal to ${b}.` : `${a} is ${SIGN[ans]} ${b}. The open mouth eats the bigger number! 🐊`,
+        };
+      }
+      if (mode === 'op') {
+        const a = rnd(2, 10), b = rnd(1, a);
+        const plus = Math.random() < 0.5;
+        const c = plus ? a + b : a - b;
+        return {
+          say: `Which sign makes it right? ${a}, ${b}, equals ${c}.`,
+          visual: equation([a, '?', b, '=', c]),
+          options: opt(['+', '−']), cols: 'two', answer: plus ? '+' : '−',
+          explain: `${a} ${plus ? '+' : '−'} ${b} = ${c}.`,
+        };
+      }
+      const a = rnd(1, 9), b = rnd(1, 9 - a + 1);
+      const shown = Math.random() < 0.5 ? a + b : a + b + pick([-1, 1]);
+      return {
+        say: `Is ${a} plus ${b} equal to ${shown}, or not equal?`,
+        visual: equation([a, '+', b, '?', shown]),
+        options: opt(['=', '≠']), cols: 'two', answer: shown === a + b ? '=' : '≠',
+        explain: `${a} + ${b} is ${a + b}. ${shown === a + b ? 'So it is equal.' : `${a + b} is not equal to ${shown}.`}`,
+      };
+    },
+  },
+  {
+    id: 'm-length', name: 'Long & short', emoji: '📏',
+    gen(l) {
+      if (Math.random() < 0.5) {
+        const a = rnd(2, 9); let b = rnd(2, 9); if (a === b) b = a > 5 ? a - 2 : a + 2;
+        const askLong = Math.random() < 0.5;
+        const ans = (askLong ? a > b : a < b) ? 'A' : 'B';
+        return {
+          say: askLong ? 'Which ribbon is longer?' : 'Which ribbon is shorter?',
+          visual: `<div style="display:flex;flex-direction:column;gap:14px;align-items:flex-start">${bar(a, '#ff8c42', 'A')}${bar(b, '#3fa9f5', 'B')}</div>`,
+          options: [{ html: 'A', value: 'A' }, { html: 'B', value: 'B' }], cols: 'two', answer: ans,
+          explain: `Line them up at the start. ${ans} is ${askLong ? 'longer' : 'shorter'}.`,
+        };
+      }
+      const n = rnd(2, l === 1 ? 6 : 9);
+      return {
+        say: 'How many cubes long is the pencil?',
+        visual: `<div style="display:flex;flex-direction:column;align-items:flex-start;gap:4px"><div style="font-size:0">${'<span class="cube" style="width:44px;height:30px;margin:0"></span>'.repeat(n)}</div><div style="height:30px;width:${n * 44}px;background:linear-gradient(90deg,#ffd23f 85%,#2b2250 85%);border-radius:6px 30px 30px 6px"></div></div>`,
+        options: numOptions(n, 1, 12), answer: n,
+        explain: `Count the cubes from one end to the other: the pencil is ${n} cubes long.`,
+      };
+    },
+  },
+  {
+    id: 'm-calendar', name: 'Days & months', emoji: '📅',
+    gen(l) {
+      const DAYS = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
+      const MONTHS = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'];
+      const kind = pick(l === 1 ? ['after', 'before', 'count'] : ['after', 'before', 'count', 'month', 'monthcount', 'first']);
+      const fact = {
+        count: ['How many days are in one week?', 7, 'There are 7 days in a week.'],
+        monthcount: ['How many months are in one year?', 12, 'There are 12 months in a year.'],
+      }[kind];
+      if (fact) return { say: fact[0], visual: '<div style="font-size:90px">📅</div>', options: numOptions(fact[1], 1, 14), answer: fact[1], explain: fact[2] };
+      if (kind === 'first') return {
+        say: 'What is the first month of the year?', visual: '<div style="font-size:90px">🎉</div>',
+        options: shuffle(['January', 'December', 'June']).map(m => ({ html: m, value: m, say: m })), answer: 'January',
+        explain: 'January is the first month. December is the last month.',
+      };
+      const list = kind === 'month' ? MONTHS : DAYS;
+      const i = rnd(1, list.length - 2);
+      const before = kind === 'before';
+      const ans = before ? list[i - 1] : list[i + 1];
+      return {
+        say: before ? `Which day comes before ${list[i]}?` : kind === 'month' ? `Which month comes after ${list[i]}?` : `Which day comes after ${list[i]}?`,
+        visual: `<div class="word-big" style="font-size:clamp(34px,6vw,60px)">${list[i]}</div>`,
+        options: shuffle([ans, ...sample(list.filter(x => x !== ans && x !== list[i]), 2)]).map(x => ({ html: x, value: x, say: x })), answer: ans,
+        explain: `${list.slice(Math.max(0, i - 1), i + 2).join(', ')}.`,
+      };
+    },
+  },
+  {
+    id: 'm-time', name: 'Tell the time', emoji: '🕐',
+    gen(l) {
+      const hr = rnd(1, 12);
+      const half = l === 3 && Math.random() < 0.5;
+      const label = (h, m) => (m ? `half past ${h}` : `${h} o'clock`);
+      const wrong = sample([...Array(12).keys()].map(x => x + 1).filter(x => x !== hr), 2).map(h => label(h, half ? 30 : 0));
+      return {
+        say: 'What time is it? Look at the short red hand.',
+        visual: clockSVG(hr, half ? 30 : 0, 210),
+        options: shuffle([label(hr, half), ...wrong]).map(x => ({ html: x, value: x, say: x })), answer: label(hr, half),
+        explain: half ? `The long hand points to 6, so it is half past. The short hand is just past ${hr}. It is half past ${hr}.` : `The long hand points to 12, so it is o'clock. The short hand points to ${hr}. It is ${hr} o'clock.`,
       };
     },
   },

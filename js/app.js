@@ -17,6 +17,8 @@ const PETS = {
   lamb: { label: 'Lamb', stages: ['🎁', '🐑', '🐑', '🐑'] },
 };
 const PET_STEPS = [0, 5, 15, 35];
+// From the Grade 1B Christmas term revision guide
+const EXAMS = [['2026-12-02', 'Phonics and Spelling'], ['2026-12-03', 'English Grammar, Penmanship and Music'], ['2026-12-04', 'Integrated Studies'], ['2026-12-07', 'Mathematics'], ['2026-12-08', 'Bible and IT']];
 const STICKERS = ['🦋', '🐬', '🕊️', '🌈', '✝️', '📖', '🙏', '⛪', '💖', '🍦', '🧁', '🎀', '👑', '🐠', '🦩', '🐼', '🐨', '🦊', '🐯', '🐸', '🐙', '🦀', '🐳', '🌻', '🌺', '🍓', '🍉', '🍍', '🥭', '🎈', '🎨', '🎵', '🚀', '⭐', '🌙', '☀️', '🪐', '💎', '🏆', '🎁', '🍭', '🐝', '🐞', '🦜', '🐢', '🦒', '🐘', '🦓', '🐧', '🦉', '🌴', '🏝️', '🎠', '🎡', '🛼', '🪁', '🧸', '🍩', '🥥', '🐚', '🦕', '🐿️', '🦔', '🌷'];
 
 if (store.pet && !PETS[store.pet.kind]) { store.pet = null; save(); }
@@ -425,6 +427,7 @@ function parentZone() {
     <div class="card">Today: <b>${Math.round(d.secs / 60)} min</b> played · <b>${d.right}/${d.total}</b> right first time
       <br>Total: 🪙 ${store.coins} coins · ⭐ ${store.stars} stars · 📒 ${store.stickers.length} stickers · ${store.sessions.length} games played</div>
     <div class="card"><b>Last 7 days</b><br>${days.map(([k, v]) => `${k}: ${Math.round(v.secs / 60)} min, ${v.right}/${v.total} right`).join('<br>') || 'No play yet'}</div>
+    <div class="card"><b>📝 Christmas term exams</b><br>${EXAMS.map(([d, subj]) => { const days = Math.ceil((new Date(d + 'T08:00:00') - new Date()) / 864e5); return `${new Date(d + 'T12:00:00').toDateString().slice(0, 10)}: ${subj} — ${days > 0 ? days + ' day' + (days === 1 ? '' : 's') + ' to go' : days === 0 ? 'today' : 'done'}`; }).join('<br>')}<br><small>Reading & comprehension is tested every day.</small></div>
     <div class="card"><b>Needs the most practice</b><br>${weakest.map(sk => `${sk.emoji} ${esc(sk.name)} — ${Math.round(mastery(sk.id) * 100)}%`).join('<br>') || 'Not enough play yet'}</div>
   </div>`));
 

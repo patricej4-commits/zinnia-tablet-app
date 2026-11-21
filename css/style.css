@@ -234,3 +234,5 @@ button { font-family: inherit; color: inherit; border: none; cursor: pointer; }
 .teach .nl-wrap { width: min(86vw, 860px); margin: 0 auto; }
 .slot, .tile { width: auto; min-width: clamp(60px, 10vw, 86px); padding: 0 10px; }
 .w-bible { background: linear-gradient(160deg, #6fc3ff, #3a6fe0); }
+.tenframe.mini { grid-template-columns: repeat(5, 26px); grid-auto-rows: 26px; border-width: 3px; }
+.tenframe.mini > span { border-width: 1px; }

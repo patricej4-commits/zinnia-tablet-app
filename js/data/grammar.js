@@ -331,6 +331,85 @@ export const grammarSkills = [
       };
     },
   },
+
+  {
+    id: 'g-possessive', name: "Possessive nouns ('s)", emoji: '🎒',
+    gen(l) {
+      const [owner, thing, pic] = pick(POSS);
+      if (l === 1 || Math.random() < 0.5) {
+        const right = `${owner}'s ${thing}`;
+        return {
+          say: `The ${thing} belongs to ${owner}. Which is right?`, readFirst: l > 1,
+          visual: `<div style="font-size:90px">${pic}</div>`,
+          options: shuffle([right, `${owner}s ${thing}`, `${owner} ${thing}`]).map(x => ({ html: esc(x), value: x })), answer: right,
+          explain: `We add an apostrophe and s to show who owns it: ${right}.`,
+        };
+      }
+      const sentence = `This is ${owner}'s ${thing}.`;
+      return {
+        say: 'Read it. Who owns it?', readFirst: true,
+        visual: `<div class="sentence">${esc(sentence)}</div>`,
+        options: shuffle([owner, ...sample(POSS.map(p => p[0]).filter(o => o !== owner), 2)]).map(x => ({ html: esc(x), value: x })), answer: owner,
+        explain: `${owner}'s ${thing} means the ${thing} belongs to ${owner}.`,
+      };
+    },
+  },
+  {
+    id: 'g-helping', name: 'Helping verbs', emoji: '🤝',
+    gen(l) { return fill(l, pick(HELPING), 'One: has, does, is, was. Many: have, do, are, were. I: have, do, am, was. Yesterday: had.'); },
+  },
+  {
+    id: 'g-abc', name: 'ABC order', emoji: '🔤',
+    gen(l) {
+      if (l === 1) {
+        const letters = sample('abcdefghijklmnopqrstuvwxyz'.split(''), 3).sort();
+        return {
+          type: 'order', say: 'Put the letters in ABC order.', items: shuffle(letters), answer: letters,
+          explain: `In ABC order: ${letters.join(', ')}.`,
+        };
+      }
+      let words;
+      do { words = sample(ABC_WORDS, l === 2 ? 3 : 4); } while (new Set(words.map(w => w[0])).size !== words.length);
+      const sorted = [...words].sort();
+      if (Math.random() < 0.4) return {
+        say: 'Which word comes first in ABC order? Look at the first letter.', readFirst: true,
+        options: shuffle(words).map(w => ({ html: w, value: w })), answer: sorted[0],
+        explain: `${sorted[0]} starts with ${sorted[0][0]}, which comes first in the alphabet.`,
+      };
+      return {
+        type: 'order', say: 'Put the words in ABC order. Look at the first letter of each word.', items: shuffle(words), answer: sorted,
+        explain: `In ABC order: ${sorted.join(', ')}.`,
+      };
+    },
+  },
+  {
+    id: 'g-endmark', name: 'Full stop, ? or !', emoji: '❗',
+    gen(l) {
+      const [s, mark] = pick(ENDMARKS);
+      const NAME = { '.': 'full stop', '?': 'question mark', '!': 'exclamation mark' };
+      return {
+        say: l === 1 ? `${s}... Which mark goes at the end?` : 'Read it. Which mark goes at the end?', text: 'Which mark goes at the end?', readFirst: l > 1,
+        visual: `<div class="sentence">${esc(s)}<span style="color:#5b3fd1"> ?</span></div>`.replace(' ?</span>', ' ☐</span>'),
+        options: ['.', '?', '!'].map(m => ({ html: `<span class="pic">${m}</span><span class="lbl">${NAME[m]}</span>`, value: m, say: NAME[m] })), answer: mark,
+        explain: mark === '.' ? 'A telling sentence ends with a full stop.' : mark === '?' ? 'An asking sentence ends with a question mark.' : 'A sentence with strong feeling ends with an exclamation mark.',
+      };
+    },
+  },
+];
+const POSS = [['Zinnia', 'book', '📖'], ['Mummy', 'bag', '👜'], ['Daddy', 'car', '🚗'], ['the dog', 'bone', '🦴'], ['Kai', 'ball', '⚽'], ['Grandma', 'hat', '👒'], ['the cat', 'toy', '🧸'], ['Maya', 'kite', '🪁'], ['the baby', 'cup', '🍼'], ['Leo', 'bike', '🚲']];
+const HELPING = [
+  ['Zinnia ___ a red bag.', 'has', ['has', 'have']], ['I ___ two pencils.', 'have', ['have', 'has']], ['They ___ a big dog.', 'have', ['have', 'has']],
+  ['The cat ___ a long tail.', 'has', ['has', 'have']], ['We ___ a new car.', 'have', ['have', 'has']], ['Yesterday I ___ a cake.', 'had', ['had', 'has']],
+  ['Last week Kai ___ a cold.', 'had', ['had', 'have']], ['___ you like mangoes?', 'Do', ['Do', 'Does']], ['___ she like to sing?', 'Does', ['Does', 'Do']],
+  ['He ___ his homework.', 'does', ['does', 'do']], ['I ___ my best at school.', 'do', ['do', 'does']], ['They ___ not like rain.', 'do', ['do', 'does']],
+  ['She ___ not run fast.', 'does', ['does', 'do']], ['The dogs ___ barking.', 'are', ['are', 'is', 'am']], ['I ___ happy.', 'am', ['am', 'is', 'are']],
+  ['The baby ___ crying.', 'was', ['was', 'were']], ['The birds ___ singing.', 'were', ['were', 'was']],
+];
+const ABC_WORDS = ['apple', 'ball', 'cat', 'dog', 'egg', 'fish', 'goat', 'hat', 'ink', 'jam', 'kite', 'lion', 'mango', 'nest', 'owl', 'pig', 'queen', 'rain', 'sun', 'tree', 'van', 'web', 'yam', 'zoo'];
+const ENDMARKS = [
+  ['I like to read', '.'], ['The sun is hot', '.'], ['We go to church on Sunday', '.'], ['My dog is brown', '.'], ['Kai has a red kite', '.'],
+  ['What is your name', '?'], ['Can you swim', '?'], ['Where is my hat', '?'], ['Do you like mangoes', '?'], ['Who is at the door', '?'],
+  ['Look out', '!'], ['Wow, that is a big cake', '!'], ['Help', '!'], ['I won the race', '!'], ['Oh no, the milk fell', '!'],
 ];
 
 const KIND = {

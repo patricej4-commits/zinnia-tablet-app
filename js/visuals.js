@@ -146,3 +146,44 @@ export function numberLine(o) {
   if (o.frogAt !== undefined && o.frogAt !== null) s += `<text x="${X(o.frogAt)}" y="${Y - 24}" font-size="40" text-anchor="middle">🐸</text>`;
   return s + '</svg>';
 }
+
+// Clock face showing hour:minute (o'clock and half past)
+export function clockSVG(hr, min = 0, size = 200) {
+  const ang = (v, max) => (v / max) * 2 * Math.PI - Math.PI / 2;
+  const hA = ang((hr % 12) + min / 60, 12), mA = ang(min, 60);
+  let nums = '';
+  for (let i = 1; i <= 12; i++) {
+    const a = ang(i, 12);
+    nums += `<text x="${100 + Math.cos(a) * 72}" y="${100 + Math.sin(a) * 72 + 9}" font-size="24" text-anchor="middle" font-weight="800" fill="#2b2250" font-family="Baloo 2, sans-serif">${i}</text>`;
+  }
+  return `<svg viewBox="0 0 200 200" width="${size}" height="${size}" role="img" aria-label="clock">
+    <circle cx="100" cy="100" r="94" fill="#fff" stroke="#5b3fd1" stroke-width="8"/>${nums}
+    <line x1="100" y1="100" x2="${100 + Math.cos(hA) * 44}" y2="${100 + Math.sin(hA) * 44}" stroke="#ff5964" stroke-width="9" stroke-linecap="round"/>
+    <line x1="100" y1="100" x2="${100 + Math.cos(mA) * 70}" y2="${100 + Math.sin(mA) * 70}" stroke="#2b2250" stroke-width="6" stroke-linecap="round"/>
+    <circle cx="100" cy="100" r="7" fill="#2b2250"/></svg>`;
+}
+
+// Tally marks (groups of five with a line across)
+export function tally(n) {
+  let s = '', x = 6;
+  for (let g = 0; g < Math.ceil(n / 5); g++) {
+    const k = Math.min(5, n - g * 5);
+    const start = x;
+    for (let i = 0; i < Math.min(k, 4); i++) { s += `<line x1="${x}" y1="8" x2="${x}" y2="62" stroke="#2b2250" stroke-width="5" stroke-linecap="round"/>`; x += 13; }
+    if (k === 5) s += `<line x1="${start - 6}" y1="54" x2="${x - 7}" y2="16" stroke="#ff5964" stroke-width="5" stroke-linecap="round"/>`;
+    x += 14;
+  }
+  return `<svg viewBox="0 0 ${x} 70" height="60" style="max-width:100%">${s}</svg>`;
+}
+
+// Small ten frame for answer buttons
+export function miniFrame(n) {
+  let c = '';
+  for (let i = 0; i < 10 * Math.ceil(Math.max(n, 1) / 10); i++) c += `<span>${i < n ? '<i class="dot"></i>' : ''}</span>`;
+  return `<div class="tenframe mini">${c}</div>`;
+}
+
+// Bar for measuring length
+export function bar(len, colour, label) {
+  return `<div style="display:flex;align-items:center;gap:10px"><span style="font-size:22px;width:24px">${label}</span><div style="height:30px;width:${len * 34}px;background:${colour};border-radius:8px;border:3px solid #2b2250"></div></div>`;
+}

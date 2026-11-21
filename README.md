@@ -42,3 +42,16 @@ Open it once while online; after that it works offline. The read-aloud microphon
 ## Developing
 Plain HTML/CSS/JavaScript, no build step. Run `python3 -m http.server` in this folder and open `http://localhost:8000`.
 Question content lives in `js/data/*.js`. After changing files, bump `CACHE` in `sw.js` so tablets pick up the update.
+
+## Christmas term 2026 exam coverage
+Built from the class **1B Christmas Term Revision Guide** (exams Dec 2–8, 2026). The Parent Zone shows the exam timetable with a countdown.
+- **Maths:** sets, numbers 1–19, number patterns (skip counting), ordinals, tens & ones, comparing & ordering (ascending/descending), representing numbers, addition & subtraction (number lines, bonds, ten frames, number sentences, column), symbols (= ≠ > < + −), shapes & lines, patterning, measurement (length, calendar, time)
+- **Phonics:** vowels & consonants, Special Sounds Charts 6–8, marking, c/k rule, k/ck/ke, rhyming words
+- **Grammar:** sentences (capitals & punctuation), possessive nouns, helping verbs (is, are, am, has, have, had, was, were, do, does), nouns, adjectives, pronouns, singular & plural, verbs, common & proper nouns, ABC order
+- **Spelling:** spelling by sounds, vowel blends and special sounds (the class Spelling Lists 1–11 can be added when available)
+- **Reading & comprehension:** stories with questions, sight words, one- and two-vowel words, special-sound words
+- **Integrated Studies:** myself & growth, care for self & home, unique body parts, groups, limbs (names & functions), senses, plants, family, animals (hatch/born, babies & adults), healthy eating (stoplight foods, edible plant parts), food providers
+- **Music:** whole/half/quarter notes, parts of a note, staff/stave, treble (G) and bass (F) clefs
+- **IT:** what is a computer, hardware & software, input/output/processing, parts (monitor, mouse, keyboard, system unit), types and uses
+- **Bible:** verses Aa–Ii (extra focus), Bible drills, Salvation
+- Not in the app: penmanship (cursive) and the poem "The Secret" (text not available yet)

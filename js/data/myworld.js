@@ -46,17 +46,17 @@ const FACTS = {
   ],
   'w-computer': [
     ['What is a computer?', 'an electronic device', ['a toy car', 'a kind of food'], 'A computer is a machine. It takes in, thinks, keeps and shows information.', '💻'],
-    ['Which part of the computer do we type on?', 'keyboard', ['mouse', 'screen'], 'We type letters and numbers on the keyboard.', '⌨️'],
-    ['Which part of the computer shows us pictures and words?', 'screen', ['keyboard', 'mouse'], 'The screen shows information. It is an output device.', '🖥️'],
-    ['Which part do we point and click with?', 'mouse', ['screen', 'system unit'], 'We point and click with the mouse. It is an input device.', '🖱️'],
+    ['Which part of the computer do we type on?', 'keyboard', ['mouse', 'monitor'], 'We type letters and numbers on the keyboard.', '⌨️'],
+    ['Which part of the computer shows us pictures and words?', 'monitor', ['keyboard', 'mouse'], 'The monitor (screen) shows information. It is an output device.', '🖥️'],
+    ['Which part do we point and click with?', 'mouse', ['monitor', 'system unit'], 'We point and click with the mouse. It is an input device.', '🖱️'],
     ['Which part of the computer thinks?', 'system unit', ['mouse', 'keyboard'], 'The system unit processes. That means it thinks!', '🧠'],
     ['The keyboard is an...', 'input device', ['output device'], 'Input puts information in. Keyboard and mouse are input.', '⌨️'],
     ['The mouse is an...', 'input device', ['output device'], 'The mouse puts information inside the computer, so it is input.', '🖱️'],
-    ['The screen is an...', 'output device', ['input device'], 'The screen shows information, so it is output.', '🖥️'],
+    ['The monitor is an...', 'output device', ['input device'], 'The monitor shows information, so it is output.', '🖥️'],
     ['What does the system unit do?', 'process (it thinks)', ['input', 'output'], 'The system unit processes. That means it thinks!', '🧠'],
     ['Which one is a TYPE of computer?', 'tablet', ['mouse', 'keyboard'], 'Types: laptop, tablet, desktop, smartphone. A mouse is a PART.', '📱'],
-    ['Which one is a TYPE of computer?', 'laptop', ['screen', 'mouse'], 'The four types of computer are: laptop, tablet, desktop and smartphone.', '💻'],
-    ['Which one is a PART of the computer?', 'keyboard', ['smartphone', 'laptop'], 'The four parts are: screen, keyboard, mouse and system unit.', '⌨️'],
+    ['Which one is a TYPE of computer?', 'laptop', ['monitor', 'mouse'], 'The four types of computer are: laptop, tablet, desktop and smartphone.', '💻'],
+    ['Which one is a PART of the computer?', 'keyboard', ['smartphone', 'laptop'], 'The four parts are: monitor, keyboard, mouse and system unit.', '⌨️'],
     ['A smartphone is a...', 'type of computer', ['part of a computer'], 'A smartphone is one of the four types of computer: laptop, tablet, desktop, smartphone.', '📱'],
   ],
   'w-music': [
@@ -79,6 +79,114 @@ const META = {
   'w-body': ['My body', '🧍‍♀️'], 'w-food': ['Healthy food', '🥗'], 'w-groups': ['Groups & rules', '👨‍👩‍👧‍👦'],
   'w-habits': ['Good & bad habits', '🌟'], 'w-computer': ['Computers', '💻'], 'w-music': ['Music symbols', '🎼'], 'w-spanish': ['Spanish', '🇪🇸'],
 };
+
+
+// ===== Added from the Christmas term revision guide =====
+const WHOLE = '<svg viewBox="0 0 60 90" width="70"><ellipse cx="30" cy="70" rx="16" ry="11" fill="none" stroke="#2b2250" stroke-width="5" transform="rotate(-20 30 70)"/></svg>', HALF = '<svg viewBox="0 0 60 90" width="70"><ellipse cx="26" cy="72" rx="14" ry="10" fill="none" stroke="#2b2250" stroke-width="5" transform="rotate(-20 26 72)"/><line x1="39" y1="70" x2="39" y2="8" stroke="#2b2250" stroke-width="5"/></svg>', QUARTER = '<svg viewBox="0 0 60 90" width="70"><ellipse cx="26" cy="72" rx="14" ry="10" fill="#2b2250" transform="rotate(-20 26 72)"/><line x1="39" y1="70" x2="39" y2="8" stroke="#2b2250" stroke-width="5"/></svg>';
+Object.assign(FACTS, {
+  'w-senses': [
+    ['How many senses do we have?', '5', ['3', '10'], 'We have 5 senses: sight, hearing, smell, taste and touch.', '🖐️'],
+    ['Which sense organ helps us see?', 'eyes', ['ears', 'nose'], 'We see with our eyes. Seeing is the sense of sight.', '👀'],
+    ['Which sense organ helps us hear?', 'ears', ['eyes', 'tongue'], 'We hear with our ears.', '👂'],
+    ['Which sense organ helps us smell?', 'nose', ['ears', 'skin'], 'We smell with our nose.', '👃'],
+    ['Which sense organ helps us taste?', 'tongue', ['nose', 'eyes'], 'We taste with our tongue.', '👅'],
+    ['Which sense organ helps us feel and touch?', 'skin', ['ears', 'eyes'], 'We feel with our skin. Touch is a sense.', '✋'],
+    ['How can we protect our eyes?', 'do not look at the sun', ['rub them hard', 'poke them'], 'Never look at the sun. Do not rub or poke your eyes.', '😎'],
+    ['How can we protect our ears?', 'do not put things in them', ['shout in them', 'put pencils in them'], 'Never put things in your ears, and stay away from very loud noise.', '👂'],
+    ['How can we protect our skin?', 'keep it clean', ['play with fire', 'never bathe'], 'Bathe every day, keep it clean, and stay safe from hot things.', '🧼'],
+    ['A flower smells sweet. Which sense do we use?', 'smell', ['hearing', 'sight'], 'We use our nose to smell. That is the sense of smell.', '🌺'],
+    ['A drum is loud. Which sense do we use?', 'hearing', ['taste', 'smell'], 'We use our ears to hear the drum.', '🥁'],
+  ],
+  'w-plants': [
+    ['Which part of the plant holds it in the soil?', 'roots', ['leaves', 'flower'], 'The roots hold the plant in the soil and take in water.', '🌱'],
+    ['Which part of the plant holds it up?', 'stem', ['roots', 'seeds'], 'The stem holds the plant up and carries water to the leaves.', '🌿'],
+    ['Which part makes food for the plant?', 'leaves', ['roots', 'stem'], 'The leaves use sunlight to make food for the plant.', '🍃'],
+    ['Which part makes the seeds?', 'flower', ['roots', 'stem'], 'The flower makes seeds. Seeds grow into new plants.', '🌸'],
+    ['What does a seed grow into?', 'a new plant', ['a rock', 'a bird'], 'A seed grows into a new plant.', '🌰'],
+    ['What do plants need to grow?', 'water, sunlight, air and soil', ['candy and juice', 'toys'], 'Plants need water, sunlight, air and soil to grow.', '☀️'],
+    ['What comes first in a plant life cycle?', 'seed', ['flower', 'fruit'], 'Seed, then seedling, then young plant, then adult plant with flowers and seeds.', '🌰'],
+    ['A baby plant is called a...', 'seedling', ['puppy', 'calf'], 'A baby plant is a seedling.', '🌱'],
+    ['Why are plants important?', 'they give us food and air', ['they are noisy', 'they bite'], 'Plants give us food, fresh air, shade, and homes for animals.', '🌳'],
+  ],
+  'w-family': [
+    ['Who was the first family?', 'Adam and Eve', ['Noah and Jonah', 'David and Goliath'], 'God made the first family: Adam and Eve.', '👫'],
+    ['A family with a mother, father and children is a...', 'nuclear family', ['extended family', 'school family'], 'Mother, father and children make a nuclear family.', '👨‍👩‍👧'],
+    ['A family with grandparents, aunts and cousins too is an...', 'extended family', ['nuclear family', 'empty family'], 'When grandparents, aunts, uncles and cousins are included, it is an extended family.', '👵'],
+    ['A family with one parent and children is a...', 'single-parent family', ['extended family', 'nuclear family'], 'One parent with children is a single-parent family.', '👩‍👧'],
+    ['What are the basic needs of a family?', 'food, clothing and shelter', ['toys, games and TV', 'sweets and soda'], 'Every family needs food, clothing and shelter (a home), and love!', '🏠'],
+    ['What does a family tree show?', 'the people in my family', ['the trees in my yard', 'my toys'], 'A family tree shows the people in my family.', '🌳'],
+    ['My mother\'s mother is my...', 'grandmother', ['sister', 'aunt'], 'My mother\'s mother is my grandmother.', '👵'],
+    ['My father\'s brother is my...', 'uncle', ['cousin', 'grandfather'], 'My father\'s brother is my uncle.', '👨'],
+  ],
+  'w-animals': [
+    ['Does a chick hatch or is it born?', 'hatch', ['born'], 'A chick hatches from an egg.', '🐣'],
+    ['Does a puppy hatch or is it born?', 'born', ['hatch'], 'A puppy is born. It grows inside its mother.', '🐶'],
+    ['Does a turtle hatch or is it born?', 'hatch', ['born'], 'Baby turtles hatch from eggs.', '🐢'],
+    ['Does a calf hatch or is it born?', 'born', ['hatch'], 'A calf is born.', '🐮'],
+    ['Does a duckling hatch or is it born?', 'hatch', ['born'], 'A duckling hatches from an egg.', '🦆'],
+    ['Does a kitten hatch or is it born?', 'born', ['hatch'], 'A kitten is born.', '🐱'],
+    ['A baby dog is called a...', 'puppy', ['kitten', 'calf'], 'A baby dog is a puppy.', '🐶'],
+    ['A baby cat is called a...', 'kitten', ['puppy', 'chick'], 'A baby cat is a kitten.', '🐱'],
+    ['A baby cow is called a...', 'calf', ['foal', 'kid'], 'A baby cow is a calf.', '🐮'],
+    ['A baby goat is called a...', 'kid', ['lamb', 'calf'], 'A baby goat is a kid.', '🐐'],
+    ['A baby sheep is called a...', 'lamb', ['kid', 'puppy'], 'A baby sheep is a lamb.', '🐑'],
+    ['A baby horse is called a...', 'foal', ['calf', 'chick'], 'A baby horse is a foal.', '🐴'],
+    ['A baby hen is called a...', 'chick', ['duckling', 'kitten'], 'A baby hen is a chick.', '🐔'],
+    ['A baby frog is called a...', 'tadpole', ['puppy', 'foal'], 'A baby frog is a tadpole.', '🐸'],
+    ['A baby pig is called a...', 'piglet', ['kitten', 'lamb'], 'A baby pig is a piglet.', '🐷'],
+  ],
+  'w-foodmore': [
+    ['Green light foods are...', 'GO foods: eat them often', ['never eat them', 'only at parties'], 'Green light foods like fruits, vegetables and water are GO foods. Eat them often!', '🟢'],
+    ['Red light foods are...', 'WHOA foods: eat them only a little', ['eat them all day', 'the best foods'], 'Red light foods like candy, soda and chips are WHOA foods. Only a little!', '🔴'],
+    ['Which is a green light food?', 'a mango', ['candy', 'soda'], 'Fruits and vegetables are green light GO foods.', '🥭'],
+    ['Which is a red light food?', 'candy', ['carrots', 'water'], 'Candy is a red light food. Eat only a little.', '🍬'],
+    ['Which part of the carrot do we eat?', 'root', ['leaf', 'flower'], 'We eat the root of the carrot.', '🥕'],
+    ['Which part of the sugar cane do we eat?', 'stem', ['root', 'flower'], 'We eat the stem of the sugar cane.', '🎋'],
+    ['Which part of callaloo do we eat?', 'leaves', ['roots', 'seeds'], 'We eat the leaves of callaloo and cabbage.', '🥬'],
+    ['Which part of the mango tree do we eat?', 'fruit', ['root', 'stem'], 'We eat the fruit of the mango tree.', '🥭'],
+    ['Which part of the plant are peas and beans?', 'seeds', ['leaves', 'roots'], 'Peas and beans are seeds.', '🫘'],
+    ['Which part of broccoli do we eat?', 'flower', ['root', 'seeds'], 'We eat the flower of broccoli.', '🥦'],
+    ['Who grows vegetables for us?', 'farmer', ['baker', 'fisherman'], 'Farmers grow fruits and vegetables. They are food providers.', '🧑‍🌾'],
+    ['Who catches fish for us?', 'fisherman', ['farmer', 'baker'], 'Fishermen catch fish. They are food providers.', '🎣'],
+    ['Who bakes bread for us?', 'baker', ['farmer', 'fisherman'], 'Bakers bake bread and cakes. They are food providers.', '🍞'],
+    ['Who gives us milk?', 'dairy farmer', ['baker', 'fisherman'], 'Dairy farmers get milk from cows.', '🥛'],
+  ],
+  'w-care': [
+    ['How do I care for my body?', 'bathe every day', ['never bathe', 'eat only candy'], 'I bathe, brush my teeth, comb my hair and wear clean clothes.', '🛁'],
+    ['How can I help care for my home?', 'put my toys away', ['throw toys on the floor', 'draw on the walls'], 'I put my toys away, make my bed and help keep my home clean.', '🧸'],
+    ['Where does garbage go?', 'in the bin', ['on the floor', 'in the yard'], 'Garbage goes in the bin to keep our home clean.', '🗑️'],
+    ['What should I do in the morning?', 'make my bed', ['leave it messy', 'jump on it'], 'Making my bed helps keep my room tidy.', '🛏️'],
+    ['Why do we wash our hands?', 'to wash away germs', ['to get dirty', 'to waste water'], 'Washing hands washes away germs so we stay healthy.', '🧼'],
+  ],
+});
+FACTS['w-body'].push(
+  ['What do we use our legs for?', 'to walk and run', ['to eat', 'to see'], 'Our legs help us walk, run and jump.', '🦵'],
+  ['What do we use our hands for?', 'to hold and write', ['to hear', 'to smell'], 'Our hands help us hold things, write and clap.', '✋'],
+  ['What do our feet help us do?', 'stand and walk', ['see and hear', 'taste'], 'Our feet help us stand and walk.', '🦶'],
+  ['What makes my fingers special?', 'my fingerprints are unique', ['they are blue', 'they can fly'], 'Nobody else has fingerprints just like mine. God made me unique!', '👆'],
+  ['Which joint is in the middle of my arm?', 'elbow', ['knee', 'ankle'], 'The elbow is in the middle of the arm. The knee is in the middle of the leg.', '💪'],
+  ['Which joint is in the middle of my leg?', 'knee', ['elbow', 'wrist'], 'The knee is in the middle of the leg.', '🦵'],
+);
+FACTS['w-music'].push(
+  ['Which note is this?', 'whole note', ['half note', 'quarter note'], 'A whole note is open with no stem. It gets 4 beats.', WHOLE],
+  ['Which note is this?', 'half note', ['whole note', 'quarter note'], 'A half note is open with a stem. It gets 2 beats.', HALF],
+  ['Which note is this?', 'quarter note', ['whole note', 'half note'], 'A quarter note is filled in with a stem. It gets 1 beat.', QUARTER],
+  ['How many beats does a whole note get?', '4', ['1', '2'], 'A whole note gets 4 beats.', WHOLE],
+  ['How many beats does a half note get?', '2', ['4', '1'], 'A half note gets 2 beats.', HALF],
+  ['How many beats does a quarter note get?', '1', ['2', '4'], 'A quarter note gets 1 beat.', QUARTER],
+  ['What are the parts of a music note?', 'head and stem', ['arms and legs', 'roots and leaves'], 'A note has a head (the round part) and a stem (the line).', QUARTER],
+);
+FACTS['w-computer'].push(
+  ['Hardware is the part of the computer we can...', 'touch', ['eat', 'hear only'], 'Hardware is the parts we can touch, like the mouse and keyboard.', '🖱️'],
+  ['Software is...', 'the programs and apps', ['the mouse', 'the keyboard'], 'Software is the programs and apps. We cannot touch software.', '💿'],
+  ['Is a keyboard hardware or software?', 'hardware', ['software'], 'We can touch the keyboard, so it is hardware.', '⌨️'],
+  ['Is a game app hardware or software?', 'software', ['hardware'], 'A game app is software. We cannot touch it.', '🎮'],
+  ['How can we use a computer?', 'to learn and type', ['to cook rice', 'to sweep'], 'We use computers to learn, type, draw, play games and talk to family.', '💻'],
+);
+Object.assign(META, {
+  'w-senses': ['My senses', '👀'], 'w-plants': ['Plants', '🌱'], 'w-family': ['My family', '👨‍👩‍👧'], 'w-animals': ['Animals & babies', '🐣'],
+  'w-foodmore': ['Food: stoplight & parts', '🚦'], 'w-care': ['Caring for me & home', '🧼'],
+});
 
 export const worldSkills = Object.keys(FACTS).map(id => ({
   id, name: META[id][0], emoji: META[id][1],
