@@ -60,3 +60,9 @@ Built from the class **1B Christmas Term Revision Guide** (exams Dec 2–8, 2026
 - **Listening reminders:** Ollie reminds her to listen at the start of every game, every third question and before every listening question (spoken and shown as a 👂 line). Some "try again" messages also remind her to listen.
 - **Exam readiness (Parent Zone):** a score for each exam subject = recent accuracy × level reached × amount of practice, across every topic in the revision guide. 75%+ = Ready ✅, 50–74% = Almost ready, 25–49% = Getting there, below 25% = Needs lots of practice. Each subject lists the 3 topics to practise next.
 - **📝 Exam Practice button** on the map: practises the next exam coming up (the weaker subject if two are on the same day), focusing on her weakest topics.
+
+## Easy first, understanding, variety, and hearing herself read
+- **Watch me first:** the first time she meets a topic (and again if she misses it twice in a game), Ollie shows a worked example with the answer and the reason, then says "Now it is your turn!"
+- **Easy to hard:** every topic starts at level 1 and only gets harder after 3 right in a row; games start with a warm-up question she knows; at most 2 brand-new topics per game.
+- **Less repetition:** the app remembers the last 400 questions and avoids repeating them, picks a fresh mix of topics each game (topics from the last game are less likely), and asks each topic at most twice per game.
+- **Recording:** in "Read it out loud" her reading is recorded and played straight back ("Listen to yourself reading!"), with a ▶️ Hear myself again button. Every reading question also has a 🎙️ button to record and hear herself. Recordings are kept only in memory and deleted when the question ends; nothing is saved or sent anywhere.

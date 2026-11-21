@@ -1,6 +1,6 @@
 import { store, save, record, mastery, needWeight, addTime, today, resetAll, skill } from './store.js';
 import { say, sfx, stopSpeaking, listVoices, refreshVoice, micSupported } from './speech.js';
-import { runQuestion } from './games.js';
+import { runQuestion, runDemo, canDemo } from './games.js';
 import { pick, shuffle, esc, rnd } from './util.js';
 import { WORLDS, ALL_SKILLS } from './worlds.js';
 import { EXAMS, examReadiness, examSkills, daysUntil, nextExam } from './exam.js';
@@ -217,13 +217,43 @@ function chooseSkill(pool, last) {
   return cands[cands.length - 1];
 }
 
+// Fingerprint of a question, so the same question does not keep coming back
+const qSig = q => [q.skill, q.text, q.say, q.word, q.sentence, q.target, q.start, q.hops, JSON.stringify(q.answer)].join('|');
+
 function makeQuestion(sk, levelOverride) {
   const lvl = levelOverride || skill(sk.id).level;
-  const q = sk.gen(lvl);
-  q.skill = sk.id;
+  const recent = new Set(store.recentQs || []);
+  let q;
+  for (let i = 0; i < 20; i++) {
+    q = sk.gen(lvl);
+    q.skill = sk.id;
+    if (!recent.has(qSig(q))) break; // try for one she has not seen lately
+  }
   if (sk.type && !q.type) q.type = sk.type;
-  // Reading/mic questions only when the device can do it, otherwise fallback still works
+  store.recentQs = [...(store.recentQs || []), qSig(q)].slice(-400);
   return q;
+}
+
+// Pick n topics for a game: weaker topics more often, but mixed up, not the same ones
+// as last game, and at most 2 brand-new topics per game so she is not overwhelmed.
+function pickTopics(skills, n) {
+  const lastGame = new Set(store.lastGameSkills || []);
+  const cands = [...skills];
+  const out = [];
+  let fresh = 0;
+  while (out.length < n && cands.length) {
+    const w = cands.map(sk => {
+      const isNew = !store.skills[sk.id];
+      if (isNew && fresh >= 2) return 0.0001;
+      return needWeight(sk.id) * (lastGame.has(sk.id) ? 0.3 : 1);
+    });
+    let r = Math.random() * w.reduce((a, b) => a + b, 0), i = 0;
+    for (; i < w.length - 1; i++) { r -= w[i]; if (r <= 0) break; }
+    const sk = cands.splice(i, 1)[0];
+    if (!store.skills[sk.id]) fresh++;
+    out.push(sk);
+  }
+  return out;
 }
 
 async function play({ title, skills, mixed }) {
@@ -232,15 +262,17 @@ async function play({ title, skills, mixed }) {
   const total = store.settings.sessionLength;
   let pool = skills;
   if (mixed) {
-    // Today's Adventure: the 6 skills that need the most practice + 2 random others
-    const ranked = [...skills].sort((a, b) => needWeight(b.id) - needWeight(a.id));
-    pool = [...ranked.slice(0, 6), ...shuffle(ranked.slice(6)).slice(0, 2)];
-    if (store.settings.extraNumberLines) {
-      // Always add the two number-line skills she needs most
-      const nl = ranked.filter(sk => sk.id.startsWith('m-nl-') && !pool.includes(sk)).slice(0, 2);
-      pool.push(...nl);
+    // A fresh mix of topics each game (weaker ones more often)
+    pool = pickTopics(skills, Math.min(skills.length, Math.max(5, total - 1)));
+    if (store.settings.extraNumberLines && !pool.some(sk => sk.id.startsWith('m-nl-')) && Math.random() < 0.6) {
+      // Extra number line practice in most games (one topic, not every time)
+      const nl = skills.filter(sk => sk.id.startsWith('m-nl-') && sk.id !== 'm-nl-learn');
+      if (nl.length) pool.push(...pickTopics(nl, 1));
     }
+  } else if (skills.length > 6) {
+    pool = pickTopics(skills, 6);
   }
+  store.lastGameSkills = pool.map(sk => sk.id);
   // The very first time number lines come up, start with the "Meet the number line" lesson
   let firstLesson = null;
   if (pool.some(sk => sk.id.startsWith('m-nl-')) && !store.skills['m-nl-learn']) firstLesson = ALL_SKILLS.find(sk => sk.id === 'm-nl-learn');
@@ -271,6 +303,9 @@ async function play({ title, skills, mixed }) {
   let count = 0;
   const maxQ = total + 3;
 
+  const timesAsked = {};    // topic -> questions asked this game (max 2 each, so it does not repeat)
+  const gameMisses = {};    // topic -> misses this game
+  const strongest = [...pool].filter(sk => store.skills[sk.id]?.seen >= 3).sort((a, b) => mastery(b.id) - mastery(a.id))[0];
   let missRun = 0;          // wrong answers in a row this game
   let challengeNext = false; // she is on a streak: offer a harder bonus question
 
@@ -283,7 +318,12 @@ async function play({ title, skills, mixed }) {
       missRun = 0;
     } else if (firstLesson) { sk = firstLesson; firstLesson = null; }
     else if (retry.length && (done >= total - retry.length || Math.random() < 0.35)) sk = retry.shift();
-    else sk = chooseSkill(pool, last);
+    else if (count === 0 && strongest && mastery(strongest.id) >= 0.6) { sk = strongest; mode = 'warm'; }
+    else {
+      const open = pool.filter(p => (timesAsked[p.id] || 0) < 2);
+      sk = chooseSkill(open.length ? open : pool, last);
+    }
+    timesAsked[sk.id] = (timesAsked[sk.id] || 0) + 1;
     if (mode === 'normal' && challengeNext) { mode = 'challenge'; challengeNext = false; }
     last = sk.id;
     count++;
@@ -294,6 +334,13 @@ async function play({ title, skills, mixed }) {
       q.say = 'Challenge time! ' + q.say;
     }
     if (mode === 'boost') q.say = pick(['Here is one you know!', 'You can do this one!', 'Let\'s warm up!']) + ' ' + q.say;
+    if (mode === 'warm') q.say = 'Let\'s warm up! ' + q.say;
+    // First time on a topic, or she is finding it hard: Ollie shows a worked example first
+    const st = store.skills[sk.id];
+    if (mode !== 'challenge' && (!st || !st.seen || (gameMisses[sk.id] || 0) >= 2)) {
+      const demo = makeQuestion(sk, 1);
+      if (canDemo(demo)) { await runDemo(demo, stage); gameMisses[sk.id] = 0; if (quit) break; }
+    }
     // Listening reminders: start of the game, every third question, and before listening questions
     if (count === 1) q.preSay = `${pick(['Let\'s go', 'Here we go', 'Ready'])}, ${name()}! Remember to listen carefully to every question.`;
     else if (q.listenOnly) q.preSay = pick(['Listening question! Ears ready?', 'Super listening ears on!', 'Listen very carefully to this one.']);
@@ -313,6 +360,7 @@ async function play({ title, skills, mixed }) {
       done++;
       if (mode !== 'challenge') {
         missRun++;
+        gameMisses[sk.id] = (gameMisses[sk.id] || 0) + 1;
         if (retry.length < 3) retry.push(sk);
       }
     }

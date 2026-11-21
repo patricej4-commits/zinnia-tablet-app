@@ -1,5 +1,5 @@
 // Renders one question and resolves when it is finished.
-import { say, sfx, listen, scoreReading, micSupported, stopSpeaking } from './speech.js';
+import { say, sfx, listen, scoreReading, micSupported, stopSpeaking, recordSupported, startRecording, playRecording, discardRecording, lastListenError } from './speech.js';
 import { store } from './store.js';
 import { pick, shuffle, esc } from './util.js';
 import { shapeSVG, numberLine } from './visuals.js';
@@ -23,10 +23,35 @@ export function runQuestion(q, root) {
     const ask = h(`<div class="ask"><div class="mascot">🦉</div><div class="bubble">${shownText}</div><button class="icon-btn ear" aria-label="Hear it again">👂</button></div>`);
     const owl = ask.querySelector('.mascot');
     const ear = ask.querySelector('.ear');
+    discardRecording(); // recordings from the last question are deleted
     if (q.preSay) root.append(h(`<div class="listen-tip">👂 ${esc(q.preSay)}</div>`));
     root.append(ask);
 
     const speak = async (text, opts) => { owl.classList.add('talk'); await say(text, opts); owl.classList.remove('talk'); };
+
+    // 🎙️ On reading questions she can record herself reading and hear it straight back
+    let activeRec = null;
+    if (q.readFirst && (q.type || 'choice') !== 'read' && recordSupported && store.settings.micOn) {
+      const rb = h('<button class="icon-btn" aria-label="Record my reading" title="Read it out loud and hear yourself">🎙️</button>');
+      ask.append(rb);
+      let stopTimer;
+      const stopAndPlay = async () => {
+        clearTimeout(stopTimer);
+        const r = activeRec; activeRec = null;
+        rb.textContent = '🎙️'; rb.classList.remove('rec-on');
+        const url = r ? await r.stop() : null;
+        if (url && !finished) { await speak('Listen to yourself!'); await playRecording(url); }
+      };
+      rb.onclick = async () => {
+        sfx.tap();
+        if (activeRec) { stopAndPlay(); return; }
+        try {
+          activeRec = await startRecording();
+          rb.textContent = '⏹'; rb.classList.add('rec-on');
+          stopTimer = setTimeout(stopAndPlay, 20000);
+        } catch (e) { rb.remove(); }
+      };
+    }
     const maxEars = listenOnly ? (q.maxReplays ?? 2) : 99;
 
     ear.onclick = () => {
@@ -47,6 +72,7 @@ export function runQuestion(q, root) {
     const finish = (correct) => {
       if (finished) return;
       finished = true;
+      if (activeRec) { activeRec.stop().then(discardRecording); activeRec = null; }
       resolve({ correct, firstTry: correct && attempts === 0, listened: earUses });
     };
 
@@ -228,7 +254,8 @@ function mark(q, area, { onRight, onWrong }) {
   area.append(box, legend, check);
 }
 
-// ---------- read aloud (microphone) ----------
+// ---------- read aloud: record her, play it back, and check with the microphone ----------
+let recogOK = true; // false if this tablet can't record and check speech at the same time
 function read(q, area, ctx) {
   const words = q.sentence.split(' ');
   const sent = h(`<div class="visual"><div class="sentence">${words.map((w, i) => `<span class="rw" data-i="${i}">${esc(w)}</span>`).join(' ')}</div></div>`);
@@ -238,18 +265,50 @@ function read(q, area, ctx) {
   let canTapWords = false;
   spans.forEach(s => (s.onclick = () => { if (canTapWords) { sfx.tap(); say(s.textContent); } }));
 
-  if (!micSupported || !store.settings.micOn) { readFallback(q, area, ctx, sent); return; }
+  const canRecord = recordSupported && store.settings.micOn;
+  const canCheck = micSupported && store.settings.micOn && recogOK;
+  if (!canRecord && !canCheck) { readFallback(q, area, ctx, sent); return; }
 
   const btn = h('<button class="big-btn mic-btn">🎤 I\'m ready to read!</button>');
-  area.append(btn);
+  const again = h('<button class="big-btn hidden">▶️ Hear myself again</button>');
+  let url = null;
+  again.onclick = () => { sfx.tap(); playRecording(url); };
+  area.append(btn, again);
   let busy = false;
   btn.onclick = async () => {
     if (busy) return; busy = true;
     sfx.tap();
-    btn.classList.add('listening'); btn.textContent = '🎤 Reading… (I\'m listening)';
-    const heard = await listen(9000);
-    btn.classList.remove('listening'); busy = false;
-    if (heard === null) { btn.remove(); readFallback(q, area, ctx, sent); return; }
+    btn.classList.add('listening');
+    let rec = null;
+    if (canRecord) { try { rec = await startRecording(); } catch (e) { rec = null; } }
+    let heard = [];
+    if (canCheck && recogOK) {
+      btn.textContent = '🎤 Reading… (I\'m listening)';
+      heard = await listen(9000);
+    } else {
+      // Record only: she taps when she has finished reading
+      btn.textContent = '⏹ Tap when you finish';
+      await new Promise(res => {
+        const done = () => { btn.removeEventListener('click', done); res(); };
+        setTimeout(() => btn.addEventListener('click', done), 400);
+        setTimeout(res, 15000);
+      });
+    }
+    url = rec ? await rec.stop() : null;
+    btn.classList.remove('listening');
+    if (url) {
+      // Play her reading straight back to her
+      btn.textContent = '🔊 Listen to yourself!';
+      again.classList.remove('hidden');
+      await ctx.speak('Listen to yourself reading!');
+      await playRecording(url);
+    }
+    busy = false;
+    if (!canCheck || !recogOK || heard === null) { btn.remove(); readFallback(q, area, ctx, sent); return; }
+    if (!heard.length && rec && lastListenError && lastListenError !== 'no-speech') {
+      // This tablet can't record and check at the same time: keep recording, check with pictures instead
+      recogOK = false; btn.remove(); readFallback(q, area, ctx, sent); return;
+    }
     const score = scoreReading(q.sentence, heard);
     // colour the words she said
     const heardWords = heard.join(' ').toLowerCase();
@@ -364,4 +423,65 @@ function numline(q, area, { onRight, onWrong, speak }) {
   draw();
   area.append(wrap);
   if (sum) area.append(sum);
+}
+
+// ---------- "Watch me do one first!" ----------
+// Ollie shows a worked example with the answer and the reason, before she tries.
+const plain = html => { const d = document.createElement('div'); d.innerHTML = html; return d.textContent.trim(); };
+export function canDemo(q) {
+  const t = q.type || 'choice';
+  return !q.prelude && !q.listenOnly && ['choice', 'build', 'order', 'mark', 'numline'].includes(t);
+}
+export function runDemo(q, root) {
+  return new Promise(resolve => {
+    discardRecording();
+    root.innerHTML = '';
+    const ask = h(`<div class="ask"><div class="mascot talk">🦉</div><div class="bubble">👀 Watch me do one first!<br><small>${esc(q.text || q.say)}</small></div></div>`);
+    root.append(ask);
+    if (q.visual) root.append(h(`<div class="visual">${q.visual}</div>`));
+    const area = h('<div style="width:100%;display:flex;flex-direction:column;align-items:center;gap:14px"></div>');
+    root.append(area);
+    const t = q.type || 'choice';
+    let answer = '';
+    if (t === 'choice') {
+      const box = h(`<div class="options ${q.cols || ''}"></div>`);
+      for (const o of q.options) {
+        const right = o.value === q.answer;
+        box.append(h(`<div class="opt ${right ? 'right' : 'dim'}">${o.html}</div>`));
+        if (right) answer = o.say || plain(o.html);
+      }
+      area.append(box);
+    } else if (t === 'build') {
+      const parts = q.parts || q.word.split('');
+      area.append(h(`<div class="slots">${parts.map(p => `<div class="slot filled">${esc(p)}</div>`).join('')}</div>`));
+      answer = q.word;
+    } else if (t === 'order') {
+      area.append(h(`<div class="order-row">${q.answer.map(a => `<div class="slot filled" style="width:auto;min-width:86px;padding:0 12px">${esc(a)}</div>`).join('')}</div>`));
+      answer = q.answer.join(', ');
+    } else if (t === 'mark') {
+      const MK = { short: '˘', long: '¯', silent: '' };
+      area.append(h(`<div class="markword">${q.word.split('').map((ch, i) => `<div class="mletter ${q.marks[i] ? 'vowel' : ''} ${q.marks[i] === 'silent' ? 'silent' : ''}"><span class="mk">${MK[q.marks[i]] || '&nbsp;'}</span><span class="ch">${ch}</span></div>`).join('')}</div>`));
+    } else if (t === 'numline') {
+      let opts = { ...q.line, marks: {} };
+      if (q.mode === 'tap') { opts.marks[q.target] = '#2ec27e'; answer = String(q.target); }
+      else {
+        const d = Math.sign(q.hops), hops = [];
+        let f = q.start;
+        for (let i = 0; i < Math.abs(q.hops); i++) { hops.push([f, f + d]); f += d; }
+        opts = { ...opts, hops, frogAt: f }; opts.marks[f] = '#2ec27e'; answer = String(f);
+      }
+      area.append(h(`<div class="nl-wrap">${numberLine(opts)}</div>`));
+    }
+    const teach = h(`<div class="teach">💡 ${esc(q.explain || '')}${q.explainVisual ? `<div style="margin-top:8px">${q.explainVisual}</div>` : ''}</div>`);
+    const go = h('<div class="next-row"><button class="big-btn green">My turn! ▶</button></div>');
+    area.append(teach, go);
+    let done = false;
+    go.querySelector('button').onclick = () => { if (done) return; done = true; stopSpeaking(); sfx.tap(); resolve(); };
+    (async () => {
+      await say(`Watch me do one first! ${q.say}`);
+      if (answer) await say(`The answer is ${answer}.`);
+      if (q.explain) await say(q.explain);
+      if (!done) await say('Now it is your turn!');
+    })();
+  });
 }

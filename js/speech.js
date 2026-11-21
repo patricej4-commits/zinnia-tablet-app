@@ -88,6 +88,9 @@ export function scoreReading(target, heardList) {
   return best;
 }
 
+// Why the last listen() failed ('no-speech', 'audio-capture', 'network', ...)
+export let lastListenError = '';
+
 // Listen once. Resolves with array of alternative transcripts ([] on failure).
 export function listen(timeoutMs = 8000) {
   return new Promise(resolve => {
@@ -99,12 +102,13 @@ export function listen(timeoutMs = 8000) {
     r.maxAlternatives = 5;
     let results = [];
     let finished = false;
+    lastListenError = '';
     const end = () => { if (!finished) { finished = true; try { r.stop(); } catch (e) {} resolve(results); } };
     r.onresult = e => {
       for (const res of e.results) for (const alt of res) results.push(alt.transcript);
       end();
     };
-    r.onerror = e => { if (e.error === 'not-allowed' || e.error === 'service-not-allowed') results = null; end(); };
+    r.onerror = e => { lastListenError = e.error || 'error'; if (e.error === 'not-allowed' || e.error === 'service-not-allowed') results = null; end(); };
     r.onend = end;
     try { r.start(); } catch (e) { end(); }
     setTimeout(end, timeoutMs);
@@ -141,3 +145,47 @@ export const sfx = {
   fanfare() { [523, 523, 523, 659, 784, 659, 784, 1047].forEach((f, i) => tone(f, i * 0.12, 0.3, 'triangle', 0.15)); },
   pop() { tone(400, 0, 0.05, 'sine', 0.1); tone(800, 0.03, 0.08, 'sine', 0.08); },
 };
+
+// ---------- Record her reading and play it straight back (kept in memory only) ----------
+export const recordSupported = !!(navigator.mediaDevices && navigator.mediaDevices.getUserMedia && window.MediaRecorder);
+let lastUrl = null;
+
+// Starts recording. Returns { stop() -> Promise<url> }. Throws if the mic is not allowed.
+export async function startRecording() {
+  stopSpeaking();
+  const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+  const rec = new MediaRecorder(stream);
+  const chunks = [];
+  rec.ondataavailable = e => { if (e.data && e.data.size) chunks.push(e.data); };
+  rec.start();
+  let stopped = null;
+  return {
+    stop() {
+      if (stopped) return stopped;
+      stopped = new Promise(resolve => {
+        rec.onstop = () => {
+          stream.getTracks().forEach(t => t.stop());
+          discardRecording();
+          lastUrl = chunks.length ? URL.createObjectURL(new Blob(chunks, { type: rec.mimeType || 'audio/webm' })) : null;
+          resolve(lastUrl);
+        };
+        try { rec.stop(); } catch (e) { stream.getTracks().forEach(t => t.stop()); resolve(null); }
+      });
+      return stopped;
+    },
+  };
+}
+export function playRecording(url) {
+  return new Promise(resolve => {
+    if (!url) { resolve(); return; }
+    stopSpeaking();
+    const a = new Audio(url);
+    a.onended = resolve; a.onerror = resolve;
+    a.play().catch(resolve);
+    setTimeout(resolve, 30000);
+  });
+}
+// Recordings are never saved: this deletes the last one.
+export function discardRecording() {
+  if (lastUrl) { URL.revokeObjectURL(lastUrl); lastUrl = null; }
+}
