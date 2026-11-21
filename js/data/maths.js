@@ -161,7 +161,7 @@ export const mathSkills = [
     id: 'm-add', name: 'Adding', emoji: '➕',
     gen(l) {
       const max = l === 1 ? 6 : l === 2 ? 10 : 18;
-      const a = rnd(1, Math.min(9, max - 1)), b = rnd(0, Math.min(9, max - a));
+      const a = rnd(1, Math.min(9, max - 1)), b = rnd(1, Math.min(9, max - a));
       const [e, w] = pick(THINGS);
       const name = pick(NAMES);
       if (l > 1 && Math.random() < 0.35) {

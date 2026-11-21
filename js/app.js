@@ -64,7 +64,34 @@ function startClock() {
 function stopClock() { clearInterval(tick); }
 function overTime() {
   const lim = store.settings.dailyMinutes;
-  return lim > 0 && (store.daily[today()]?.secs || 0) >= lim * 60;
+  // The time limit only applies once today's mission is finished
+  return lim > 0 && (store.daily[today()]?.secs || 0) >= lim * 60 && missionDone();
+}
+
+// ---------- Daily mission: a set number of questions in EVERY area, every day ----------
+const WORLD_OF = {};
+WORLDS.forEach(w => w.skills.forEach(sk => (WORLD_OF[sk.id] = w.id)));
+const dayRec = (d = today()) => (store.daily[d] ||= { secs: 0, right: 0, total: 0 });
+const perWorld = () => store.settings.dailyPerWorld || 0;
+const worldDoneToday = (w, d = today()) => store.daily[d]?.worlds?.[w.id] || 0;
+const missionLeft = w => Math.max(0, perWorld() - worldDoneToday(w));
+function missionDone() { return perWorld() === 0 || WORLDS.every(w => missionLeft(w) === 0); }
+const nextMissionWorld = () => WORLDS.find(w => missionLeft(w) > 0);
+function missionStreak() {
+  let n = 0;
+  const d = new Date();
+  if (!store.daily[today()]?.missionDone) d.setDate(d.getDate() - 1);
+  for (;;) {
+    const key = d.toISOString().slice(0, 10);
+    if (!store.daily[key]?.missionDone) break;
+    n++; d.setDate(d.getDate() - 1);
+  }
+  return n;
+}
+function playMission() {
+  const w = nextMissionWorld();
+  if (!w) return map(false);
+  play({ title: 'Daily Mission: ' + w.name, skills: w.skills, mixed: true, length: Math.max(3, missionLeft(w)), mission: true });
 }
 
 function greeting() {
@@ -148,7 +175,8 @@ function map(greet) {
   app.innerHTML = '';
   const s = h('<div class="screen"></div>');
   s.append(topbar(null));
-  const line = greet ? `${greeting()}, ${name()}! Where shall we go today?` : 'Where shall we go next?';
+  let line = greet ? `${greeting()}, ${name()}! Where shall we go today?` : 'Where shall we go next?';
+  if (perWorld() > 0 && !missionDone()) { const left = WORLDS.filter(w => missionLeft(w) > 0).length; line += ` You have ${left} area${left === 1 ? '' : 's'} left in today's mission. Let's do it!`; }
   const hello = h(`<div class="hello">
     <div class="mascot">🦉</div>
     <div class="say" style="flex:1">${esc(line)}</div>
@@ -163,6 +191,23 @@ function map(greet) {
   };
   s.append(hello);
 
+  if (perWorld() > 0) {
+    const doneN = WORLDS.filter(w => missionLeft(w) === 0).length;
+    const card = h(`<div class="mission">
+      <h3>📋 Today's Mission: ${doneN} of ${WORLDS.length} areas done ${missionDone() ? '🏆' : ''}</h3>
+      <div class="mchips">${WORLDS.map(w => `<span class="mchip ${missionLeft(w) === 0 ? 'ok' : ''}">${w.emo} ${missionLeft(w) === 0 ? '✅' : `${worldDoneToday(w)}/${perWorld()}`}</span>`).join('')}</div>
+    </div>`);
+    if (!missionDone()) {
+      const nw = nextMissionWorld();
+      const mb = h(`<button class="big-btn green adventure-btn" style="margin:0"><span style="font-size:40px">▶</span> Do my mission: ${nw.emo} ${nw.name}</button>`);
+      mb.onclick = () => { sfx.tap(); playMission(); };
+      card.append(mb);
+    } else {
+      const st = missionStreak();
+      card.append(h(`<div style="font-size:20px">🎉 Mission complete! ${st > 1 ? `🔥 ${st} days in a row!` : 'Great work today!'}</div>`));
+    }
+    s.append(card);
+  }
   const adv = h(`<button class="big-btn adventure-btn"><span style="font-size:44px">🗺️</span> Today's Adventure</button>`);
   adv.onclick = () => { sfx.tap(); play({ title: "Today's Adventure", skills: ALL_SKILLS, mixed: true }); };
   s.append(adv);
@@ -176,7 +221,8 @@ function map(greet) {
 
   const grid = h('<div class="islands"></div>');
   for (const w of WORLDS) {
-    const b = h(`<button class="island ${w.cls}"><div class="emo">${w.emo}</div><div class="name">${w.name}</div><div class="stars">${worldStars(w)}</div></button>`);
+    const badge = perWorld() > 0 ? `<span class="mbadge">${missionLeft(w) === 0 ? '✅' : `${worldDoneToday(w)}/${perWorld()}`}</span>` : '';
+    const b = h(`<button class="island ${w.cls}" style="position:relative">${badge}<div class="emo">${w.emo}</div><div class="name">${w.name}</div><div class="stars">${worldStars(w)}</div></button>`);
     b.onclick = () => { sfx.tap(); island(w); };
     grid.append(b);
   }
@@ -256,10 +302,10 @@ function pickTopics(skills, n) {
   return out;
 }
 
-async function play({ title, skills, mixed }) {
+async function play({ title, skills, mixed, length, mission }) {
   stopSpeaking();
   if (overTime()) return breakTime();
-  const total = store.settings.sessionLength;
+  const total = length || store.settings.sessionLength;
   let pool = skills;
   if (mixed) {
     // A fresh mix of topics each game (weaker ones more often)
@@ -349,6 +395,9 @@ async function play({ title, skills, mixed }) {
     if (quit) break;
     // A missed challenge question is never counted against her
     if (!(mode === 'challenge' && !res.correct)) record(sk.id, res.correct && res.firstTry);
+    // Count towards today's mission (every answered question counts in its area)
+    const dr = dayRec(); dr.worlds ||= {};
+    dr.worlds[WORLD_OF[sk.id]] = (dr.worlds[WORLD_OF[sk.id]] || 0) + 1;
     if (res.correct) {
       done++; missRun = 0;
       const c = (res.firstTry ? 3 : 1) * (mode === 'challenge' ? 2 : 1);
@@ -379,11 +428,17 @@ async function play({ title, skills, mixed }) {
   const stars = acc >= 0.85 ? 3 : acc >= 0.6 ? 2 : 1;
   const beforeStage = petStage();
   store.stars += stars;
+  // Whole daily mission finished?
+  let missionComplete = false;
+  if (perWorld() > 0 && missionDone() && !dayRec().missionDone) {
+    dayRec().missionDone = true; missionComplete = true;
+    store.coins += 20; earned += 20;
+  }
   save();
-  results({ stars, earned, bestCombo, grew: petStage() > beforeStage, title });
+  results({ stars, earned, bestCombo, grew: petStage() > beforeStage, title, missionComplete });
 }
 
-function results({ stars, earned, bestCombo, grew }) {
+function results({ stars, earned, bestCombo, grew, missionComplete }) {
   app.innerHTML = '';
   const s = h(`<div class="screen center">
     <div class="title">${stars === 3 ? 'SUPERSTAR!' : stars === 2 ? 'Great job!' : 'Well done!'}</div>
@@ -415,10 +470,18 @@ function results({ stars, earned, bestCombo, grew }) {
       after.append(h(`<div class="bubble">✨ Your ${esc(store.pet.name)} ${petStage() === 1 ? 'came out of the gift' : 'grew'}! ${petEmoji()}</div>`));
       setTimeout(() => say(`Look! Your ${store.pet.name} ${petStage() === 1 ? 'came out of the gift' : 'grew bigger'}!`), 2200);
     }
+    if (missionComplete) {
+      const st = missionStreak();
+      after.append(h(`<div class="bubble">🏆 Daily Mission complete! +20 🪙 ${st > 1 ? `· 🔥 ${st} days in a row!` : ''}</div>`));
+      confetti(60); sfx.fanfare();
+      setTimeout(() => say(`Hooray ${name()}! You finished your whole mission today! ${st > 1 ? st + ' days in a row!' : ''} I am so proud of you!`), 2600);
+    }
     const row = h('<div style="display:flex;gap:14px;flex-wrap:wrap;justify-content:center"></div>');
-    const again = h('<button class="big-btn green">Play more ▶</button>');
+    const nw = !missionDone() && nextMissionWorld();
+    const again = h(`<button class="big-btn green">${nw ? `Next mission: ${nw.emo} ${nw.name} ▶` : 'Play more ▶'}</button>`);
     const home = h('<button class="big-btn">🗺️ Map</button>');
-    again.onclick = () => { sfx.tap(); play({ title: "Today's Adventure", skills: ALL_SKILLS, mixed: true }); };
+    if (nw) setTimeout(() => say(`Next, let's do ${nw.name}!`), grew ? 5000 : 2400);
+    again.onclick = () => { sfx.tap(); if (nw) playMission(); else play({ title: "Today's Adventure", skills: ALL_SKILLS, mixed: true }); };
     home.onclick = () => { sfx.tap(); map(false); };
     row.append(again, home);
     after.append(row);
@@ -486,7 +549,7 @@ function parentZone() {
     <h2>${esc(name())}'s progress</h2>
     <div class="card">Today: <b>${Math.round(d.secs / 60)} min</b> played · <b>${d.right}/${d.total}</b> right first time
       <br>Total: 🪙 ${store.coins} coins · ⭐ ${store.stars} stars · 📒 ${store.stickers.length} stickers · ${store.sessions.length} games played</div>
-    <div class="card"><b>Last 7 days</b><br>${days.map(([k, v]) => `${k}: ${Math.round(v.secs / 60)} min, ${v.right}/${v.total} right`).join('<br>') || 'No play yet'}</div>
+    <div class="card"><b>Last 7 days</b> ${perWorld() ? `· mission streak 🔥 ${missionStreak()}` : ''}<br>${days.map(([k, v]) => `${k}: ${v.missionDone ? '✅ mission done' : perWorld() ? '❌ mission not finished' : ''} · ${Math.round(v.secs / 60)} min, ${v.right}/${v.total} right first time<br><small>${WORLDS.map(w => `${w.emo} ${v.worlds?.[w.id] || 0}`).join(' &nbsp; ')}</small>`).join('<br>') || 'No play yet'}</div>
     <div class="card"><b>📝 Exam readiness</b> <small>(Christmas term exams, measured from how she plays)</small>
       <table class="ptable" style="margin-top:8px"><tr><th>Exam</th><th>Ready?</th><th>Practise next</th></tr>
       ${EXAMS.map(e => { const r = examReadiness(e); const d = daysUntil(e.date);
@@ -523,6 +586,7 @@ function parentZone() {
       <div class="prow"><label><input type="checkbox" data-k="micOn" ${set.micOn ? 'checked' : ''}> Read-aloud with microphone ${micSupported ? '' : '(not supported in this browser — reading uses picture matching instead)'}</label></div>
       <div class="prow">Voice <select data-k="voiceName"><option value="">Automatic</option>${voices.map(v => `<option ${v.name === set.voiceName ? 'selected' : ''}>${esc(v.name)}</option>`).join('')}</select> <button class="pbtn" data-a="test">Test voice</button></div>
       <div class="prow">Talking speed <select data-k="speechRate">${[0.75, 0.85, 1, 1.15].map(r => `<option value="${r}" ${r == set.speechRate ? 'selected' : ''}>${r === 1 ? 'Normal' : r < 1 ? 'Slower' + (r < 0.8 ? ' still' : '') : 'Faster'}</option>`).join('')}</select></div>
+      <div class="prow">Daily mission: questions in EVERY area each day <select data-k="dailyPerWorld">${[0, 3, 5, 8, 10].map(n => `<option value="${n}" ${n == set.dailyPerWorld ? 'selected' : ''}>${n ? n + ' per area (' + n * WORLDS.length + ' a day)' : 'Off'}</option>`).join('')}</select></div>
       <div class="prow">Questions per game <select data-k="sessionLength">${[5, 8, 10, 12, 15].map(n => `<option ${n == set.sessionLength ? 'selected' : ''}>${n}</option>`).join('')}</select></div>
       <div class="prow"><label><input type="checkbox" data-k="extraNumberLines" ${set.extraNumberLines ? 'checked' : ''}> Extra number line practice in every Today's Adventure</label></div>
       <div class="prow">Daily time limit <select data-k="dailyMinutes">${[0, 15, 20, 30, 45, 60].map(n => `<option value="${n}" ${n == set.dailyMinutes ? 'selected' : ''}>${n ? n + ' minutes' : 'No limit'}</option>`).join('')}</select></div>
@@ -535,7 +599,7 @@ function parentZone() {
       const k = el.dataset.k;
       if (k === 'name') store.playerName = el.value.trim() || 'Zinnia';
       else if (el.type === 'checkbox') set[k] = el.checked;
-      else if (['speechRate', 'sessionLength', 'dailyMinutes'].includes(k)) set[k] = Number(el.value);
+      else if (['speechRate', 'sessionLength', 'dailyMinutes', 'dailyPerWorld'].includes(k)) set[k] = Number(el.value);
       else set[k] = el.value;
       if (k === 'voiceName') refreshVoice();
       save();

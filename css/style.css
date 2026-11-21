@@ -238,3 +238,14 @@ button { font-family: inherit; color: inherit; border: none; cursor: pointer; }
 .tenframe.mini > span { border-width: 1px; }
 .listen-tip { background: #fff8d6; border-radius: 999px; padding: 4px 16px; font-size: clamp(16px, 2.4vw, 22px); color: #7a5a00; }
 .icon-btn.rec-on { background: var(--red); color: #fff; animation: pulse 1s infinite; }
+
+/* listen first: answers wait until Ollie finishes the question */
+.wait-listen > * { pointer-events: none; opacity: .35; filter: grayscale(.4); }
+.wait-listen::before { content: '👂 Listen to Ollie first…'; font-size: clamp(18px, 2.6vw, 24px); background: #fff8d6; color: #7a5a00; border-radius: 999px; padding: 4px 18px; }
+/* daily mission */
+.mission { background: #fff; border-radius: 26px; padding: 12px 16px; margin-bottom: 14px; box-shadow: 0 6px 0 rgba(0,0,0,.08); }
+.mission h3 { margin: 0 0 8px; font-family: var(--fun); font-size: clamp(20px, 3vw, 28px); }
+.mchips { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 10px; }
+.mchip { background: #f0edff; border-radius: 999px; padding: 4px 12px; font-size: 18px; }
+.mchip.ok { background: #d4f8e3; }
+.island .mbadge { position: absolute; top: 8px; right: 10px; background: #fff; color: var(--ink); border-radius: 999px; padding: 2px 10px; font-size: 16px; font-weight: 700; }

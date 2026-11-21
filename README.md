@@ -66,3 +66,7 @@ Built from the class **1B Christmas Term Revision Guide** (exams Dec 2–8, 2026
 - **Easy to hard:** every topic starts at level 1 and only gets harder after 3 right in a row; games start with a warm-up question she knows; at most 2 brand-new topics per game.
 - **Less repetition:** the app remembers the last 400 questions and avoids repeating them, picks a fresh mix of topics each game (topics from the last game are less likely), and asks each topic at most twice per game.
 - **Recording:** in "Read it out loud" her reading is recorded and played straight back ("Listen to yourself reading!"), with a ▶️ Hear myself again button. Every reading question also has a 🎙️ button to record and hear herself. Recordings are kept only in memory and deleted when the question ends; nothing is saved or sent anywhere.
+
+## Daily mission and listening first
+- **Daily Mission:** a set number of questions in EVERY area each day (default 5 per area = 35 a day; change it in the Parent Zone). The map shows a checklist and a big "Do my mission" button that goes area by area. Finishing earns a trophy, +20 coins and a day streak. The daily time limit only starts after the mission is done. The Parent Zone shows which days the mission was completed.
+- **Listen first:** answer buttons are greyed out with "👂 Listen to Ollie first…" until Ollie finishes reading the question.

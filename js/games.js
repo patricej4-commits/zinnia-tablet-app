@@ -68,6 +68,11 @@ export function runQuestion(q, root) {
     if (vis) root.append(vis);
     const area = h('<div style="width:100%;display:flex;flex-direction:column;align-items:center;gap:14px"></div>');
     root.append(area);
+    // Listen first: she can't answer until Ollie has finished reading the question
+    if (store.settings.voiceOn && window.speechSynthesis) {
+      area.classList.add('wait-listen');
+      intro.then(() => area.classList.remove('wait-listen'));
+    }
 
     const finish = (correct) => {
       if (finished) return;
