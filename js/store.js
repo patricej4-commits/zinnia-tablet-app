@@ -18,6 +18,7 @@ const defaults = () => ({
     voiceName: '',
     sessionLength: 8,
     dailyMinutes: 0,      // 0 = no limit
+    extraNumberLines: true, // she finds number lines hard: practise them in every adventure
   },
 });
 

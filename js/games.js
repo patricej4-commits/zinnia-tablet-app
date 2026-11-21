@@ -2,7 +2,7 @@
 import { say, sfx, listen, scoreReading, micSupported, stopSpeaking } from './speech.js';
 import { store } from './store.js';
 import { pick, shuffle, esc } from './util.js';
-import { shapeSVG } from './visuals.js';
+import { shapeSVG, numberLine } from './visuals.js';
 
 const PRAISE = ['Yes! Brilliant!', 'Woo-hoo! You got it!', 'Super star!', 'Amazing!', 'Wow, clever girl!', 'Fantastic!', 'You are on fire!', 'Correct! High five!', 'Awesome job!', 'Yay!'];
 const RETRY = ['Oops! Try again.', 'Almost! Have another go.', 'Not quite. You can do it!', 'Hmm, look again.'];
@@ -36,9 +36,10 @@ export function runQuestion(q, root) {
     };
 
     // Reading questions: Ollie says the instruction, but never reads the words for her.
-    speak(q.readFirst ? `${pick(['Reading time!', 'You can read this!', 'Use your reading eyes!'])} ${q.say}` : q.say);
+    const intro = speak(q.readFirst ? `${pick(['Reading time!', 'You can read this!', 'Use your reading eyes!'])} ${q.say}` : q.say);
 
-    if (q.visual) root.append(h(`<div class="visual">${q.visual}</div>`));
+    const vis = q.visual ? h(`<div class="visual">${q.visual}</div>`) : null;
+    if (vis) root.append(vis);
     const area = h('<div style="width:100%;display:flex;flex-direction:column;align-items:center;gap:14px"></div>');
     root.append(area);
 
@@ -64,7 +65,7 @@ export function runQuestion(q, root) {
       }
       // Teach, then move on (the skill will come back later)
       showAnswer && showAnswer();
-      const teach = h(`<div class="teach">💡 ${esc(q.explain || 'Let\'s remember this one!')}</div>`);
+      const teach = h(`<div class="teach">💡 ${esc(q.explain || 'Let\'s remember this one!')}${q.explainVisual ? `<div style="margin-top:8px">${q.explainVisual}</div>` : ''}</div>`);
       const nextRow = h('<div class="next-row"><button class="big-btn green">Next ➜</button></div>');
       area.append(teach, nextRow);
       nextRow.querySelector('button').onclick = () => { stopSpeaking(); sfx.tap(); finish(false); };
@@ -73,7 +74,17 @@ export function runQuestion(q, root) {
     };
 
     const type = q.type || 'choice';
-    ({ choice, order, build, mark, read, follow }[type])(q, area, { onRight, onWrong, speak, noteMiss: () => { attempts++; } });
+    const ctx = { onRight, onWrong, speak, noteMiss: () => { attempts++; } };
+    const startPlay = () => ({ choice, order, build, mark, read, follow, numline }[type])(q, area, ctx);
+    if (q.prelude) {
+      // Watch-and-learn lesson first, then the question
+      ear.style.visibility = 'hidden';
+      intro.then(() => q.prelude(vis, speak)).then(() => {
+        if (q.ask) { ask.querySelector('.bubble').textContent = q.ask; q.say = q.ask; speak(q.ask); }
+        ear.style.visibility = '';
+        startPlay();
+      });
+    } else startPlay();
   });
 }
 
@@ -305,4 +316,51 @@ function follow(q, area, { onRight, onWrong }) {
     grid.append(cell);
   });
   area.append(grid);
+}
+
+// ---------- number line: tap a number, or hop the frog ----------
+// q.line = numberLine options. q.mode = 'tap' (tap q.target) or 'hop' (start at q.start, hop q.hops; + right, - left)
+function numline(q, area, { onRight, onWrong, speak }) {
+  const wrap = h('<div class="nl-wrap tappable"></div>');
+  const sum = q.mode === 'hop' ? h('<div class="nl-sum"></div>') : null;
+  const marks = {};
+  let frog = q.mode === 'hop' ? q.start : undefined;
+  const hops = [];
+  const dir = Math.sign(q.hops || 0), need = Math.abs(q.hops || 0);
+  let locked = false;
+  const draw = () => {
+    wrap.innerHTML = numberLine({ ...q.line, frogAt: frog, hops, marks });
+    wrap.querySelectorAll('.nl-hit').forEach(el => (el.onclick = () => tap(Number(el.dataset.n))));
+    if (sum) sum.textContent = `${q.start} ${dir > 0 ? '+' : '−'} ${need} = ${hops.length === need ? frog : '?'}   ${'🐾'.repeat(hops.length)}`;
+  };
+  const showPath = () => {
+    hops.length = 0; frog = q.start;
+    for (let i = 0; i < need; i++) { hops.push([frog, frog + dir]); frog += dir; }
+    marks[frog] = '#2ec27e';
+    draw();
+  };
+  async function tap(n) {
+    if (locked) return;
+    if (q.mode === 'tap') {
+      if (n === q.target) { locked = true; marks[n] = '#2ec27e'; draw(); sfx.pop(); onRight(); }
+      else {
+        marks[n] = '#ff5964'; draw(); setTimeout(() => { delete marks[n]; draw(); }, 600);
+        if (await onWrong(() => { marks[q.target] = '#2ec27e'; draw(); })) locked = true;
+      }
+      return;
+    }
+    // hop mode: she must tap the very next number, one hop at a time
+    if (n === frog) return;
+    if (n === frog + dir) {
+      hops.push([frog, n]); frog = n; sfx.pop(); draw();
+      speak(String(hops.length));
+      if (hops.length === need) { locked = true; marks[frog] = '#2ec27e'; draw(); onRight(); }
+    } else {
+      marks[n] = '#ff5964'; draw(); setTimeout(() => { delete marks[n]; draw(); }, 600);
+      if (await onWrong(showPath)) locked = true;
+    }
+  }
+  draw();
+  area.append(wrap);
+  if (sum) area.append(sum);
 }

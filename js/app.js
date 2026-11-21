@@ -225,7 +225,15 @@ async function play({ title, skills, mixed }) {
     // Today's Adventure: the 6 skills that need the most practice + 2 random others
     const ranked = [...skills].sort((a, b) => needWeight(b.id) - needWeight(a.id));
     pool = [...ranked.slice(0, 6), ...shuffle(ranked.slice(6)).slice(0, 2)];
+    if (store.settings.extraNumberLines) {
+      // Always add the two number-line skills she needs most
+      const nl = ranked.filter(sk => sk.id.startsWith('m-nl-') && !pool.includes(sk)).slice(0, 2);
+      pool.push(...nl);
+    }
   }
+  // The very first time number lines come up, start with the "Meet the number line" lesson
+  let firstLesson = null;
+  if (pool.some(sk => sk.id.startsWith('m-nl-')) && !store.skills['m-nl-learn']) firstLesson = ALL_SKILLS.find(sk => sk.id === 'm-nl-learn');
 
   app.innerHTML = '';
   const s = h(`<div class="screen">
@@ -263,7 +271,8 @@ async function play({ title, skills, mixed }) {
       sk = [...pool].sort((a, b) => mastery(b.id) - mastery(a.id))[0];
       mode = 'boost';
       missRun = 0;
-    } else if (retry.length && (done >= total - retry.length || Math.random() < 0.35)) sk = retry.shift();
+    } else if (firstLesson) { sk = firstLesson; firstLesson = null; }
+    else if (retry.length && (done >= total - retry.length || Math.random() < 0.35)) sk = retry.shift();
     else sk = chooseSkill(pool, last);
     if (mode === 'normal' && challengeNext) { mode = 'challenge'; challengeNext = false; }
     last = sk.id;
@@ -444,6 +453,7 @@ function parentZone() {
       <div class="prow">Voice <select data-k="voiceName"><option value="">Automatic</option>${voices.map(v => `<option ${v.name === set.voiceName ? 'selected' : ''}>${esc(v.name)}</option>`).join('')}</select> <button class="pbtn" data-a="test">Test voice</button></div>
       <div class="prow">Talking speed <select data-k="speechRate">${[0.75, 0.85, 1, 1.15].map(r => `<option value="${r}" ${r == set.speechRate ? 'selected' : ''}>${r === 1 ? 'Normal' : r < 1 ? 'Slower' + (r < 0.8 ? ' still' : '') : 'Faster'}</option>`).join('')}</select></div>
       <div class="prow">Questions per game <select data-k="sessionLength">${[5, 8, 10, 12, 15].map(n => `<option ${n == set.sessionLength ? 'selected' : ''}>${n}</option>`).join('')}</select></div>
+      <div class="prow"><label><input type="checkbox" data-k="extraNumberLines" ${set.extraNumberLines ? 'checked' : ''}> Extra number line practice in every Today's Adventure</label></div>
       <div class="prow">Daily time limit <select data-k="dailyMinutes">${[0, 15, 20, 30, 45, 60].map(n => `<option value="${n}" ${n == set.dailyMinutes ? 'selected' : ''}>${n ? n + ' minutes' : 'No limit'}</option>`).join('')}</select></div>
       <div class="prow"><button class="pbtn" data-a="pet">Choose a new pet</button><button class="pbtn danger" data-a="reset">Reset all progress</button></div>
     </div>

@@ -105,3 +105,44 @@ export function vertical(top, op, bottom) {
     <div class="vrow"><span class="vop"></span><span class="vans" style="grid-column: span ${two ? 2 : 1}">?</span></div>
   </div>`;
 }
+
+// Number line. opts: { min, max, show(n) -> bool (which labels to print), arrowAt, boxAt,
+//   frogAt, hops: [[from, to], ...], marks: { n: colour } }
+// Every number has an invisible tap target: <rect class="nl-hit" data-n="...">
+export function numberLine(o) {
+  const { min = 0, max = 10 } = o;
+  const n = max - min;
+  const step = n <= 10 ? 70 : 44;
+  const pad = 46;
+  const W = pad * 2 + n * step, H = 170;
+  const X = v => pad + (v - min) * step;
+  const Y = 105;
+  const show = o.show || (() => true);
+  let s = `<svg class="nl" viewBox="0 0 ${W} ${H}" role="img" aria-label="number line from ${min} to ${max}">`;
+  // the line with arrow ends (number lines keep going!)
+  s += `<line x1="8" y1="${Y}" x2="${W - 8}" y2="${Y}" stroke="#2b2250" stroke-width="5"/>`;
+  s += `<polygon points="2,${Y} 18,${Y - 9} 18,${Y + 9}" fill="#2b2250"/><polygon points="${W - 2},${Y} ${W - 18},${Y - 9} ${W - 18},${Y + 9}" fill="#2b2250"/>`;
+  // hops (arcs above the line)
+  for (const [a, b] of o.hops || []) {
+    const x1 = X(a), x2 = X(b), mid = (x1 + x2) / 2;
+    const col = b > a ? '#2ec27e' : '#ff5964';
+    s += `<path d="M${x1} ${Y - 6} Q${mid} ${Y - 62} ${x2} ${Y - 6}" fill="none" stroke="${col}" stroke-width="4" stroke-dasharray="7 5"/>`;
+    s += `<polygon points="${x2},${Y - 6} ${x2 + (b > a ? -11 : 11)},${Y - 16} ${x2 + (b > a ? -2 : 2)},${Y - 19}" fill="${col}"/>`;
+  }
+  for (let v = min; v <= max; v++) {
+    const x = X(v);
+    const big = v % 5 === 0;
+    const mark = o.marks && o.marks[v];
+    if (mark) s += `<circle cx="${x}" cy="${Y + 42}" r="${step <= 44 ? 19 : 25}" fill="${mark}" opacity=".35"/>`;
+    s += `<line x1="${x}" y1="${Y - (big ? 16 : 11)}" x2="${x}" y2="${Y + (big ? 16 : 11)}" stroke="#2b2250" stroke-width="${big ? 5 : 4}"/>`;
+    if (o.boxAt === v) {
+      s += `<rect x="${x - 22}" y="${Y + 22}" width="44" height="42" rx="8" fill="#fff3b0" stroke="#5b3fd1" stroke-width="4"/><text x="${x}" y="${Y + 53}" font-size="30" text-anchor="middle" font-weight="800" fill="#5b3fd1" font-family="Baloo 2, sans-serif">?</text>`;
+    } else if (show(v)) {
+      s += `<text x="${x}" y="${Y + 54}" font-size="${step <= 44 ? 26 : 32}" text-anchor="middle" font-weight="800" fill="#2b2250" font-family="Baloo 2, sans-serif">${v}</text>`;
+    }
+    if (o.arrowAt === v) s += `<polygon points="${x - 15},${Y - 48} ${x + 15},${Y - 48} ${x},${Y - 22}" fill="#ff5fa2"/>`;
+    s += `<rect class="nl-hit" data-n="${v}" x="${x - step / 2}" y="0" width="${step}" height="${H}" fill="transparent"/>`;
+  }
+  if (o.frogAt !== undefined && o.frogAt !== null) s += `<text x="${X(o.frogAt)}" y="${Y - 24}" font-size="40" text-anchor="middle">🐸</text>`;
+  return s + '</svg>';
+}

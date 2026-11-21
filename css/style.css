@@ -224,3 +224,11 @@ button { font-family: inherit; color: inherit; border: none; cursor: pointer; }
 .vhead { font-size: .38em; color: #9a8fd6; }
 .vline { height: 7px; background: var(--ink); border-radius: 4px; width: 100%; margin: 6px 0 8px; }
 .vans { text-align: center; color: var(--purple); border: 5px dashed var(--purple); border-radius: 14px; line-height: 1.1; }
+
+/* number line */
+.nl-wrap { width: 100%; max-width: 1000px; background: #fff; border-radius: 26px; padding: 6px 8px; box-shadow: 0 6px 0 rgba(0,0,0,.08); }
+.nl { width: 100%; height: auto; display: block; }
+.nl-wrap.tappable .nl-hit { cursor: pointer; }
+.nl-sum { font-family: var(--fun); font-weight: 800; font-size: clamp(34px, 6vw, 54px); background: #fff; border-radius: 20px; padding: 0 24px; }
+.visual > .nl-wrap, .teach .nl-wrap { width: min(94vw, 980px); flex: 0 0 auto; }
+.teach .nl-wrap { width: min(86vw, 860px); margin: 0 auto; }

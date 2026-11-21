@@ -2,7 +2,7 @@
 // shapes, patterns, ordering, partitioning, tens & ones, addition and
 // subtraction (take away, ten frames, number bonds, number sentences).
 import { rnd, pick, shuffle, numOptions, textOptions, NUM_WORDS, cap, sample } from '../util.js';
-import { tenFrames, numberBond, tensOnes, group, equation, lineSVG, vertical } from '../visuals.js';
+import { tenFrames, numberBond, tensOnes, group, equation, lineSVG, vertical, numberLine } from '../visuals.js';
 
 const THINGS = [
   ['🥭', 'mangoes'], ['🍌', 'bananas'], ['🐟', 'fish'], ['🌺', 'flowers'], ['🐢', 'turtles'],
@@ -312,6 +312,159 @@ export const mathSkills = [
           { html: '<span class="pic">😢</span><span class="lbl">Not enough</span>', value: 'short', say: 'not enough hats' }],
         answer: hats < 1 ? 'short' : ans,
         explain: `${kids} children. ${Math.max(1, hats)} hats. Give one hat to each child to check.`,
+      };
+    },
+  },
+
+  // ================= NUMBER LINES =================
+  {
+    id: 'm-nl-learn', name: 'Meet the number line', emoji: '📺',
+    gen(l) {
+      const lessons = ['intro', 'back'];
+      if (l > 1) lessons.push('add');
+      if (l > 2) lessons.push('sub');
+      const kind = pick(lessons);
+      const line = { min: 0, max: 10 };
+      const nl = extra => `<div class="nl-wrap">${numberLine({ ...line, ...extra })}</div>`;
+      // Frog hops from a to b, counting each hop out loud
+      const hopAlong = async (vis, speak, a, b, countNumbers) => {
+        const d = Math.sign(b - a), hops = [];
+        let f = a;
+        vis.innerHTML = nl({ frogAt: f });
+        while (f !== b) {
+          hops.push([f, f + d]); f += d;
+          vis.innerHTML = nl({ frogAt: f, hops: [...hops] });
+          await speak(countNumbers ? String(f) : String(hops.length), { rate: 0.85 });
+        }
+      };
+      if (kind === 'intro') return {
+        say: 'This is a number line! It is like a road for numbers. It starts at 0.',
+        visual: nl({ frogAt: 0, marks: { 0: '#ffd23f' } }),
+        prelude: async (vis, speak) => {
+          await speak('Each hop this way is one more. Count with Froggy!');
+          await hopAlong(vis, speak, 0, 10, true);
+          await speak('The numbers get bigger as Froggy hops to the right.');
+        },
+        ask: 'Which way do numbers get bigger?',
+        options: [{ html: '<span class="pic">➡️</span><span class="lbl">This way</span>', value: 'r', say: 'to the right' }, { html: '<span class="pic">⬅️</span><span class="lbl">That way</span>', value: 'l', say: 'to the left' }],
+        cols: 'two', answer: 'r',
+        explain: 'Numbers get bigger as we go to the right. 1, 2, 3, 4...',
+      };
+      if (kind === 'back') return {
+        say: 'Let us count back on the number line! Froggy starts at 10.',
+        visual: nl({ frogAt: 10 }),
+        prelude: async (vis, speak) => {
+          await speak('Each hop back is one less. Count back with Froggy!');
+          await hopAlong(vis, speak, 10, 0, true);
+          await speak('The numbers get smaller as Froggy hops to the left.');
+        },
+        ask: 'Which way do numbers get smaller?',
+        options: [{ html: '<span class="pic">➡️</span><span class="lbl">This way</span>', value: 'r', say: 'to the right' }, { html: '<span class="pic">⬅️</span><span class="lbl">That way</span>', value: 'l', say: 'to the left' }],
+        cols: 'two', answer: 'l',
+        explain: 'Numbers get smaller as we go to the left. 10, 9, 8, 7...',
+      };
+      if (kind === 'add') {
+        const a = rnd(1, 6), b = rnd(2, 4);
+        return {
+          say: `Let us add on the number line! ${a} plus ${b}. Froggy starts at ${a}.`,
+          visual: nl({ frogAt: a, marks: { [a]: '#ffd23f' } }),
+          prelude: async (vis, speak) => {
+            await speak(`Adding means hop to the right. We hop ${b} times. Count the hops!`);
+            await hopAlong(vis, speak, a, a + b, false);
+          },
+          ask: `Where did Froggy land? ${a} + ${b} = ?`,
+          options: numOptions(a + b, 0, 10), answer: a + b,
+          explain: `Start at ${a}. Hop ${b} to the right. Froggy lands on ${a + b}.`,
+        };
+      }
+      const a = rnd(5, 10), b = rnd(2, 4);
+      return {
+        say: `Let us take away on the number line! ${a} take away ${b}. Froggy starts at ${a}.`,
+        visual: nl({ frogAt: a, marks: { [a]: '#ffd23f' } }),
+        prelude: async (vis, speak) => {
+          await speak(`Take away means hop to the left. We hop ${b} times. Count the hops!`);
+          await hopAlong(vis, speak, a, a - b, false);
+        },
+        ask: `Where did Froggy land? ${a} − ${b} = ?`,
+        options: numOptions(a - b, 0, 10), answer: a - b,
+        explain: `Start at ${a}. Hop ${b} to the left. Froggy lands on ${a - b}.`,
+      };
+    },
+  },
+  {
+    id: 'm-nl-build', name: 'Build the number line', emoji: '🧱',
+    gen(l) {
+      const max = l === 3 ? 20 : 10;
+      const n = rnd(1, max - 1);
+      // level 1: every other number shown. level 2+: only some numbers shown
+      const show = v => v === 0 || v === max || v === n - 1 || v === n + 1 || (l === 1 && v % 2 === 0) || (l === 2 && v % 5 === 0) || (l === 3 && v % 10 === 0);
+      return {
+        say: 'Which number is missing in the box? Count along the line.',
+        visual: `<div class="nl-wrap">${numberLine({ min: 0, max, show, boxAt: n })}</div>`,
+        options: numOptions(n, 0, max), answer: n,
+        explain: `It goes ${n - 1}, ${n}, ${n + 1}. The missing number is ${n}.`,
+        explainVisual: `<div class="nl-wrap">${numberLine({ min: 0, max, marks: { [n]: '#2ec27e' } })}</div>`,
+      };
+    },
+  },
+  {
+    id: 'm-nl-read', name: 'Read the number line', emoji: '🔻',
+    gen(l) {
+      const max = l === 3 ? 20 : 10;
+      const n = rnd(1, max - 1);
+      const show = l === 1 ? v => v !== n : l === 2 ? v => v % 5 === 0 : v => v % 5 === 0;
+      return {
+        say: 'What number is the pink arrow pointing to?',
+        visual: `<div class="nl-wrap">${numberLine({ min: 0, max, show, arrowAt: n })}</div>`,
+        options: numOptions(n, 0, max), answer: n,
+        explain: l === 1 ? `Look at the numbers next to it: ${n - 1} and ${n + 1}. The arrow is on ${n}.` : `Count the lines from ${Math.floor(n / 5) * 5}. The arrow is on ${n}.`,
+        explainVisual: `<div class="nl-wrap">${numberLine({ min: 0, max, arrowAt: n, marks: { [n]: '#2ec27e' } })}</div>`,
+      };
+    },
+  },
+  {
+    id: 'm-nl-tap', name: 'Find it on the line', emoji: '👆', type: 'numline',
+    gen(l) {
+      const max = l === 3 ? 20 : 10;
+      const n = rnd(1, max);
+      const show = l === 1 ? () => true : v => v % 5 === 0;
+      return {
+        type: 'numline', mode: 'tap', target: n, line: { min: 0, max, show },
+        say: `Tap the number ${n} on the number line.`,
+        hint: l === 1 ? '' : 'Count the lines from 0.',
+        explain: l === 1 ? `Here is ${n}.` : `Count from 0, one line at a time, until you get to ${n}.`,
+      };
+    },
+  },
+  {
+    id: 'm-nl-hop', name: 'Hop to add & take away', emoji: '🐸', type: 'numline',
+    gen(l) {
+      const sub = l > 1 && Math.random() < 0.5;
+      const max = l === 3 ? 20 : 10;
+      const b = rnd(1, l === 1 ? 3 : 5);
+      const a = sub ? rnd(b, max) : rnd(0, max - b);
+      return {
+        type: 'numline', mode: 'hop', start: a, hops: sub ? -b : b, line: { min: 0, max },
+        say: sub ? `${a} take away ${b}. Froggy is on ${a}. Tap to hop ${b} to the left!` : `${a} plus ${b}. Froggy is on ${a}. Tap to hop ${b} to the right!`,
+        text: sub ? `${a} − ${b}: hop ${b} to the left ⬅️` : `${a} + ${b}: hop ${b} to the right ➡️`,
+        hint: 'Tap the very next number. One hop at a time!',
+        after: sub ? `${a} take away ${b} is ${a - b}!` : `${a} plus ${b} is ${a + b}!`,
+        explain: sub ? `Take away means hop left. Start on ${a}, hop ${b} times, and land on ${a - b}.` : `Plus means hop right. Start on ${a}, hop ${b} times, and land on ${a + b}.`,
+      };
+    },
+  },
+  {
+    id: 'm-nl-compare', name: 'Bigger or smaller?', emoji: '↔️',
+    gen(l) {
+      const max = l === 3 ? 20 : 10;
+      const [a, b] = sample(Array.from({ length: max + 1 }, (_, i) => i), 2);
+      const askBig = Math.random() < 0.5;
+      const ans = askBig ? Math.max(a, b) : Math.min(a, b);
+      return {
+        say: askBig ? `Which number is bigger, ${a} or ${b}? Look at the number line.` : `Which number is smaller, ${a} or ${b}? Look at the number line.`,
+        visual: `<div class="nl-wrap">${numberLine({ min: 0, max, marks: { [a]: '#ffd23f', [b]: '#ffd23f' } })}</div>`,
+        options: [a, b].map(v => ({ html: String(v), value: v, say: String(v) })), cols: 'two', answer: ans,
+        explain: askBig ? `${Math.max(a, b)} is further to the right, so it is bigger.` : `${Math.min(a, b)} is further to the left, so it is smaller.`,
       };
     },
   },
