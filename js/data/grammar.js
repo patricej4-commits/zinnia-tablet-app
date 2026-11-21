@@ -8,7 +8,7 @@ import { picOf } from './pictures.js';
 function fill(l, [sentence, answer, choices], explain) {
   const shown = esc(sentence).replace('___', '<span style="color:#5b3fd1;border-bottom:5px solid #5b3fd1;padding:0 18px">?</span>');
   return {
-    say: l === 1 ? `Which word fits? ${sentence.replace('___', 'blank')}` : 'Read the sentence. Which word fits?',
+    say: l === 1 ? `Which word fits? ${sentence.replace('___', 'blank')}` : 'Read it. Which word fits?',
     readFirst: l > 1,
     visual: `<div class="sentence">${shown}</div>`,
     options: shuffle(choices).map(c => ({ html: esc(c), value: c })), answer,
@@ -94,7 +94,7 @@ export const grammarSkills = [
           readFirst: true,
           options: shuffle([v, n]).map(w => ({ html: `<span class="lbl" style="font-size:40px">${w}</span>`, value: w })), cols: 'two',
           answer: askNoun ? n : v,
-          explain: `A noun is the name of a person, animal, place or thing, like ${n}. A verb is an action word, like ${v}.`,
+          explain: `${n} is a noun. It is a naming word. ${v} is a verb. It is an action word.`,
         };
       }
       const groups = { person: PERSON, place: PLACE, animal: ANIMAL, thing: THING };
@@ -105,7 +105,7 @@ export const grammarSkills = [
         visual: `<div style="display:flex;align-items:center;gap:12px">${picOf(w) ? `<span style="font-size:90px">${picOf(w)}</span>` : ''}<div class="word-big">${w}</div></div>`,
         options: [['person', '🧍'], ['place', '🏫'], ['animal', '🐾'], ['thing', '🧸']].map(([k, e]) => ({ html: `<span class="pic">${e}</span><span class="lbl">${k}</span>`, value: k, say: k })),
         answer: kind,
-        explain: `A noun is the name of a person, animal, place or thing. ${w} is a ${kind}.`,
+        explain: `${w} is a ${kind}.`,
       };
     },
   },
@@ -120,15 +120,15 @@ export const grammarSkills = [
           visual: `<div class="word-big">${esc(w)}</div>`,
           options: [{ html: '<span class="pic">🙂</span><span class="lbl">Common</span>', value: 'c', say: 'common noun' }, { html: '<span class="pic">👑</span><span class="lbl">Proper</span>', value: 'p', say: 'proper noun' }],
           cols: 'two', answer: isP ? 'p' : 'c',
-          explain: isP ? `${w} is a special name, so it is a proper noun. Proper nouns start with a capital letter.` : `${w} is a general name, so it is a common noun. We write it with a lowercase letter.`,
+          explain: isP ? `${w} is a special name. It is a proper noun. It starts with a big letter.` : `${w} is a common noun. It starts with a small letter.`,
         };
       }
       const p = pick(PROPER);
       const wrong = sample(COMMON, 2);
       return {
-        say: 'Which one is a proper noun? Look for the capital letter!', readFirst: true,
+        say: 'Which one is a special name? Look for the big letter!', readFirst: true,
         options: shuffle([p, ...wrong]).map(w => ({ html: esc(w), value: w })), answer: p,
-        explain: `${p} is a special name. Proper nouns always start with a capital letter.`,
+        explain: `${p} is a special name. It starts with a big letter.`,
       };
     },
   },
@@ -139,11 +139,11 @@ export const grammarSkills = [
         const w = pick(['apple', 'cat', 'star', 'mango', 'fish', 'dog', 'ball', 'flower', 'car', 'egg'].filter(picOf));
         const many = Math.random() < 0.5;
         return {
-          say: 'Is this singular, just one, or plural, more than one?',
+          say: 'Is it one, or more than one?',
           visual: `<div style="font-size:80px">${many ? Array(3).fill(picOf(w)).join(' ') : picOf(w)}</div>`,
           options: [{ html: '<span class="pic">☝️</span><span class="lbl">Singular</span>', value: 's', say: 'singular' }, { html: '<span class="pic">🖐️</span><span class="lbl">Plural</span>', value: 'p', say: 'plural' }],
           cols: 'two', answer: many ? 'p' : 's',
-          explain: many ? 'More than one is plural.' : 'Just one is singular.',
+          explain: many ? 'More than one is plural.' : 'One is singular.',
         };
       }
       const es = Math.random() < 0.5;
@@ -154,7 +154,7 @@ export const grammarSkills = [
         say: `One ${w}. Two... which is right?`, readFirst: l === 3,
         visual: `<div class="word-big">one ${w}</div>`,
         options: shuffle([right, wrong]).map(x => ({ html: `two ${x}`, value: x })), cols: 'two', answer: right,
-        explain: es ? `Words ending in x, z, s, ss, sh, ch and o add e s. One ${w}, two ${right}.` : `Most words just add s. One ${w}, two ${right}.`,
+        explain: es ? `Words that end in x, s, sh, ch or o add e s. One ${w}, two ${right}.` : `Just add s. One ${w}, two ${right}.`,
       };
     },
   },
@@ -168,23 +168,23 @@ export const grammarSkills = [
           say: `Is it a ${w}, or an ${w}?`,
           visual: `<div style="display:flex;align-items:center;gap:12px"><span style="font-size:90px">${picOf(w)}</span><div class="word-big">___ ${w}</div></div>`,
           options: [{ html: 'a', value: 'a' }, { html: 'an', value: 'an' }], cols: 'two', answer: isAn ? 'an' : 'a',
-          explain: isAn ? `${w} starts with a vowel sound, so we say an ${w}.` : `${w} starts with a consonant, so we say a ${w}.`,
+          explain: isAn ? `${w} starts with a vowel. We say an ${w}.` : `We say a ${w}.`,
         };
       }
-      return fill(l, pick(ARTICLE_SENT), 'Use an before words starting with a, e, i, o, u. Use the for one special thing.');
+      return fill(l, pick(ARTICLE_SENT), 'Use an before a, e, i, o, u.');
     },
   },
   {
     id: 'g-pronoun', name: 'Pronouns', emoji: '🙋‍♀️',
-    gen(l) { return fill(l, pick(PRONOUNS), 'A pronoun takes the place of a noun.'); },
+    gen(l) { return fill(l, pick(PRONOUNS), 'A pronoun takes the place of a name.'); },
   },
   {
     id: 'g-amisare', name: 'am, is, are', emoji: '🤝',
-    gen(l) { return fill(l, pick(AM_IS_ARE), 'I goes with am. He, she, it and one thing go with is. We, you, they and many things go with are.'); },
+    gen(l) { return fill(l, pick(AM_IS_ARE), 'I am. He is. She is. It is. We are. You are. They are.'); },
   },
   {
     id: 'g-waswere', name: 'was & were', emoji: '⏪',
-    gen(l) { return fill(l, pick(WAS_WERE), 'Was is for one. Were is for more than one, and for you.'); },
+    gen(l) { return fill(l, pick(WAS_WERE), 'One uses was. Many use were. You were.'); },
   },
   {
     id: 'g-verb', name: 'Action words (verbs)', emoji: '🏃‍♀️',
@@ -195,13 +195,13 @@ export const grammarSkills = [
         return {
           say: `Find the action: ${v}!`, text: 'Find the action you hear! 👂',
           options: shuffle([v, ...others]).map(w => ({ html: `<span class="pic">${picOf(w)}</span><span class="lbl">${w}</span>`, value: w, say: w })), answer: v,
-          explain: `A verb is an action word or doing word, like ${v}.`,
+          explain: `${v} is an action word.`,
         };
       }
       const [s, v] = pick(VERB_SENT);
       const words = s.replace('.', '').split(' ');
       return {
-        say: 'Read the sentence. Tap the verb — the action word!', readFirst: true,
+        say: 'Read it. Tap the action word!', readFirst: true,
         visual: `<div class="sentence">${esc(s)}</div>`,
         options: [...new Set(words)].map(w => ({ html: esc(w), value: w })),
         answer: v,
@@ -218,16 +218,16 @@ export const grammarSkills = [
           say: `Which word describes the ${w}?`,
           visual: `<div style="font-size:110px">${e}</div>`,
           options: shuffle([a, ...wrong]).map(x => ({ html: x, value: x, say: x })), answer: a,
-          explain: `An adjective describes a noun. The ${w} is ${a}.`,
+          explain: `The ${w} is ${a}.`,
         };
       }
       const [s, a] = pick(ADJ_SENT);
       return {
-        say: 'Read the sentence. Which word is the describing word?', readFirst: true,
+        say: 'Read it. Which word tells what it is like?', readFirst: true,
         visual: `<div class="sentence">${esc(s)}</div>`,
         options: [...new Set(s.replace('.', '').split(' '))].map(w => ({ html: esc(w), value: w })),
         answer: a,
-        explain: `${a} is the adjective. It describes something in: ${s}`,
+        explain: `${a} is the describing word.`,
       };
     },
   },
@@ -243,7 +243,7 @@ export const grammarSkills = [
         say: `${a} plus ${b} makes...?`, readFirst: l === 3,
         visual: `<div class="eq" style="font-size:clamp(36px,7vw,64px)">${a} + ${b} = <span class="gap">?</span></div>` + (picOf(word) ? `<div style="font-size:80px">${picOf(word)}</div>` : ''),
         options: shuffle(opts).map(x => ({ html: x, value: x })), answer: word,
-        explain: `A compound word is two words put together to make one new word, with no space: ${a} and ${b} make ${word}.`,
+        explain: `${a} and ${b} make ${word}.`,
       };
     },
   },
@@ -258,9 +258,9 @@ export const grammarSkills = [
       const noSpace = words.slice(0, i - 1).concat(words[i - 1] + words[i]).concat(words.slice(i + 1)).join(' ');
       const opts = shuffle([s, noCap, noStop, noSpace]);
       return {
-        say: 'Which sentence is written the right way?', readFirst: true,
+        say: 'Which one is written the right way?', readFirst: true,
         options: opts.map(x => ({ html: `<span class="lbl">${esc(x)}</span>`, value: x })), answer: s, cols: 'two',
-        explain: `A good sentence begins with a capital letter, has spaces between words, and ends with a full stop. Like this: ${s}`,
+        explain: `Big letter at the start. Spaces between words. A dot at the end. ${s}`,
       };
     },
   },

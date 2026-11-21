@@ -134,12 +134,12 @@ export const mathSkills = [
       const a = rnd(0, whole), b = whole - a;
       const miss = l === 1 ? 'part' : pick(['part', 'part', 'whole']);
       if (miss === 'whole') return {
-        say: 'Part and part make the whole. What is the whole?',
+        say: 'Put the two parts together. How many in all?',
         visual: numberBond(null, a, b), options: numOptions(whole, 0, 20), answer: whole,
         explain: `${a} and ${b} together make ${whole}.`,
       };
       return {
-        say: `The whole is ${whole}. One part is ${a}. What is the missing part?`,
+        say: `${whole} in all. One part is ${a}. What is the other part?`,
         visual: numberBond(whole, a, null), options: numOptions(b, 0, 20), answer: b,
         explain: `${whole} take away ${a} is ${b}. So ${a} and ${b} make ${whole}.`,
       };
@@ -178,7 +178,7 @@ export const mathSkills = [
         say: `There are ${a} dots. Take away ${b}. How many are left?`,
         visual: tenFrames(a, b) + equation([a, '−', b, '=', '?']),
         options: numOptions(a - b, 0, 10), answer: a - b,
-        explain: `Cross out ${b}, then count what is left: ${a} take away ${b} equals ${a - b}.`,
+        explain: `Cross out ${b}. Count what is left. ${a} take away ${b} is ${a - b}.`,
       };
       if (mode === 1) {
         const name = pick(NAMES);
@@ -194,7 +194,7 @@ export const mathSkills = [
         say: `If ${a} take away ${b} equals ${a - b}, then what is ${a} take away ${a - b}?`,
         visual: `<div class="eq" style="font-size:44px">${a} − ${b} = ${a - b}</div>` + equation([a, '−', a - b, '=', '?']),
         options: numOptions(b, 0, 10), answer: b,
-        explain: `They are a family! ${a} − ${b} = ${a - b} and ${a} − ${a - b} = ${b}.`,
+        explain: `${a} − ${b} = ${a - b}, so ${a} − ${a - b} = ${b}.`,
       };
     },
   },
@@ -212,7 +212,7 @@ export const mathSkills = [
         say: 'What comes next in the pattern?',
         visual: `<div class="group" style="max-width:none">${seq.join(' ')} <span class="gap" style="border-bottom:6px solid #5b3fd1">❓</span></div>`,
         options: shuffle(choices).map(c => ({ html: `<span class="pic">${c}</span>`, value: c })), answer: ans,
-        explain: `The core of the pattern is ${core.map(i => pool[i]).join(' ')}. It repeats again and again.`,
+        explain: `The pattern goes ${core.map(i => pool[i]).join(' ')}, again and again.`,
       };
     },
   },
@@ -255,7 +255,7 @@ export const mathSkills = [
         options: [{ html: '<span class="pic">🌿</span><span class="lbl">Natural</span>', value: 'n', say: 'natural' },
           { html: '<span class="pic">🛠️</span><span class="lbl">Man-made</span>', value: 'm', say: 'man-made' }],
         cols: 'two', answer: isNat ? 'n' : 'm',
-        explain: isNat ? `A ${w} is natural. It comes from nature. People did not make it.` : `A ${w} is man-made. People made it.`,
+        explain: isNat ? `God made the ${w}. It is natural.` : `People made the ${w}. It is man-made.`,
       };
     },
   },
@@ -271,7 +271,7 @@ export const mathSkills = [
         options: [{ html: '<span class="pic">📏</span><span class="lbl">Straight</span>', value: 's', say: 'straight' },
           { html: '<span class="pic">🌙</span><span class="lbl">Curved</span>', value: 'c', say: 'curved' }],
         cols: 'two', answer: isS ? 's' : 'c',
-        explain: isS ? 'Straight lines go like a ruler — no bends that curve.' : 'Curved lines bend round, like a rainbow.',
+        explain: isS ? 'A straight line does not bend.' : 'A curved line bends, like a rainbow.',
       };
     },
   },
@@ -282,13 +282,13 @@ export const mathSkills = [
       const hats = kids + rnd(-2, 2) || 1;
       const ans = hats === kids ? 'same' : hats > kids ? 'extra' : 'short';
       return {
-        say: 'Every child needs one hat. Are there enough hats?',
+        say: 'Each child needs one hat. Are there enough hats?',
         visual: `<div class="groups">${group('🧒', kids)}${group('🧢', Math.max(1, hats))}</div>`,
         options: [{ html: '<span class="pic">✅</span><span class="lbl">Just right</span>', value: 'same', say: 'just right' },
           { html: '<span class="pic">➕</span><span class="lbl">Too many hats</span>', value: 'extra', say: 'too many hats' },
           { html: '<span class="pic">😢</span><span class="lbl">Not enough</span>', value: 'short', say: 'not enough hats' }],
         answer: hats < 1 ? 'short' : ans,
-        explain: `There are ${kids} children and ${Math.max(1, hats)} hats. Match one hat to one child to see.`,
+        explain: `${kids} children. ${Math.max(1, hats)} hats. Give one hat to each child to check.`,
       };
     },
   },

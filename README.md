@@ -1,7 +1,7 @@
 # Zinnia's Adventure 🦉
 
 A learning game for Zinnia's tablet, built from her Grade 1 class work (Google Classroom, Term 1 2026–27).
-Ollie the owl talks to her, shows pictures, makes her read, and rewards her with coins, stars, stickers and a pet that hatches and grows.
+Ollie the owl talks to her, shows pictures, makes her read, and rewards her with coins, stars, stickers and a pet that grows. No fantasy or magic content (no monsters, witches, wizards, unicorns, fairies or dragons).
 
 ## The six worlds
 
@@ -18,7 +18,7 @@ Ollie the owl talks to her, shows pictures, makes her read, and rewards her with
 - **Adaptive:** every skill has 3 levels. Three right in a row → harder. Mistakes → easier, and the skill comes back more often. "Today's Adventure" always picks the skills she needs most.
 - **Makes her read:** reading questions are never read out to her. Ollie only gives the instruction.
 - **Mistakes become lessons:** first mistake → "try again". Second → Ollie explains the rule (using the teacher's wording), and that question comes back later in the game.
-- **Game rewards:** coins, combo streaks 🔥, 1–3 stars per game, a treasure chest with a new sticker every game, and a pet egg that hatches and grows with stars.
+- **Game rewards:** coins, combo streaks 🔥, 1–3 stars per game, a treasure chest with a new sticker every game, and a surprise pet (puppy, kitty, dove, bunny or lamb) that grows with stars.
 
 ## Parent Zone
 Tap 👪 (top right) and answer the grown-up multiplication question. There you can:

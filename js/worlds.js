@@ -7,7 +7,7 @@ import { worldSkills } from './data/myworld.js';
 
 export const WORLDS = [
   { id: 'sound', name: 'Sound Safari', emo: '🦁', cls: 'w-sound', skills: phonicsSkills, intro: 'Welcome to Sound Safari! Let\'s hunt for special sounds!' },
-  { id: 'word', name: 'Word Castle', emo: '🏰', cls: 'w-word', skills: grammarSkills, intro: 'Welcome to Word Castle! Words are magic here!' },
+  { id: 'word', name: 'Word Castle', emo: '🏰', cls: 'w-word', skills: grammarSkills, intro: 'Welcome to Word Castle! Let us play with words!' },
   { id: 'number', name: 'Number Jungle', emo: '🐒', cls: 'w-number', skills: mathSkills, intro: 'Welcome to Number Jungle! Let\'s count with the monkeys!' },
   { id: 'listen', name: 'Listening Lagoon', emo: '🐬', cls: 'w-listen', skills: listenSkills, intro: 'Welcome to Listening Lagoon! Turn on your super listening ears!' },
   { id: 'story', name: 'Story Tree', emo: '🌳', cls: 'w-story', skills: readingSkills, intro: 'Welcome to the Story Tree! Time to read like a superstar!' },

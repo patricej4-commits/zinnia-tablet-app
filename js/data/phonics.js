@@ -78,8 +78,8 @@ function autoMarks(word) {
 const ONE_VOWEL = ['cat', 'bat', 'pen', 'sip', 'job', 'cub', 'pot', 'shut', 'bit', 'can', 'mad', 'tub', 'quit', 'slid', 'grim', 'slim', 'quick', 'duck', 'back', 'deck', 'sack', 'rock', 'kick', 'plant', 'math', 'hush', 'blend', 'grasp', 'smell', 'frost', 'quack', 'quiz', 'quilt', 'quest', 'glad', 'fish', 'frog', 'crab', 'drum', 'ship', 'hen', 'six', 'bus'];
 const TWO_VOWEL = ['bite', 'cane', 'made', 'tube', 'quite', 'slide', 'grime', 'slime', 'meet', 'team', 'heal', 'tree', 'keep', 'beach', 'reach', 'goat', 'ape', 'bake', 'cape', 'date', 'face', 'gate', 'cake', 'rain', 'road', 'mane', 'tweet', 'glaze', 'brake', 'scale', 'dream', 'queen', 'quote', 'quake', 'kite', 'bike', 'boat', 'snake', 'tail', 'seed', 'leaf'];
 
-const ONE_RULE = 'One-vowel rule: when there is one vowel in a word, it usually says its short sound. We mark it with a smile.';
-const TWO_RULE = 'Two-vowel rule: when there are two vowels in a word, the first one says its name, and the second one is silent. We mark the first vowel with a dash and the second vowel with a slash.';
+const ONE_RULE = 'One vowel? It says its short sound. Give it a smile.';
+const TWO_RULE = 'Two vowels? The first one says its name. The second one is quiet. Dash on the first. Slash on the second.';
 
 export const phonicsSkills = [
   {
@@ -90,9 +90,9 @@ export const phonicsSkills = [
         const v = pick(VOWELS);
         const cons = sample('bcdfghjklmnprstvwz'.split(''), 3);
         return {
-          say: 'Which letter is a vowel? One of the five special letters!',
+          say: 'Which letter is a vowel?',
           options: shuffle([v, ...cons]).map(c => ({ html: c, value: c, say: c })), answer: v,
-          explain: 'The five special letters are the vowels: a, e, i, o, u.',
+          explain: 'The vowels are a, e, i, o, u.',
         };
       }
       if (mode === 1) {
@@ -103,7 +103,7 @@ export const phonicsSkills = [
           say: `Is ${c} a vowel or a consonant?`, visual: `<div class="word-big">${up ? c.toUpperCase() + ' ' : ''}${c}</div>`,
           options: [{ html: 'Vowel', value: 'v', say: 'vowel' }, { html: 'Consonant', value: 'c', say: 'consonant' }], cols: 'two',
           answer: isV ? 'v' : 'c',
-          explain: isV ? `${c} is a vowel. The vowels are a, e, i, o, u.` : `${c} is a consonant. There are 21 consonants. Only a, e, i, o, u are vowels.`,
+          explain: isV ? `${c} is a vowel. The vowels are a, e, i, o, u.` : `${c} is a consonant. Only a, e, i, o, u are vowels.`,
         };
       }
       // missing short vowel (from class worksheet: p_n, _nt, m_g, _gg ...)
@@ -133,7 +133,7 @@ export const phonicsSkills = [
         say: `Which special sound is missing? ${word}.`, text: 'Which special sound is missing? 👂',
         visual: wordCard(word, shown),
         options: opts.map(s => ({ html: s, value: s, say: s })), answer: sound,
-        explain: `${word} has the special sound ${sound.split('').join(' ')}. We circle special sounds!`,
+        explain: `${word} has the special sound ${sound.split('').join(' ')}.`,
         after: `${sound.split('').join(' ')}... ${word}!`,
       };
     },
@@ -148,7 +148,7 @@ export const phonicsSkills = [
       const key = chart[sound][0];
       const wrong = sample(Object.keys(chart).filter(s => s !== sound && !clash(s, sound)).map(s => chart[s][0]), 2);
       return {
-        say: `Chart ${chartNo}! Which word goes with the special sound ${sound.split('').join(' ')}?`,
+        say: `Which word has the sound ${sound.split('').join(' ')}?`,
         visual: `<div class="word-big" style="border-radius:50%;padding:20px 34px;border:6px solid #ff5fa2">${sound}</div>`,
         readFirst: l > 1,
         options: shuffle([key, ...wrong]).map(w => ({ html: `${picOf(w) ? `<span class="pic">${picOf(w)}</span>` : ''}<span class="lbl">${w}</span>`, value: w })),
@@ -163,7 +163,7 @@ export const phonicsSkills = [
       const two = Math.random() < 0.5;
       const w = pick(two ? TWO_VOWEL : ONE_VOWEL);
       return {
-        say: 'Read the word. Is the vowel short, or long?', readFirst: true,
+        say: 'Read the word. Is the vowel short or long?', readFirst: true,
         visual: wordCard(w, w),
         options: [{ html: '<span class="pic">˘</span><span class="lbl">Short (one vowel)</span>', value: 's' },
           { html: '<span class="pic">¯</span><span class="lbl">Long (two vowels)</span>', value: 'l' }],
@@ -181,9 +181,9 @@ export const phonicsSkills = [
       const two = Object.keys(marks).length === 2;
       return {
         type: 'mark', word: w, marks,
-        say: `Mark the vowels in ${w}. Tap a vowel to change its mark.`,
-        hint: two ? 'Two vowels: dash on the first, slash on the second.' : 'One vowel: give it a smile.',
-        explain: (two ? TWO_RULE : ONE_RULE) + (w.includes('qu') ? ' Remember, we never mark the u next to q.' : ''),
+        say: `Mark the vowels in ${w}. Tap a red letter.`,
+        hint: two ? 'Dash on the first. Slash on the second.' : 'One vowel gets a smile.',
+        explain: (two ? TWO_RULE : ONE_RULE) + (w.includes('qu') ? ' Do not mark the u after q.' : ''),
       };
     },
   },
@@ -199,7 +199,7 @@ export const phonicsSkills = [
         return {
           say: `Does ${w} start with c or k?`, text: 'Does it start with c or k?', visual: wordCard(w, '_' + w.slice(1)),
           options: [{ html: 'c', value: 'c', say: 'c' }, { html: 'k', value: 'k', say: 'k' }], cols: 'two', answer: isK ? 'k' : 'c',
-          explain: 'K comes before i and e. C comes before the other three: a, o and u!',
+          explain: 'K goes with i and e. C goes with a, o and u.',
         };
       }
       const ends = {
@@ -213,7 +213,7 @@ export const phonicsSkills = [
       return {
         say: `How do we spell the end of ${w}? c k, k, or k e?`, text: 'How does this word end? ck, k or ke?', visual: wordCard(w, shown),
         options: ['ck', 'k', 'ke'].map(x => ({ html: x, value: x, say: x.split('').join(' ') })), answer: kind,
-        explain: kind === 'ck' ? 'Short vowel, then the k sound at the end? Write c k!' : kind === 'ke' ? 'Long vowel, then the k sound at the end? Write k e!' : 'After a consonant or two vowels together, just write k.',
+        explain: kind === 'ck' ? 'Short vowel? End with c k.' : kind === 'ke' ? 'Long vowel? End with k e.' : 'After a consonant or two vowels, just use k.',
       };
     },
   },
@@ -226,7 +226,7 @@ export const phonicsSkills = [
       return {
         say: `Finish the word: ${w}.`, text: 'Finish the word! ff, ll, ss or zz?', visual: wordCard(w, w.slice(0, -2) + '_ _'),
         options: ['ff', 'll', 'ss', 'zz'].map(x => ({ html: x, value: x, say: x.split('').join(' ') })), answer: kind,
-        explain: `Short word, short vowel, ending in f, l, s or z? Double it! ${w} ends with ${kind.split('').join(' ')}.`,
+        explain: `Short words that end in f, l, s or z get two of them. ${w} ends with ${kind.split('').join(' ')}.`,
       };
     },
   },

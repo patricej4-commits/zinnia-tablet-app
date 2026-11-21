@@ -10,14 +10,16 @@ const name = () => store.playerName || 'Zinnia';
 
 // ---------- pets & stickers ----------
 const PETS = {
-  dragon: { label: 'Dragon', stages: ['🥚', '🦎', '🐲', '🐉'] },
-  unicorn: { label: 'Unicorn', stages: ['🥚', '🐴', '🦄', '🦄'] },
-  puppy: { label: 'Puppy', stages: ['🥚', '🐶', '🐕', '🐕‍🦺'] },
-  kitty: { label: 'Kitty', stages: ['🥚', '🐱', '🐈', '🦁'] },
-  bird: { label: 'Birdie', stages: ['🥚', '🐣', '🐥', '🦚'] },
+  puppy: { label: 'Puppy', stages: ['🎁', '🐶', '🐕', '🦮'] },
+  kitty: { label: 'Kitty', stages: ['🎁', '🐱', '🐈', '🦁'] },
+  dove: { label: 'Dove', stages: ['🎁', '🐣', '🐥', '🕊️'] },
+  bunny: { label: 'Bunny', stages: ['🎁', '🐰', '🐇', '🐇'] },
+  lamb: { label: 'Lamb', stages: ['🎁', '🐑', '🐑', '🐑'] },
 };
 const PET_STEPS = [0, 5, 15, 35];
-const STICKERS = ['🦋', '🐬', '🦄', '🌈', '🍦', '🧁', '🎀', '👑', '🐠', '🦩', '🐼', '🐨', '🦊', '🐯', '🐸', '🐙', '🦀', '🐳', '🌻', '🌺', '🍓', '🍉', '🍍', '🥭', '🎈', '🎨', '🎵', '🚀', '⭐', '🌙', '☀️', '🪐', '💎', '🏆', '🎁', '🍭', '🐝', '🐞', '🦜', '🐢', '🦒', '🐘', '🦓', '🐧', '🦉', '🌴', '🏝️', '🎠', '🎡', '🛼', '🪁', '🧸', '🪅', '🍩', '🥥', '🐚', '🦕', '🐿️', '🦔', '🌷'];
+const STICKERS = ['🦋', '🐬', '🕊️', '🌈', '✝️', '📖', '🙏', '⛪', '💖', '🍦', '🧁', '🎀', '👑', '🐠', '🦩', '🐼', '🐨', '🦊', '🐯', '🐸', '🐙', '🦀', '🐳', '🌻', '🌺', '🍓', '🍉', '🍍', '🥭', '🎈', '🎨', '🎵', '🚀', '⭐', '🌙', '☀️', '🪐', '💎', '🏆', '🎁', '🍭', '🐝', '🐞', '🦜', '🐢', '🦒', '🐘', '🦓', '🐧', '🦉', '🌴', '🏝️', '🎠', '🎡', '🛼', '🪁', '🧸', '🍩', '🥥', '🐚', '🦕', '🐿️', '🦔', '🌷'];
+
+if (store.pet && !PETS[store.pet.kind]) { store.pet = null; save(); }
 
 function petStage() {
   let s = 0;
@@ -87,25 +89,25 @@ function splash() {
 function petPicker() {
   app.innerHTML = '';
   const s = h(`<div class="screen center">
-    <div class="title">Pick a magic egg!</div>
-    <div class="bubble">Your egg will hatch and grow when you earn stars ⭐</div>
+    <div class="title">Pick a surprise pet!</div>
+    <div class="bubble">Get stars ⭐ to open your gift and help your pet grow!</div>
     <div class="options" style="margin-top:20px"></div>
   </div>`);
   const box = s.querySelector('.options');
-  const eggs = { dragon: '🐉', unicorn: '🦄', puppy: '🐶', kitty: '🐱', bird: '🐥' };
+  const eggs = { puppy: '🐶', kitty: '🐱', dove: '🕊️', bunny: '🐰', lamb: '🐑' };
   for (const [k, e] of Object.entries(eggs)) {
-    const b = h(`<button class="opt"><span class="pic">🥚</span><span class="lbl">${e} ${PETS[k].label}</span></button>`);
+    const b = h(`<button class="opt"><span class="pic">${e}</span><span class="lbl">${PETS[k].label}</span></button>`);
     b.onclick = () => {
       sfx.correct();
       store.pet = { kind: k, name: PETS[k].label };
       save();
-      say(`Great choice! Look after your ${PETS[k].label} egg. Earn stars to help it hatch!`);
+      say(`Great choice! Get stars to open your gift. Then your ${PETS[k].label} will come out!`);
       map(false);
     };
     box.append(b);
   }
   app.append(s);
-  say(`Hi ${name()}! I'm Ollie the owl. Pick a magic egg!`);
+  say(`Hi ${name()}! I am Ollie the owl. Pick a pet!`);
 }
 
 function topbar(back) {
@@ -147,12 +149,12 @@ function map(greet) {
   const hello = h(`<div class="hello">
     <div class="mascot">🦉</div>
     <div class="say" style="flex:1">${esc(line)}</div>
-    <div class="pet-box"><div class="pet">${petEmoji()}</div><div class="pet-bar"><i style="width:${Math.round(petProgress() * 100)}%"></i></div></div>
+    <div class="pet-box"><div class="pet" style="font-size:${44 + petStage() * 10}px">${petEmoji()}</div><div class="pet-bar"><i style="width:${Math.round(petProgress() * 100)}%"></i></div></div>
   </div>`);
   hello.querySelector('.pet-box').onclick = () => {
     sfx.pop();
     const st = petStage();
-    const msg = st === 0 ? 'Your egg is wiggling! Earn more stars to hatch it!' : st === 3 ? `Your ${store.pet.name} is all grown up and so proud of you!` : `Your ${store.pet.name} says thank you! Earn more stars to help it grow!`;
+    const msg = st === 0 ? 'Your gift is wiggling! Get more stars to open it!' : st === 3 ? `Your ${store.pet.name} is all grown up and so proud of you!` : `Your ${store.pet.name} says thank you! Earn more stars to help it grow!`;
     say(msg);
     hello.querySelector('.pet').animate([{ transform: 'scale(1)' }, { transform: 'scale(1.4) rotate(10deg)' }, { transform: 'scale(1)' }], 500);
   };
@@ -320,8 +322,8 @@ function results({ stars, earned, bestCombo, grew }) {
     const after = s.querySelector('.after');
     after.classList.remove('hidden');
     if (grew) {
-      after.append(h(`<div class="bubble">✨ Your ${esc(store.pet.name)} ${petStage() === 1 ? 'hatched' : 'grew'}! ${petEmoji()}</div>`));
-      setTimeout(() => say(`Look! Your ${store.pet.name} ${petStage() === 1 ? 'hatched' : 'grew bigger'}!`), 2200);
+      after.append(h(`<div class="bubble">✨ Your ${esc(store.pet.name)} ${petStage() === 1 ? 'came out of the gift' : 'grew'}! ${petEmoji()}</div>`));
+      setTimeout(() => say(`Look! Your ${store.pet.name} ${petStage() === 1 ? 'came out of the gift' : 'grew bigger'}!`), 2200);
     }
     const row = h('<div style="display:flex;gap:14px;flex-wrap:wrap;justify-content:center"></div>');
     const again = h('<button class="big-btn green">Play more ▶</button>');

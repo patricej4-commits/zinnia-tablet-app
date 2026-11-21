@@ -3,7 +3,7 @@ export const PICS = {
   cat: '🐱', dog: '🐶', pig: '🐷', hen: '🐔', fox: '🦊', cow: '🐮', goat: '🐐', duck: '🦆', fish: '🐟', frog: '🐸',
   bird: '🐦', owl: '🦉', bee: '🐝', bug: '🐛', ant: '🐜', crab: '🦀', snake: '🐍', snail: '🐌', shark: '🦈', whale: '🐳',
   turtle: '🐢', mouse: '🐭', sheep: '🐑', horse: '🐴', lion: '🦁', tiger: '🐯', bear: '🐻', rabbit: '🐰', elephant: '🐘', monkey: '🐒',
-  octopus: '🐙', chick: '🐥', worm: '🪱', bat: '🦇', egg: '🥚', apple: '🍎', orange: '🍊', banana: '🍌', mango: '🥭', grapes: '🍇',
+  octopus: '🐙', chick: '🐥', worm: '🪱', bat: '🏏', egg: '🥚', apple: '🍎', orange: '🍊', banana: '🍌', mango: '🥭', grapes: '🍇',
   cake: '🎂', cupcake: '🧁', pancake: '🥞', cookie: '🍪', bread: '🍞', cheese: '🧀', milk: '🥛', corn: '🌽', carrot: '🥕', chips: '🍟',
   sun: '☀️', moon: '🌙', star: '⭐', stars: '✨', cloud: '☁️', rain: '🌧️', rainbow: '🌈', snow: '❄️', tree: '🌳', flower: '🌸',
   sunflower: '🌻', leaf: '🍃', rock: '🪨', shell: '🐚', house: '🏠', school: '🏫', church: '⛪', car: '🚗', bus: '🚌', truck: '🚚',
@@ -12,7 +12,7 @@ export const PICS = {
   clock: '🕰️', key: '🔑', lock: '🔒', box: '📦', cup: '☕', spoon: '🥄', fork: '🍴', bed: '🛏️', chair: '🪑', door: '🚪',
   tent: '⛺', bath: '🛁', brush: '🪥', comb: '🪮', glove: '🧤', crown: '👑', coin: '🪙', gift: '🎁', flag: '🚩', glue: '🧴',
   hand: '✋', foot: '🦶', eye: '👁️', ear: '👂', nose: '👃', tooth: '🦷', baby: '👶', girl: '👧', boy: '👦', queen: '👸',
-  king: '🤴', man: '👨', clown: '🤡', ghost: '👻', robot: '🤖', web: '🕸️', net: '🥅', jet: '🛩️', van: '🚐', fan: '🪭',
+  king: '🤴', man: '👨', clown: '🤡', robot: '🤖', net: '🥅', jet: '🛩️', van: '🚐', fan: '🪭',
   map: '🗺️', mop: '🧹', pot: '🍲', jam: '🍯', nut: '🥜', ten: '🔟', six: '6️⃣', three: '3️⃣', sock2: '🧦', fire: '🔥',
   night: '🌃', light: '💡', snowman: '⛄', jellyfish: '🪼', butterfly: '🦋', ladybug: '🐞', football: '🏈', toothbrush: '🪥', goldfish: '🐠', dragonfly: '🪰',
   sheep2: '🐑', smile: '😃', swim: '🏊', run: '🏃', sleep: '😴', eat: '😋', jump: '🤸', sing: '🎤', read: '📚', cry: '😢',
@@ -21,7 +21,7 @@ export const PICS = {
   ice: '🧊', plant: '🪴', block: '🧱', plug: '🔌', flute: '🪈', crown2: '👑', bowl: '🥣', boot: '👢', moon2: '🌕', pool: '🏊',
   hook: '🪝', wood: '🪵', girl2: '👧', nurse: '🧑‍⚕️', burger: '🍔', circle: '⭕', spider: '🕷️', finger: '👆', oil: '🛢️', toy: '🧸',
   cherry: '🍒', chain: '⛓️', shoes: '👞', sheep3: '🐑', farm: '🚜', barn: '🛖', scarf: '🧣', thread: '🧵', throne: '🪑', church2: '⛪',
-  pie: '🥧', fries: '🍟', walk: '🚶', chalk: '🖍️', talk: '🗣️', squirrel: '🐿️', swan: '🦢', skull: '💀', sled: '🛷', desk: '🖥️',
+  pie: '🥧', fries: '🍟', walk: '🚶', chalk: '🖍️', talk: '🗣️', squirrel: '🐿️', swan: '🦢', sled: '🛷', desk: '🖥️',
   milk2: '🥛', rake: '🧹', lake: '🏞️', neck: '🦒', sack: '🎒', mug: '☕', pin: '📌', ink: '🖋️', mat: '🟫', gate: '🚧',
   cave: '🕳️', bone: '🦴', rope: '🪢', cone: '🍦', nest: '🪺', lamp: '🪔', hill: '⛰️', bus2: '🚌', dish: '🍽️', watch: '⌚',
   peach: '🍑', fox2: '🦊', glass: '🥛', sandwich: '🥪', coconut: '🥥', pineapple: '🍍', ackee: '🍳', patty: '🥟',
@@ -31,7 +31,7 @@ const DROP = ['igloo', 'ackee', 'patty', 'rake', 'mop', 'broom', 'desk', 'barn',
   'smoke', 'glass', 'toothbrush', 'pool', 'fries', 'mug', 'glue', 'flute', 'jellyfish', 'comb', 'fan', 'dragonfly', 'sweep', 'nest',
   'dish', 'spoon', 'nurse', 'oil', 'chain', 'shoes', 'farm', 'circle', 'wood', 'boot', 'thread', 'ink', 'pin', 'church', 'skull', 'cook'];
 // Pictures that are fine as a hint next to a written word (but too ambiguous for "find the picture")
-const HINT_OK = ['broom', 'nest', 'spoon', 'nurse', 'oil', 'chain', 'shoes', 'farm', 'circle', 'wood', 'boot', 'thread', 'ink', 'pin', 'church', 'skull', 'cook', 'glass', 'mug', 'fries', 'pool', 'smoke'];
+const HINT_OK = ['broom', 'nest', 'spoon', 'nurse', 'oil', 'chain', 'shoes', 'farm', 'circle', 'wood', 'boot', 'thread', 'ink', 'pin', 'church', 'cook', 'glass', 'mug', 'fries', 'pool', 'smoke'];
 const HINTS = {};
 for (const k of HINT_OK) HINTS[k] = PICS[k];
 for (const k of Object.keys(PICS)) if (/\d$/.test(k) || DROP.includes(k)) delete PICS[k];
