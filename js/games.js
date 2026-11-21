@@ -1,0 +1,308 @@
+// Renders one question and resolves when it is finished.
+import { say, sfx, listen, scoreReading, micSupported, stopSpeaking } from './speech.js';
+import { store } from './store.js';
+import { pick, shuffle, esc } from './util.js';
+import { shapeSVG } from './visuals.js';
+
+const PRAISE = ['Yes! Brilliant!', 'Woo-hoo! You got it!', 'Super star!', 'Amazing!', 'Wow, clever girl!', 'Fantastic!', 'You are on fire!', 'Correct! High five!', 'Awesome job!', 'Yay!'];
+const RETRY = ['Oops! Try again.', 'Almost! Have another go.', 'Not quite. You can do it!', 'Hmm, look again.'];
+
+const h = (html) => { const t = document.createElement('template'); t.innerHTML = html.trim(); return t.content.firstElementChild; };
+
+// Main entry. root = element to draw into. Returns { correct, firstTry }
+export function runQuestion(q, root) {
+  return new Promise(resolve => {
+    root.innerHTML = '';
+    let attempts = 0;
+    let finished = false;
+    let earUses = 0;
+
+    // ----- prompt with Ollie -----
+    const listenOnly = q.listenOnly;
+    const shownText = listenOnly ? '🎧 Listen carefully!' : esc(q.text || q.say);
+    const ask = h(`<div class="ask"><div class="mascot">🦉</div><div class="bubble">${shownText}</div><button class="icon-btn ear" aria-label="Hear it again">👂</button></div>`);
+    const owl = ask.querySelector('.mascot');
+    const ear = ask.querySelector('.ear');
+    root.append(ask);
+
+    const speak = async (text, opts) => { owl.classList.add('talk'); await say(text, opts); owl.classList.remove('talk'); };
+    const maxEars = listenOnly ? (q.maxReplays ?? 2) : 99;
+
+    ear.onclick = () => {
+      if (earUses >= maxEars) { speak('Listen with your best ears. Have a go!'); return; }
+      earUses++;
+      if (listenOnly && earUses >= maxEars) ear.classList.add('used');
+      speak(q.say);
+    };
+
+    // Reading questions: Ollie says the instruction, but never reads the words for her.
+    speak(q.readFirst ? `${pick(['Reading time!', 'You can read this!', 'Use your reading eyes!'])} ${q.say}` : q.say);
+
+    if (q.visual) root.append(h(`<div class="visual">${q.visual}</div>`));
+    const area = h('<div style="width:100%;display:flex;flex-direction:column;align-items:center;gap:14px"></div>');
+    root.append(area);
+
+    const finish = (correct) => {
+      if (finished) return;
+      finished = true;
+      resolve({ correct, firstTry: correct && attempts === 0, listened: earUses });
+    };
+
+    // Called by each type when she answers
+    const onRight = async () => {
+      sfx.correct();
+      await speak(q.praise || pick(PRAISE));
+      if (q.after) await speak(q.after);
+      setTimeout(() => finish(true), 250);
+    };
+    const onWrong = async (showAnswer) => {
+      attempts++;
+      sfx.wrong();
+      if (attempts < (q.tries || 2)) {
+        speak(pick(RETRY) + (q.hint ? ' ' + q.hint : ''));
+        return false;
+      }
+      // Teach, then move on (the skill will come back later)
+      showAnswer && showAnswer();
+      const teach = h(`<div class="teach">💡 ${esc(q.explain || 'Let\'s remember this one!')}</div>`);
+      const nextRow = h('<div class="next-row"><button class="big-btn green">Next ➜</button></div>');
+      area.append(teach, nextRow);
+      nextRow.querySelector('button').onclick = () => { stopSpeaking(); sfx.tap(); finish(false); };
+      speak(q.explain || '');
+      return true;
+    };
+
+    const type = q.type || 'choice';
+    ({ choice, order, build, mark, read, follow }[type])(q, area, { onRight, onWrong, speak });
+  });
+}
+
+// ---------- multiple choice ----------
+function choice(q, area, { onRight, onWrong, speak }) {
+  const box = h(`<div class="options ${q.cols || ''}"></div>`);
+  let locked = false;
+  for (const o of q.options) {
+    const b = h(`<button class="opt">${o.html}</button>`);
+    b.onclick = async () => {
+      if (locked || b.classList.contains('dim')) return;
+      if (o.value === q.answer) {
+        locked = true;
+        b.classList.add('right');
+        [...box.children].forEach(c => c !== b && c.classList.add('dim'));
+        onRight();
+      } else {
+        b.classList.add('wrong');
+        setTimeout(() => b.classList.add('dim'), 400);
+        const done = await onWrong(() => {
+          [...box.children].forEach((c, i) => { if (q.options[i].value === q.answer) c.classList.add('right'); });
+        });
+        if (done) locked = true;
+      }
+    };
+    // long-press an option to hear it (only when not a reading question)
+    if (o.say && !q.readFirst) {
+      let t;
+      b.addEventListener('pointerdown', () => { t = setTimeout(() => speak(o.say), 600); });
+      ['pointerup', 'pointerleave'].forEach(ev => b.addEventListener(ev, () => clearTimeout(t)));
+    }
+    box.append(b);
+  }
+  area.append(box);
+}
+
+// ---------- tap in order ----------
+function order(q, area, { onRight, onWrong }) {
+  const row = h('<div class="order-row"></div>');
+  const tiles = h('<div class="tiles"></div>');
+  let idx = 0, locked = false;
+  for (const v of q.items) {
+    const t = h(`<button class="tile" style="width:auto;min-width:86px;padding:0 12px">${v}</button>`);
+    t.onclick = async () => {
+      if (locked || t.classList.contains('used')) return;
+      if (v === q.answer[idx]) {
+        sfx.pop();
+        t.classList.add('used');
+        row.append(h(`<div class="slot filled" style="width:auto;min-width:86px;padding:0 12px">${v}</div>`));
+        idx++;
+        if (idx === q.answer.length) { locked = true; onRight(); }
+      } else {
+        t.animate([{ transform: 'translateX(-8px)' }, { transform: 'translateX(8px)' }, { transform: 'none' }], 300);
+        const done = await onWrong(() => {
+          row.innerHTML = q.answer.map(a => `<div class="slot filled" style="width:auto;min-width:86px;padding:0 12px">${a}</div>`).join('');
+          tiles.remove();
+        });
+        if (done) locked = true;
+      }
+    };
+    tiles.append(t);
+  }
+  area.append(row, tiles);
+}
+
+// ---------- build a word from letter tiles ----------
+function build(q, area, { onRight, onWrong, speak }) {
+  const target = q.word.split('');
+  const letters = shuffle([...target, ...(q.extra || [])]);
+  const slots = h('<div class="slots"></div>');
+  const tiles = h('<div class="tiles"></div>');
+  const filled = [];
+  let locked = false;
+  const drawSlots = () => {
+    slots.innerHTML = '';
+    target.forEach((_, i) => {
+      const f = filled[i];
+      const s = h(`<button class="slot ${f ? 'filled' : ''}">${f ? f.ch : ''}</button>`);
+      s.onclick = () => { if (locked || !f) return; f.tile.classList.remove('used'); filled.splice(i, 1); drawSlots(); };
+      slots.append(s);
+    });
+  };
+  letters.forEach(ch => {
+    const t = h(`<button class="tile">${ch}</button>`);
+    t.onclick = async () => {
+      if (locked || t.classList.contains('used') || filled.length >= target.length) return;
+      sfx.pop();
+      t.classList.add('used');
+      filled.push({ ch, tile: t });
+      drawSlots();
+      if (filled.length === target.length) {
+        const word = filled.map(f => f.ch).join('');
+        if (word === q.word) { locked = true; speak(q.word); onRight(); }
+        else {
+          const done = await onWrong(() => {
+            filled.length = 0;
+            target.forEach(c => filled.push({ ch: c, tile: t }));
+            drawSlots();
+          });
+          if (done) { locked = true; return; }
+          setTimeout(() => { filled.splice(0).forEach(f => f.tile.classList.remove('used')); drawSlots(); }, 700);
+        }
+      }
+    };
+    tiles.append(t);
+  });
+  drawSlots();
+  area.append(slots, tiles);
+}
+
+// ---------- mark the vowels (short ˘ / long ¯ / silent /) ----------
+const MARKS = [null, 'short', 'long', 'silent'];
+const MARK_CH = { short: '˘', long: '¯', silent: '', null: '' };
+function mark(q, area, { onRight, onWrong }) {
+  const word = q.word;
+  const state = word.split('').map(() => null);
+  const box = h('<div class="markword"></div>');
+  const legend = h('<div class="marklegend"><span>Tap a red vowel:</span><span>˘ short</span><span>¯ long (says its name)</span><span><s>e</s> silent</span></div>');
+  let locked = false;
+  const draw = () => {
+    box.innerHTML = '';
+    word.split('').forEach((ch, i) => {
+      const isV = q.marks[i] !== undefined;
+      const el = h(`<div class="mletter ${isV ? 'vowel' : ''} ${state[i] === 'silent' ? 'silent' : ''}"><span class="mk">${MARK_CH[state[i]] || '&nbsp;'}</span><span class="ch">${ch}</span></div>`);
+      if (isV) el.onclick = () => { if (locked) return; sfx.tap(); state[i] = MARKS[(MARKS.indexOf(state[i]) + 1) % MARKS.length]; draw(); };
+      box.append(el);
+    });
+  };
+  draw();
+  const check = h('<button class="big-btn green">Check ✔</button>');
+  check.onclick = async () => {
+    if (locked) return;
+    const ok = Object.entries(q.marks).every(([i, m]) => state[i] === m);
+    if (ok) { locked = true; check.remove(); onRight(); }
+    else {
+      const done = await onWrong(() => { Object.entries(q.marks).forEach(([i, m]) => (state[i] = m)); draw(); });
+      if (done) { locked = true; check.remove(); }
+    }
+  };
+  area.append(box, legend, check);
+}
+
+// ---------- read aloud (microphone) ----------
+function read(q, area, ctx) {
+  const words = q.sentence.split(' ');
+  const sent = h(`<div class="visual"><div class="sentence">${words.map((w, i) => `<span class="rw" data-i="${i}">${esc(w)}</span>`).join(' ')}</div></div>`);
+  area.append(sent);
+  const spans = [...sent.querySelectorAll('.rw')];
+  let tries = 0;
+  let canTapWords = false;
+  spans.forEach(s => (s.onclick = () => { if (canTapWords) { sfx.tap(); say(s.textContent); } }));
+
+  if (!micSupported || !store.settings.micOn) { readFallback(q, area, ctx, sent); return; }
+
+  const btn = h('<button class="big-btn mic-btn">🎤 I\'m ready to read!</button>');
+  area.append(btn);
+  let busy = false;
+  btn.onclick = async () => {
+    if (busy) return; busy = true;
+    sfx.tap();
+    btn.classList.add('listening'); btn.textContent = '🎤 Reading… (I\'m listening)';
+    const heard = await listen(9000);
+    btn.classList.remove('listening'); busy = false;
+    if (heard === null) { btn.remove(); readFallback(q, area, ctx, sent); return; }
+    const score = scoreReading(q.sentence, heard);
+    // colour the words she said
+    const heardWords = heard.join(' ').toLowerCase();
+    spans.forEach(s => {
+      const w = s.textContent.toLowerCase().replace(/[^a-z']/g, '');
+      s.className = 'rw ' + (heardWords.includes(w) ? 'ok' : 'miss');
+    });
+    if (score >= 0.7) { btn.remove(); ctx.onRight(); return; }
+    tries++;
+    sfx.wrong();
+    canTapWords = true;
+    if (tries === 1) { btn.textContent = '🎤 Try again!'; ctx.speak('Good try! Tap any pink word to hear it, then read it again.'); }
+    else if (tries === 2) {
+      btn.textContent = '🎤 Your turn!';
+      ctx.speak('Listen to me first, then you read it.').then(() => readAlong(spans, q.sentence));
+    } else {
+      btn.remove();
+      // She tried hard: count it as a "needs practice" answer and move on
+      q.tries = 1;
+      q.explain = q.explain || `This says: ${q.sentence}`;
+      ctx.onWrong(() => {});
+    }
+  };
+}
+async function readAlong(spans, sentence) {
+  for (const s of spans) { s.classList.add('hl'); await say(s.textContent, { rate: 0.75 }); s.classList.remove('hl'); }
+}
+// No microphone: read the sentence, then pick the matching picture.
+function readFallback(q, area, ctx, sent) {
+  sent.querySelectorAll('.rw').forEach(s => (s.className = 'rw'));
+  ctx.speak('Read the sentence. Then tap the picture that matches!');
+  const fq = q.fallback;
+  if (!fq) {
+    const b = h('<button class="big-btn green">I read it! ✔</button>');
+    b.onclick = () => { b.remove(); ctx.onRight(); };
+    area.append(b);
+    return;
+  }
+  choice({ ...fq, readFirst: true }, area, ctx);
+}
+
+// ---------- follow spoken instructions (listening) ----------
+function follow(q, area, { onRight, onWrong }) {
+  const grid = h('<div class="shapes-grid"></div>');
+  let step = 0, locked = false;
+  q.cells.forEach(c => {
+    const cell = h(`<button class="shape-cell">${shapeSVG(c.shape, c.colour)}</button>`);
+    cell.onclick = async () => {
+      if (locked) return;
+      const t = q.targets[step];
+      if (c.shape === t.shape && c.colour === t.colour && !cell.classList.contains('picked')) {
+        sfx.pop(); cell.classList.add('picked'); step++;
+        if (step === q.targets.length) { locked = true; onRight(); }
+      } else {
+        cell.classList.add('bad'); setTimeout(() => cell.classList.remove('bad'), 500);
+        const done = await onWrong(() => {
+          [...grid.children].forEach((el, i) => {
+            const cc = q.cells[i];
+            if (q.targets.some(tt => tt.shape === cc.shape && tt.colour === cc.colour)) el.classList.add('picked');
+          });
+        });
+        if (done) locked = true;
+      }
+    };
+    grid.append(cell);
+  });
+  area.append(grid);
+}
