@@ -169,6 +169,8 @@ function worldStars(w) {
 }
 
 function map(greet) {
+  if (updateReady) { location.reload(); return; }
+  onMap = true;
   stopSpeaking();
   document.getElementById('confetti').innerHTML = '';
   if (overTime()) return breakTime();
@@ -232,6 +234,7 @@ function map(greet) {
 }
 
 function island(w) {
+  onMap = false;
   stopSpeaking();
   app.innerHTML = '';
   const s = h('<div class="screen"></div>');
@@ -303,6 +306,7 @@ function pickTopics(skills, n) {
 }
 
 async function play({ title, skills, mixed, length, mission }) {
+  onMap = false;
   stopSpeaking();
   if (overTime()) return breakTime();
   const total = length || store.settings.sessionLength;
@@ -502,6 +506,7 @@ function breakTime() {
 }
 
 function stickerBook() {
+  onMap = false;
   stopSpeaking();
   app.innerHTML = '';
   const s = h('<div class="screen"></div>');
@@ -522,6 +527,7 @@ function stickerBook() {
 
 // ---------- Parent zone ----------
 function parentGate() {
+  onMap = false;
   stopSpeaking();
   const a = rnd(6, 9), b = rnd(6, 9);
   app.innerHTML = '';
@@ -619,7 +625,22 @@ function parentZone() {
 }
 
 // ---------- start ----------
+// Updates: check when the app opens and whenever she comes back to it. A new version is
+// switched in only on the map screen (never in the middle of a question). Progress is kept.
+let updateReady = false;
+let onMap = false;
 if ('serviceWorker' in navigator) {
-  window.addEventListener('load', () => navigator.serviceWorker.register('sw.js').catch(() => {}));
+  const hadController = !!navigator.serviceWorker.controller;
+  navigator.serviceWorker.addEventListener('controllerchange', () => {
+    if (!hadController) return; // first install, nothing to update
+    updateReady = true;
+    if (onMap) location.reload();
+  });
+  window.addEventListener('load', () => {
+    navigator.serviceWorker.register('sw.js').then(reg => {
+      document.addEventListener('visibilitychange', () => { if (!document.hidden) reg.update().catch(() => {}); });
+      setInterval(() => reg.update().catch(() => {}), 30 * 60 * 1000);
+    }).catch(() => {});
+  });
 }
 splash();

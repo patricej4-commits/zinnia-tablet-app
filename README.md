@@ -70,3 +70,6 @@ Built from the class **1B Christmas Term Revision Guide** (exams Dec 2–8, 2026
 ## Daily mission and listening first
 - **Daily Mission:** a set number of questions in EVERY area each day (default 5 per area = 35 a day; change it in the Parent Zone). The map shows a checklist and a big "Do my mission" button that goes area by area. Finishing earns a trophy, +20 coins and a day streak. The daily time limit only starts after the mission is done. The Parent Zone shows which days the mission was completed.
 - **Listen first:** answer buttons are greyed out with "👂 Listen to Ollie first…" until Ollie finishes reading the question.
+
+## Updates
+The app checks for a new version when it opens, whenever she comes back to it, and every 30 minutes. A new version is switched in only when she is on the map, never in the middle of a question. Progress is kept.
