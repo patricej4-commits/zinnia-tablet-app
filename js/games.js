@@ -73,7 +73,7 @@ export function runQuestion(q, root) {
     };
 
     const type = q.type || 'choice';
-    ({ choice, order, build, mark, read, follow }[type])(q, area, { onRight, onWrong, speak });
+    ({ choice, order, build, mark, read, follow }[type])(q, area, { onRight, onWrong, speak, noteMiss: () => { attempts++; } });
   });
 }
 
@@ -245,8 +245,9 @@ function read(q, area, ctx) {
       const w = s.textContent.toLowerCase().replace(/[^a-z']/g, '');
       s.className = 'rw ' + (heardWords.includes(w) ? 'ok' : 'miss');
     });
-    if (score >= 0.7) { btn.remove(); ctx.onRight(); return; }
+    if (score >= 0.6) { btn.remove(); ctx.onRight(); return; }
     tries++;
+    ctx.noteMiss();
     sfx.wrong();
     canTapWords = true;
     if (tries === 1) { btn.textContent = '🎤 Try again!'; ctx.speak('Good try! Tap any pink word to hear it, then read it again.'); }
@@ -254,11 +255,10 @@ function read(q, area, ctx) {
       btn.textContent = '🎤 Your turn!';
       ctx.speak('Listen to me first, then you read it.').then(() => readAlong(spans, q.sentence));
     } else {
+      // Third try: she has heard it read and tried hard. The microphone can
+      // mishear children, so praise the effort and move on (not counted as first-try right).
       btn.remove();
-      // She tried hard: count it as a "needs practice" answer and move on
-      q.tries = 1;
-      q.explain = q.explain || `This says: ${q.sentence}`;
-      ctx.onWrong(() => {});
+      ctx.speak('Great reading effort! Well done for trying so hard.').then(ctx.onRight);
     }
   };
 }

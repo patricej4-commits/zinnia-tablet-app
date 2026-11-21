@@ -207,8 +207,8 @@ function chooseSkill(pool, last) {
   return cands[cands.length - 1];
 }
 
-function makeQuestion(sk) {
-  const lvl = skill(sk.id).level;
+function makeQuestion(sk, levelOverride) {
+  const lvl = levelOverride || skill(sk.id).level;
   const q = sk.gen(lvl);
   q.skill = sk.id;
   if (sk.type && !q.type) q.type = sk.type;
@@ -253,26 +253,45 @@ async function play({ title, skills, mixed }) {
   let count = 0;
   const maxQ = total + 3;
 
+  let missRun = 0;          // wrong answers in a row this game
+  let challengeNext = false; // she is on a streak: offer a harder bonus question
+
   while (done < total && count < maxQ && !quit) {
-    let sk;
-    if (retry.length && (done >= total - retry.length || Math.random() < 0.35)) sk = retry.shift();
+    let sk, mode = 'normal';
+    if (missRun >= 2) {
+      // Two misses in a row: give her an easy win from something she knows well
+      sk = [...pool].sort((a, b) => mastery(b.id) - mastery(a.id))[0];
+      mode = 'boost';
+      missRun = 0;
+    } else if (retry.length && (done >= total - retry.length || Math.random() < 0.35)) sk = retry.shift();
     else sk = chooseSkill(pool, last);
+    if (mode === 'normal' && challengeNext) { mode = 'challenge'; challengeNext = false; }
     last = sk.id;
     count++;
-    const q = makeQuestion(sk);
+    const lvl = skill(sk.id).level;
+    const q = makeQuestion(sk, mode === 'boost' ? 1 : mode === 'challenge' ? Math.min(3, lvl + 1) : lvl);
+    if (mode === 'challenge') {
+      toast('⭐ Challenge question! Bonus coins! ⭐');
+      q.say = 'Challenge time! ' + q.say;
+    }
+    if (mode === 'boost') q.say = pick(['Here is one you know!', 'You can do this one!', 'Let\'s warm up!']) + ' ' + q.say;
     const res = await runQuestion(q, stage);
     if (quit) break;
-    record(sk.id, res.correct && res.firstTry);
+    // A missed challenge question is never counted against her
+    if (!(mode === 'challenge' && !res.correct)) record(sk.id, res.correct && res.firstTry);
     if (res.correct) {
-      done++;
-      const c = res.firstTry ? 3 : 1;
+      done++; missRun = 0;
+      const c = (res.firstTry ? 3 : 1) * (mode === 'challenge' ? 2 : 1);
       earned += c; store.coins += c;
       if (res.firstTry) { firstRight++; combo++; bestCombo = Math.max(bestCombo, combo); } else combo = 0;
-      if (combo > 0 && combo % 3 === 0) { store.coins += 2; earned += 2; toast('🔥 Combo bonus +2 🪙'); sfx.coin(); }
+      if (combo > 0 && combo % 3 === 0) { store.coins += 2; earned += 2; toast('🔥 Combo bonus +2 🪙'); sfx.coin(); challengeNext = true; }
     } else {
       combo = 0;
       done++;
-      if (retry.length < 3) retry.push(sk);
+      if (mode !== 'challenge') {
+        missRun++;
+        if (retry.length < 3) retry.push(sk);
+      }
     }
     sfx.coin();
     coinEl.textContent = store.coins;

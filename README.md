@@ -18,6 +18,9 @@ Ollie the owl talks to her, shows pictures, makes her read, and rewards her with
 - **Adaptive:** every skill has 3 levels. Three right in a row → harder. Mistakes → easier, and the skill comes back more often. "Today's Adventure" always picks the skills she needs most.
 - **Makes her read:** reading questions are never read out to her. Ollie only gives the instruction.
 - **Mistakes become lessons:** first mistake → "try again". Second → Ollie explains the rule (using the teacher's wording), and that question comes back later in the game.
+- **Never stuck:** two misses in a row → an easy question she already knows, to rebuild confidence.
+- **Stretch:** three right in a row → a harder ⭐ Challenge question for double coins. Missing a challenge never counts against her.
+- **Forgiving microphone:** if the mic can't understand her after three tries, she gets praise for her effort and moves on.
 - **Game rewards:** coins, combo streaks 🔥, 1–3 stars per game, a treasure chest with a new sticker every game, and a surprise pet (puppy, kitty, dove, bunny or lamb) that grows with stars.
 
 ## Parent Zone
