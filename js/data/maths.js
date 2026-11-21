@@ -52,6 +52,18 @@ export const mathSkills = [
   {
     id: 'm-sequence', name: 'Count on & back', emoji: '🐸',
     gen(l) {
+      if (l > 1 && Math.random() < 0.4) {
+        // just before / just after / between
+        const n = rnd(1, maxFor(l) - 1);
+        const kind = pick(['before', 'after', 'between']);
+        const ans = kind === 'before' ? n - 1 : kind === 'after' ? n + 1 : n;
+        const q = kind === 'between' ? `Which number comes between ${n - 1} and ${n + 1}?` : `Which number comes just ${kind} ${n}?`;
+        return {
+          say: q, visual: kind === 'between' ? equation([n - 1, ',', '?', ',', n + 1]) : kind === 'before' ? equation(['?', ',', n]) : equation([n, ',', '?']),
+          options: numOptions(ans, 0, 20), answer: ans,
+          explain: kind === 'before' ? `Just before means one less. ${ans} comes just before ${n}.` : kind === 'after' ? `Just after means one more. ${ans} comes just after ${n}.` : `${n - 1}, ${n}, ${n + 1}. ${n} is in between.`,
+        };
+      }
       const back = l > 1 && Math.random() < 0.5;
       const len = 4;
       const start = back ? rnd(len, maxFor(l)) : rnd(0, maxFor(l) - len);
@@ -227,6 +239,18 @@ export const mathSkills = [
       const pool = shuffle(['🔴', '🔵', '🟡', '🟢', '⭐', '🌸', '🐠', '🍓', '🌙', '🦋']);
       const cores = l === 1 ? [[0, 1]] : l === 2 ? [[0, 1], [0, 0, 1], [0, 1, 1]] : [[0, 1, 2], [0, 0, 1, 1], [0, 1, 1], [0, 1, 2, 2]];
       const core = pick(cores);
+      if (l > 1 && Math.random() < 0.4) {
+        // Find the core: the part that repeats
+        const seq = Array.from({ length: core.length * 3 }, (_, i) => pool[core[i % core.length]]).join(' ');
+        const right = core.map(i => pool[i]).join(' ');
+        const wrongs = [...new Set([core.slice(0, -1).map(i => pool[i]).join(' '), [...core, core[0]].map(i => pool[i]).join(' '), core.map(i => pool[i]).reverse().join(' ')])].filter(x => x && x !== right).slice(0, 2);
+        return {
+          say: 'What is the core of this pattern? The core is the part that repeats.',
+          visual: `<div class="group" style="max-width:none">${seq}</div>`,
+          options: shuffle([right, ...wrongs]).map(x => ({ html: `<span class="lbl" style="font-size:36px">${x}</span>`, value: x })), answer: right,
+          explain: `The core is ${right}. It repeats again and again.`,
+        };
+      }
       const len = core.length * 2 + rnd(1, core.length);
       const seq = Array.from({ length: len }, (_, i) => pool[core[i % core.length]]);
       const ans = pool[core[len % core.length]];
@@ -468,4 +492,67 @@ export const mathSkills = [
       };
     },
   },
+
+  {
+    id: 'm-regroup', name: 'Regroup the set', emoji: '🔄',
+    gen(l) {
+      const [e, w] = pick(THINGS);
+      if (l === 1 || Math.random() < 0.5) {
+        // Same set, new groups: the number stays the same
+        const n = rnd(4, l === 1 ? 8 : 12);
+        const a = rnd(1, n - 1), b = rnd(1, n - 1);
+        return {
+          say: `Here are ${n} ${w}. Zinnia moves them into new groups. How many ${w} are there now?`,
+          visual: `<div class="groups">${group(e, a)}${group(e, n - a)}</div><div style="font-size:50px">⬇️</div><div class="groups">${group(e, b)}${group(e, n - b)}</div>`,
+          options: numOptions(n, 0, 15), answer: n,
+          explain: `Moving them into new groups does not change how many. There are still ${n}.`,
+        };
+      }
+      // Put a set into equal groups
+      const size = pick(l === 2 ? [2, 5] : [2, 5, 10]);
+      const groups = rnd(2, size === 10 ? 2 : size === 5 ? 3 : 5);
+      const n = size * groups;
+      return {
+        say: `There are ${n} ${w}. Put them in groups of ${size}. How many groups?`,
+        visual: `<div class="groups">${Array.from({ length: groups }, () => group(e, size)).join('')}</div>`,
+        options: numOptions(groups, 1, 10), answer: groups,
+        explain: `${n} ${w} make ${groups} groups of ${size}.`,
+      };
+    },
+  },
+  {
+    id: 'm-story', name: 'Maths stories', emoji: '📚',
+    gen(l) {
+      const [e, w] = pick(THINGS);
+      const n1 = pick(NAMES), n2 = pick(NAMES.filter(x => x !== n1));
+      const kind = pick(l === 1 ? ['add', 'sub'] : l === 2 ? ['add', 'sub', 'more'] : ['add', 'sub', 'more', 'missing']);
+      const a = rnd(2, 9), b = rnd(1, Math.min(9, kind === 'sub' ? a : 10 - a));
+      const story = {
+        add: [`${n1} has ${a} ${w}. ${n2} gives ${n1} ${b} more. How many ${w} does ${n1} have now?`, a + b, `${a} + ${b} = ${a + b}`],
+        sub: [`${n1} has ${a} ${w}. ${n1} gives ${b} to ${n2}. How many ${w} are left?`, a - b, `${a} − ${b} = ${a - b}`],
+        more: [`${n1} has ${a + b} ${w}. ${n2} has ${a}. How many more does ${n1} have?`, b, `${a + b} − ${a} = ${b}`],
+        missing: [`${n1} had ${a} ${w}. Then ${n1} got some more. Now ${n1} has ${a + b}. How many more did ${n1} get?`, b, `${a} + ${b} = ${a + b}`],
+      }[kind];
+      return {
+        say: story[0], readFirst: l === 3,
+        visual: kind === 'more' ? `<div class="groups">${group(e, a + b)}${group(e, a)}</div>` : `<div style="font-size:80px">${e}</div>`,
+        options: numOptions(story[1], 0, 20), answer: story[1],
+        explain: `${story[2]}. The answer is ${story[1]}.`,
+      };
+    },
+  },
+  {
+    id: 'm-spellnum', name: 'Spell number words', emoji: '🔡', type: 'build',
+    gen(l) {
+      const n = rnd(l === 1 ? 0 : l === 2 ? 0 : 10, l === 1 ? 10 : 19);
+      const word = NUM_WORDS[n];
+      return {
+        type: 'build', word, extra: sample('abdhlmnoprstuvw'.split('').filter(c => !word.includes(c)), 1),
+        say: `Spell the number word for ${n}. ${word}.`, text: `Spell the number word for ${n}`,
+        visual: `<div class="eq">${n}</div>`,
+        explain: `${n} is spelled ${word.split('').join(' ')}.`,
+      };
+    },
+  },
 ];
+

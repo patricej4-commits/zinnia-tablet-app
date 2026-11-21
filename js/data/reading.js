@@ -26,15 +26,33 @@ const SENTENCES = [
 
 const SIGHT = ['the', 'see', 'my', 'me', 'is', 'a', 'I', 'can', 'we', 'go', 'to', 'and', 'look', 'said', 'you', 'he', 'she', 'was', 'are', 'come', 'play', 'here', 'like', 'it', 'in', 'at', 'up', 'for', 'have', 'they', 'what', 'this', 'with', 'all', 'do', 'one', 'two', 'three', 'red', 'blue'];
 
+// Comprehension: each story has who / what / where / why / what-first questions
+// [story, [question, answer, wrong, wrong]...]
 const MINI_STORIES = [
-  { s: 'Zinnia has a pet fish. The fish is gold. It swims in a big bowl.', q: 'What colour is the fish?', o: ['gold', 'red', 'black'], a: 'gold' },
-  { s: 'Kai went to the shop with Dad. They got milk and bread. Then they went home.', q: 'Who went to the shop with Kai?', o: ['Dad', 'Mum', 'Grandma'], a: 'Dad' },
-  { s: 'The sun is up. Maya puts on her hat. She plays in the sand at the beach.', q: 'Where does Maya play?', o: ['at the beach', 'at school', 'in bed'], a: 'at the beach' },
-  { s: 'A little frog sat on a log. It saw a fly. Snap! The frog ate the fly.', q: 'What did the frog eat?', o: ['a fly', 'a fish', 'a cake'], a: 'a fly' },
-  { s: 'Leo has a red kite. The wind is strong. The kite flies up, up, up!', q: 'What colour is the kite?', o: ['red', 'green', 'blue'], a: 'red' },
-  { s: 'It is night. The stars shine. Ava is in bed with her teddy. She is sleepy.', q: 'Who is in bed with Ava?', o: ['her teddy', 'her dog', 'her mum'], a: 'her teddy' },
-  { s: 'Grandma has six hens. Each hen has an egg. Grandma puts the eggs in a basket.', q: 'How many hens does Grandma have?', o: ['six', 'two', 'ten'], a: 'six' },
-  { s: 'The bus is big and yellow. It takes the children to school. They sing on the bus.', q: 'What do the children do on the bus?', o: ['sing', 'sleep', 'eat'], a: 'sing' },
+  ['Zinnia has a pet fish. The fish is gold. It swims in a big bowl. Every morning Zinnia feeds it.',
+    [['What pet does Zinnia have?', 'a fish', 'a dog', 'a cat'], ['What colour is the fish?', 'gold', 'red', 'black'], ['Where does the fish swim?', 'in a big bowl', 'in the sea', 'in a cup'], ['When does Zinnia feed it?', 'every morning', 'at night', 'never']]],
+  ['Kai went to the shop with Dad. They got milk and bread. Then they went home and made toast.',
+    [['Who went to the shop with Kai?', 'Dad', 'Mum', 'Grandma'], ['What did they get?', 'milk and bread', 'cake and juice', 'fish'], ['What did they do first?', 'went to the shop', 'made toast', 'went to bed'], ['What did they make?', 'toast', 'soup', 'a kite']]],
+  ['The sun is up. Maya puts on her hat. She plays in the sand at the beach. She makes a big sand castle.',
+    [['Where does Maya play?', 'at the beach', 'at school', 'in bed'], ['What does Maya put on?', 'her hat', 'her coat', 'her boots'], ['What does she make?', 'a sand castle', 'a cake', 'a boat'], ['Why does Maya wear a hat?', 'the sun is up', 'it is raining', 'it is night']]],
+  ['A little frog sat on a log. It saw a fly. Snap! The frog ate the fly. Then it jumped into the pond.',
+    [['Where did the frog sit?', 'on a log', 'on a car', 'on a bed'], ['What did the frog eat?', 'a fly', 'a fish', 'a cake'], ['What did the frog do last?', 'jumped into the pond', 'sat on a log', 'saw a fly']]],
+  ['Leo has a red kite. The wind is strong. The kite flies up, up, up! Leo holds the string tight.',
+    [['What colour is the kite?', 'red', 'green', 'blue'], ['Why can the kite fly?', 'the wind is strong', 'it is raining', 'Leo is sleeping'], ['What does Leo hold?', 'the string', 'a cup', 'a book']]],
+  ['It is night. The stars shine. Ava says her prayers. Then she gets into bed with her teddy.',
+    [['When does this happen?', 'at night', 'in the morning', 'at lunch'], ['What does Ava do first?', 'says her prayers', 'gets into bed', 'eats lunch'], ['Who is in bed with Ava?', 'her teddy', 'her dog', 'her mum']]],
+  ['Grandma has six hens. Each hen lays an egg. Grandma puts the eggs in a basket. She will bake a cake.',
+    [['How many hens does Grandma have?', 'six', 'two', 'ten'], ['Where does Grandma put the eggs?', 'in a basket', 'in a box', 'in the sea'], ['What will Grandma bake?', 'a cake', 'bread', 'a pie']]],
+  ['The bus is big and yellow. It takes the children to school. They sing on the bus. The driver waves goodbye.',
+    [['What colour is the bus?', 'yellow', 'red', 'blue'], ['Where does the bus go?', 'to school', 'to the beach', 'to church'], ['What do the children do on the bus?', 'sing', 'sleep', 'eat'], ['Who waves goodbye?', 'the driver', 'the teacher', 'Grandma']]],
+  ['Zinnia fell and hurt her knee. She cried. Mummy gave her a big hug and a plaster. Zinnia felt better.',
+    [['What did Zinnia hurt?', 'her knee', 'her hand', 'her nose'], ['Why did Zinnia cry?', 'she hurt her knee', 'she was happy', 'she was hungry'], ['Who gave her a hug?', 'Mummy', 'Daddy', 'Kai'], ['How did Zinnia feel at the end?', 'better', 'sad', 'angry']]],
+  ['It rained all day. Kai could not play outside. He read a book and drew a picture of a rainbow.',
+    [['What was the weather?', 'rainy', 'sunny', 'windy'], ['Why did Kai stay inside?', 'it rained', 'he was sick', 'it was night'], ['What did Kai draw?', 'a rainbow', 'a dog', 'a car']]],
+  ['On Sunday we went to church. We sang songs and prayed. After church, we ate rice and peas with chicken.',
+    [['When did they go to church?', 'on Sunday', 'on Monday', 'at night'], ['What did they do at church?', 'sang songs and prayed', 'went swimming', 'played ball'], ['What did they eat after?', 'rice and peas with chicken', 'cake', 'ice cream']]],
+  ['Maya planted a seed. She gave it water every day. The sun shone on it. Soon a pretty flower grew!',
+    [['What did Maya plant?', 'a seed', 'a stone', 'a toy'], ['What did she give it every day?', 'water', 'milk', 'juice'], ['What grew?', 'a flower', 'a tree house', 'a mango'], ['What happened first?', 'Maya planted a seed', 'a flower grew', 'the sun shone']]],
 ];
 
 const levelSentences = l => SENTENCES.filter(s => s[0] <= l && (l === 1 || s[0] >= l - 1));
@@ -98,14 +116,16 @@ export const readingSkills = [
   },
   {
     id: 'r-story', name: 'Read a story', emoji: '📖',
-    gen() {
-      const st = pick(MINI_STORIES);
+    gen(l) {
+      const [story, qs] = pick(MINI_STORIES);
+      const [q, a, ...wrong] = pick(qs);
       return {
-        say: 'Read the little story, then answer the question.', readFirst: true,
-        text: st.q,
-        visual: `<div class="sentence" style="font-size:clamp(24px,4vw,38px);text-align:left">${esc(st.s)}</div>`,
-        options: shuffle(st.o).map(o => ({ html: esc(o), value: o })), answer: st.a,
-        explain: `The story says: ${st.s}`,
+        say: l === 1 ? 'Read the little story. Then answer the question. Tap the ear if you need help.' : 'Read the little story, then answer the question.',
+        readFirst: true, text: q,
+        earSay: l === 1 ? `${story} ... ${q}` : undefined,
+        visual: `<div class="sentence" style="font-size:clamp(24px,4vw,38px);text-align:left">${esc(story)}</div>`,
+        options: shuffle([a, ...wrong]).map(o => ({ html: esc(o), value: o })), answer: a,
+        explain: `The story says: ${story}`,
       };
     },
   },

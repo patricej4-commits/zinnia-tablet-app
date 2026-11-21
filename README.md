@@ -3,16 +3,17 @@
 A learning game for Zinnia's tablet, built from her Grade 1 class work (Google Classroom, Term 1 2026–27).
 Ollie the owl talks to her, shows pictures, makes her read, and rewards her with coins, stars, stickers and a pet that grows. No fantasy or magic content (no monsters, witches, wizards, unicorns, fairies or dragons).
 
-## The six worlds
+## The seven worlds
 
 | World | What she practises (from her class materials) |
 |---|---|
-| 🦁 **Sound Safari** | Vowels & consonants, Special Sounds Charts 6, 7 & 8, chart key words, one- and two-vowel rules, **marking vowels** (smile ˘ / dash ¯ / slash, never mark the u after q), C/K rule, ck/k/ke endings, double endings (ff, ll, ss, zz), spelling |
-| 🏰 **Word Castle** | Nouns (person/place/animal/thing), common & proper nouns, singular & plural (s / es), a/an/the, pronouns (I, me, my, mine, you, your, yours, he, she, they…), am/is/are, was/were, verbs, adjectives, compound words, writing a correct sentence |
-| 🐒 **Number Jungle** | Counting, number names 0–19, counting on & back, more/fewer, one-to-one, ordering, tens & ones, number bonds (part-part-whole), adding, **take away with ten frames, number sentences and column layout** (big number on top, minus and number below, line, answer; within 10 like class, teen numbers in tens & ones at level 3), column adding, patterns, partitioning, shapes (natural/man-made), straight & curved lines |
+| 🦁 **Sound Safari** | Vowels & consonants, Special Sounds Charts 6, 7 & 8, chart key words, one- and two-vowel rules, **marking vowels** (smile ˘ / dash ¯ / slash, never mark the u after q), C/K rule, ck/k/ke endings, double endings (ff, ll, ss, zz). **Spelling:** spell what she hears (sound-chunk tiles like sh, igh, ck at higher levels, spelling-test mode), missing letters, Abeka vowel blends (ba, be, bi…), spot the right spelling |
+| 🏰 **Word Castle** | Nouns (person/place/animal/thing), common & proper nouns, singular & plural (s / es), a/an/the, pronouns (I, me, my, mine, you, your, yours, he, she, they…), am/is/are, was/were, verbs, adjectives, compound words, writing a correct sentence. **Parts of speech:** say what kind of word it is (noun, verb, adjective, pronoun), find it in a sentence, use the right kind of word to finish a sentence, **build sentences** from word tiles |
+| 🐒 **Number Jungle** | Counting, number names 0–19, counting on & back, more/fewer, one-to-one, ordering, tens & ones, number bonds (part-part-whole), adding, **take away with ten frames, number sentences and column layout** (big number on top, minus and number below, line, answer; within 10 like class, teen numbers in tens & ones at level 3), column adding, patterns (incl. finding the core), regrouping sets, before/after/between, maths story problems, spelling number words, partitioning, shapes (natural/man-made), straight & curved lines |
 | 🐸 **Number lines** (in Number Jungle) | Watch-and-learn lessons (Froggy hops while Ollie counts), building the line (missing numbers), reading where the arrow points, tapping a number, **hopping to add (right) and take away (left)** one tap per hop, bigger/smaller. First visit starts with the lesson; Today's Adventure always includes number lines (switch in Parent Zone) |
 | 🐬 **Listening Lagoon** | Following spoken instructions, listening to short stories, hearing words, first sounds, rhymes, counting words she hears (limited replays to build focus) |
-| 🌳 **Story Tree** | Reading sentences **out loud** (the microphone checks her reading), reading and matching pictures, sight words, short stories with questions |
+| 🌳 **Story Tree** | Reading sentences **out loud** (the microphone checks her reading), reading and matching pictures, sight words, 12 short stories with who/what/where/why/what-happened-first questions |
+| 📖 **Bible Time** | The class **A–Z Bible memory verses** (KJV, from her teacher's Bible Cards): finish the verse, which letter, what it means, where it is found; Bible stories (Creation, Noah, David & Goliath, Jonah, Daniel, Baby Jesus, feeding the 5000, the lost sheep) |
 | 🌎 **My World** | My body, healthy food, groups & rules, religious & ethnic groups, good & bad habits, computers (IT study guide), music symbols, Spanish greetings |
 
 ## How it teaches

@@ -32,7 +32,7 @@ export function runQuestion(q, root) {
       if (earUses >= maxEars) { speak('Listen with your best ears. Have a go!'); return; }
       earUses++;
       if (listenOnly && earUses >= maxEars) ear.classList.add('used');
-      speak(q.say);
+      speak(q.earSay || q.say);
     };
 
     // Reading questions: Ollie says the instruction, but never reads the words for her.
@@ -152,7 +152,7 @@ function order(q, area, { onRight, onWrong }) {
 
 // ---------- build a word from letter tiles ----------
 function build(q, area, { onRight, onWrong, speak }) {
-  const target = q.word.split('');
+  const target = q.parts || q.word.split(''); // parts = sound chunks like sh, igh, ck
   const letters = shuffle([...target, ...(q.extra || [])]);
   const slots = h('<div class="slots"></div>');
   const tiles = h('<div class="tiles"></div>');

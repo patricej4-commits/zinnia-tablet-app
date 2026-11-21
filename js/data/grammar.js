@@ -264,4 +264,116 @@ export const grammarSkills = [
       };
     },
   },
+
+  // ======== Parts of speech: name them, find them, use them, build sentences ========
+  {
+    id: 'g-parts', name: 'What kind of word?', emoji: '🧠',
+    gen(l) {
+      const kinds = l === 1 ? ['n', 'v'] : l === 2 ? ['n', 'v', 'a'] : ['n', 'v', 'a', 'p'];
+      const k = pick(kinds);
+      const w = pick(WORDS[k]);
+      return {
+        say: `${w}. What kind of word is ${w}?`, text: `What kind of word is "${w}"?`,
+        visual: `<div class="word-big">${esc(w)}</div>`,
+        options: kinds.map(x => ({ html: `<span class="pic">${KIND[x].e}</span><span class="lbl">${KIND[x].name}</span><small style="font-size:18px">${KIND[x].hint}</small>`, value: x, say: KIND[x].name })),
+        cols: kinds.length === 2 ? 'two' : '', answer: k,
+        explain: `${w} is a ${KIND[k].name}. ${KIND[k].rule}`,
+      };
+    },
+  },
+  {
+    id: 'g-find', name: 'Find the word', emoji: '🔎',
+    gen(l) {
+      const kinds = l === 1 ? ['n', 'v'] : l === 2 ? ['n', 'v', 'a'] : ['n', 'v', 'a', 'p'];
+      let row, k, target;
+      for (let i = 0; i < 50; i++) {
+        row = pick(TAGGED).split(' ').map(t => t.split('/'));
+        k = pick(kinds);
+        const hits = row.filter(([, tag]) => tag === k);
+        if (hits.length === 1) { target = hits[0][0]; break; }
+      }
+      const words = [...new Set(row.map(([w]) => w))];
+      const sentence = row.map(([w]) => w).join(' ') + '.';
+      return {
+        say: `Read the sentence. Tap the ${KIND[k].name}, the ${KIND[k].hint.toLowerCase()}!`, readFirst: l > 1,
+        visual: `<div class="sentence">${esc(sentence)}</div>`,
+        options: words.map(w => ({ html: esc(w), value: w })), answer: target,
+        explain: `${target} is the ${KIND[k].name}. ${KIND[k].rule}`,
+      };
+    },
+  },
+  {
+    id: 'g-use', name: 'Use the right word', emoji: '✏️',
+    gen(l) {
+      const [sentence, k, opts] = pick(USE.filter(u => l === 3 || u[1] !== 'p'));
+      return {
+        say: l === 1 ? `Finish the sentence with a ${KIND[k].name}. ${sentence.replace('___', 'blank')}` : `Read it. Finish it with a ${KIND[k].name}, a ${KIND[k].hint.toLowerCase()}.`,
+        readFirst: l > 1,
+        visual: `<div class="sentence">${esc(sentence).replace('___', '<span style="color:#5b3fd1;border-bottom:5px solid #5b3fd1;padding:0 18px">?</span>')}</div>`,
+        options: shuffle(Object.values(opts)).map(w => ({ html: esc(w), value: w })), answer: opts[k],
+        explain: `${opts[k]} is a ${KIND[k].name}: ${sentence.replace('___', opts[k])}`,
+      };
+    },
+  },
+  {
+    id: 'g-build', name: 'Make a sentence', emoji: '🧱', type: 'order',
+    gen(l) {
+      const pool = BUILD.filter(([, s]) => s.split(' ').length <= (l === 1 ? 4 : l === 2 ? 5 : 7));
+      const [pic, s] = pick(pool);
+      const words = s.split(' ');
+      return {
+        type: 'order',
+        say: l === 1 ? `Make this sentence: ${s}` : 'Look at the picture. Put the words in order to make a sentence!',
+        text: 'Tap the words in order to make a sentence. Start with the big letter!',
+        visual: `<div style="font-size:90px">${pic}</div>`,
+        items: shuffle(words), answer: words,
+        explain: `The sentence is: ${s} It starts with a big letter and ends with a dot.`,
+      };
+    },
+  },
 ];
+
+const KIND = {
+  n: { name: 'noun', e: '🏷️', hint: 'Naming word', rule: 'A noun names a person, place, animal or thing.' },
+  v: { name: 'verb', e: '🏃‍♀️', hint: 'Action word', rule: 'A verb is an action word. It tells what someone does.' },
+  a: { name: 'adjective', e: '🌈', hint: 'Describing word', rule: 'An adjective describes a noun. It tells what it is like.' },
+  p: { name: 'pronoun', e: '🙋‍♀️', hint: 'Takes the place of a name', rule: 'A pronoun takes the place of a name, like he, she, it, we, they, I.' },
+};
+const WORDS = {
+  n: ['dog', 'girl', 'school', 'mango', 'book', 'teacher', 'beach', 'ball', 'cat', 'house', 'bird', 'car', 'tree', 'mother', 'church', 'pencil'],
+  v: ['run', 'jump', 'eat', 'swim', 'sing', 'read', 'write', 'sleep', 'dance', 'play', 'clap', 'cook', 'hop', 'climb', 'pray', 'kick'],
+  a: ['big', 'small', 'happy', 'red', 'tall', 'soft', 'hot', 'cold', 'funny', 'fast', 'sweet', 'long', 'pretty', 'sad', 'kind', 'tiny'],
+  p: ['he', 'she', 'it', 'they', 'we', 'I', 'you', 'him', 'her', 'them'],
+};
+// word/tag (n noun, v verb, a adjective, p pronoun)
+const TAGGED = [
+  'The/ big/a dog/n runs/v', 'She/p eats/v a/ sweet/a mango/n', 'Zinnia/n reads/v a/ funny/a book/n', 'He/p kicks/v the/ red/a ball/n',
+  'The/ little/a bird/n sings/v', 'We/p swim/v in/ the/ blue/a sea/n', 'They/p play/v at/ the/ beach/n', 'The/ tall/a tree/n sways/v',
+  'I/p hug/v my/ kind/a mother/n', 'The/ happy/a girl/n dances/v', 'It/p jumps/v on/ the/ soft/a bed/n', 'Grandma/n cooks/v hot/a soup/n',
+  'The/ fast/a car/n zooms/v', 'He/p climbs/v the/ big/a hill/n', 'She/p sings/v a/ happy/a song/n', 'The/ cat/n sleeps/v',
+];
+// [sentence, kind of word needed, { n, v, a, p }]
+const USE = [
+  ['The ___ dog barks.', 'a', { a: 'big', v: 'jump', n: 'table' }],
+  ['Zinnia can ___ fast.', 'v', { v: 'run', a: 'red', n: 'cup' }],
+  ['I see a ___ in the sky.', 'n', { n: 'bird', v: 'sing', a: 'happy' }],
+  ['The mango is ___.', 'a', { a: 'sweet', v: 'swim', n: 'chair' }],
+  ['We ___ to school.', 'v', { v: 'walk', a: 'tall', n: 'apple' }],
+  ['My ___ is in the bag.', 'n', { n: 'book', v: 'eat', a: 'cold' }],
+  ['The ___ cat is sleeping.', 'a', { a: 'fluffy', v: 'kick', n: 'door' }],
+  ['Birds can ___.', 'v', { v: 'fly', a: 'green', n: 'shoe' }],
+  ['The ___ is hot today.', 'n', { n: 'sun', v: 'dance', a: 'soft' }],
+  ['Kai is a ___ boy.', 'a', { a: 'kind', v: 'clap', n: 'pen' }],
+  ['Maya likes to ___ songs.', 'v', { v: 'sing', a: 'tiny', n: 'goat' }],
+  ['Kai has a ball. ___ kicks it.', 'p', { p: 'He', v: 'Run', n: 'Dog' }],
+  ['Maya and I play. ___ have fun.', 'p', { p: 'We', a: 'Big', v: 'Jump' }],
+  ['The girls sing. ___ are happy.', 'p', { p: 'They', n: 'Cat', v: 'Eat' }],
+];
+// [picture, sentence]
+const BUILD = [
+  ['🐶', 'The dog can run.'], ['☀️', 'The sun is hot.'], ['🐱', 'I see a cat.'], ['🥭', 'I like mangoes.'], ['🏫', 'We go to school.'],
+  ['📖', 'She reads a book.'], ['🐟', 'The fish can swim.'], ['🐦', 'The bird sings.'], ['⚽', 'He kicks the ball.'],
+  ['🌳', 'The tree is very tall.'], ['🏖️', 'We play at the beach.'], ['🙏', 'I pray to God.'], ['🎂', 'Mummy made a big cake.'],
+  ['🐢', 'The green turtle is slow.'], ['🌧️', 'It is raining today.'], ['🐸', 'The frog hops on a log.'], ['⛪', 'We go to church on Sunday.'],
+];
+

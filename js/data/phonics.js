@@ -1,6 +1,6 @@
 // Sound Safari: phonics from the class (Abeka Special Sounds Charts 6-8, vowels,
 // one- and two-vowel rules with marking, C/K rule, ck/k/ke, double consonants).
-import { pick, shuffle, sample, esc } from '../util.js';
+import { pick, shuffle, sample, esc, rnd } from '../util.js';
 import { picOf } from './pictures.js';
 
 // ---- Special sounds charts: sound -> words. First word is the chart key word.
@@ -233,16 +233,127 @@ export const phonicsSkills = [
   {
     id: 'p-spell', name: 'Spell it!', emoji: '🔤', type: 'build',
     gen(l) {
-      const L1 = ['cat', 'dog', 'pig', 'hen', 'sun', 'bus', 'cup', 'bed', 'fox', 'hat', 'net', 'egg', 'bat', 'van', 'web', 'six', 'ten', 'map'];
-      const L2 = ['duck', 'fish', 'ship', 'frog', 'crab', 'drum', 'bell', 'doll', 'sock', 'cake', 'kite', 'bike', 'goat', 'tree', 'boat', 'moon', 'book', 'star', 'king', 'ring'];
-      const L3 = ['snake', 'train', 'sheep', 'clock', 'plant', 'house', 'mouse', 'chick', 'shark', 'cloud', 'night', 'snail', 'horse', 'chair', 'three'];
-      const w = pick((l === 1 ? L1 : l === 2 ? L2 : L3).filter(x => picOf(x)));
-      const extra = sample('abcdefghilmnoprstu'.split('').filter(c => !w.includes(c)), l === 1 ? 1 : 2);
+      const L1 = ['cat', 'dog', 'pig', 'hen', 'sun', 'bus', 'cup', 'bed', 'fox', 'hat', 'net', 'egg', 'bat', 'van', 'web', 'six', 'ten', 'map', 'mug', 'pot', 'bug', 'jet'];
+      const L2 = ['duck', 'fish', 'ship', 'frog', 'crab', 'drum', 'bell', 'doll', 'sock', 'cake', 'kite', 'bike', 'goat', 'tree', 'boat', 'moon', 'book', 'star', 'king', 'ring', 'chick', 'shell', 'clock', 'plant', 'flag'];
+      const L3 = ['snake', 'train', 'sheep', 'clock', 'house', 'mouse', 'shark', 'cloud', 'night', 'snail', 'horse', 'chair', 'three', 'light', 'spoon', 'stars', 'church', 'bird', 'girl', 'coin', 'toy', 'ball', 'walk', 'corn', 'queen', 'smile', 'swing'];
+      const w = pick(l === 1 ? L1 : l === 2 ? L2 : L3);
+      // Level 2-3: tiles are whole special sounds (sh, ck, igh...) like the Abeka charts
+      const parts = l === 1 ? w.split('') : chunk(w);
+      const pool = l === 1 ? 'abcdefghilmnoprstu'.split('') : ['sh', 'ch', 'th', 'ck', 'ar', 'or', 'ee', 'oo', 'ai', 'igh', 'ow', 'ou', 'a', 'e', 'i', 'o', 'u', 's', 't', 'n', 'p', 'l'];
+      const extra = sample(pool.filter(c => !parts.includes(c)), l === 1 ? 1 : 2);
+      const dictation = l === 3 && Math.random() < 0.5;
       return {
-        type: 'build', word: w, extra,
-        say: `Spell ${w}. ${w}.`, text: 'Spell the word you hear! 👂', visual: `<div style="font-size:110px">${picOf(w)}</div>`,
-        explain: `${w} is spelled ${w.split('').join(', ')}.`,
+        type: 'build', word: w, parts, extra,
+        say: `Spell ${w}. ${w}.` + (l > 1 ? ' Listen for the special sounds!' : ''),
+        text: dictation ? 'Spelling test! Spell the word you hear 👂' : 'Spell the word you hear! 👂',
+        visual: dictation || !picOf(w) ? '<div style="font-size:90px">👂</div>' : `<div style="font-size:110px">${picOf(w)}</div>`,
+        explain: `${w} is spelled ${parts.map(p => p.split('').join(' ')).join(', ')}. ${w}!`,
+      };
+    },
+  },
+  {
+    id: 'p-missing', name: 'Missing letters', emoji: '🧩',
+    gen(l) {
+      const words = l === 1
+        ? ['cat', 'dog', 'pig', 'hen', 'sun', 'bus', 'cup', 'bed', 'fox', 'hat', 'net', 'bat', 'van', 'web', 'map', 'pot', 'bug', 'jet', 'six', 'ten']
+        : ['duck', 'fish', 'frog', 'crab', 'drum', 'bell', 'cake', 'kite', 'bike', 'goat', 'tree', 'boat', 'moon', 'book', 'star', 'snake', 'train', 'sheep', 'clock', 'house', 'shark', 'chair', 'plant', 'horse', 'light', 'spoon', 'queen'];
+      const w = pick(words.filter(x => picOf(x)));
+      const missCount = l === 3 ? 2 : 1;
+      const i = rnd(0, w.length - missCount);
+      const gap = w.slice(i, i + missCount);
+      const shown = w.slice(0, i) + '_'.repeat(missCount).split('').join(' ') + w.slice(i + missCount);
+      const isVowel = c => VOWELS.includes(c);
+      const pool = missCount === 1 ? (isVowel(gap) ? VOWELS : 'bcdfghklmnprstw'.split('')) : null;
+      let opts;
+      if (pool) opts = [gap, ...sample(pool.filter(c => c !== gap), 3)];
+      else {
+        const others = new Set();
+        while (others.size < 3) { const o = pick('aeioubcdklmnprsth'.split('')) + pick('aeioubcdklmnprsth'.split('')); if (o !== gap) others.add(o); }
+        opts = [gap, ...others];
+      }
+      return {
+        say: `Which letter${missCount > 1 ? 's are' : ' is'} missing? ${w}.`, text: `Which letter${missCount > 1 ? 's are' : ' is'} missing? 👂`,
+        visual: wordCard(w, shown),
+        options: shuffle(opts).map(c => ({ html: c, value: c, say: c.split('').join(' ') })), answer: gap,
+        explain: `Say it slowly: ${w}. It is spelled ${w.split('').join(' ')}.`,
+      };
+    },
+  },
+  {
+    id: 'p-blend', name: 'Vowel blends', emoji: '🔗',
+    gen(l) {
+      // Abeka: sound the consonant + vowel blend first, then add the ending
+      const words = ['bat', 'bed', 'big', 'box', 'bus', 'cat', 'cup', 'dog', 'fan', 'fish', 'hat', 'hen', 'jet', 'map', 'mop', 'net', 'pig', 'pot', 'pen', 'sun', 'six', 'ten', 'van', 'web', 'bug', 'mug', 'log', 'leg', 'kid', 'lid', 'red', 'rat'];
+      const w = pick(words);
+      const blend = w.slice(0, 2);
+      if (l > 1 && Math.random() < 0.5) {
+        // hear a blend, find it written
+        const c = blend[0];
+        const opts = [blend, ...sample(VOWELS.filter(v => v !== blend[1]), 3).map(v => c + v)];
+        return {
+          listenOnly: true, maxReplays: 3, say: `Find the blend: ${blend}. ${blend}.`,
+          options: shuffle(opts).map(b => ({ html: b, value: b })), answer: blend,
+          explain: `${blend[0]} and ${blend[1]} blend together: ${blend}.`,
+        };
+      }
+      const opts = [blend, ...sample(VOWELS.filter(v => v !== blend[1]), 2).map(v => blend[0] + v)];
+      return {
+        say: `${w}. Which blend does ${w} start with?`, text: 'Which blend does it start with? 👂',
+        visual: wordCard(w, '_ _' + w.slice(2)),
+        options: shuffle(opts).map(b => ({ html: b, value: b, say: b })), answer: blend,
+        explain: `Blend it first: ${blend}. Then add the end: ${blend}, ${w.slice(2)}... ${w}!`,
+        after: `${blend}... ${w}!`,
+      };
+    },
+  },
+  {
+    id: 'p-rightspell', name: 'Spot the right spelling', emoji: '🔍',
+    gen(l) {
+      const words = l === 1 ? ['cat', 'dog', 'sun', 'pig', 'bed', 'cup', 'hen', 'fox', 'bus', 'hat']
+        : ['duck', 'cake', 'kite', 'bike', 'goat', 'tree', 'boat', 'fish', 'ship', 'frog', 'bell', 'snake', 'night', 'light', 'sheep', 'train', 'house', 'shark', 'clock', 'chair', 'queen', 'three', 'smile', 'stars'];
+      const w = pick(words);
+      const wrongs = new Set(misspell(w));
+      wrongs.delete(w);
+      const opts = [w, ...sample([...wrongs], l === 1 ? 2 : 3)];
+      return {
+        say: 'Which word is spelled the right way?', readFirst: true,
+        visual: picOf(w) ? `<div style="font-size:100px">${picOf(w)}</div>` : '',
+        options: shuffle(opts).map(x => ({ html: x, value: x })), answer: w,
+        explain: `${w} is spelled ${w.split('').join(' ')}.`,
       };
     },
   },
 ];
+
+// Split a word into Abeka special-sound chunks (longest first): "night" -> n, igh, t
+const CHUNKS = ['thr', 'squ', 'str', 'spr', 'spl', 'scr', 'igh', 'all', 'alk', 'wor', 'sh', 'ch', 'th', 'ck', 'qu', 'ar', 'or', 'ir', 'ur', 'er', 'oo', 'ou', 'ow', 'oi', 'oy', 'ay', 'ee', 'ea', 'oa', 'ai', 'ng'];
+function chunk(w) {
+  const out = [];
+  for (let i = 0; i < w.length;) {
+    const c = CHUNKS.find(k => w.startsWith(k, i));
+    if (c) { out.push(c); i += c.length; } else { out.push(w[i]); i++; }
+  }
+  return out;
+}
+// Common mistakes a young speller makes
+function misspell(w) {
+  const out = [];
+  const vi = [...w].findIndex(c => VOWELS.includes(c));
+  if (vi >= 0) for (const v of VOWELS) if (v !== w[vi]) out.push(w.slice(0, vi) + v + w.slice(vi + 1));
+  if (w.endsWith('e')) out.push(w.slice(0, -1));
+  if (w.endsWith('ck')) out.push(w.slice(0, -2) + 'k', w.slice(0, -2) + 'c');
+  if (w.includes('igh')) out.push(w.replace('igh', 'ite'), w.replace('igh', 'i'));
+  if (w.includes('ee')) out.push(w.replace('ee', 'e'), w.replace('ee', 'ea'));
+  if (w.includes('oa')) out.push(w.replace('oa', 'o'), w.replace('oa', 'ow'));
+  if (w.includes('ai')) out.push(w.replace('ai', 'a'), w.replace('ai', 'ay'));
+  if (w.includes('sh')) out.push(w.replace('sh', 's'), w.replace('sh', 'ch'));
+  if (w.includes('ch')) out.push(w.replace('ch', 'sh'));
+  if (w.includes('ar')) out.push(w.replace('ar', 'or'));
+  if (w.includes('ou')) out.push(w.replace('ou', 'ow'));
+  if (w.startsWith('c')) out.push('k' + w.slice(1));
+  if (w.startsWith('k')) out.push('c' + w.slice(1));
+  if (w.includes('qu')) out.push(w.replace('qu', 'kw'));
+  if (!w.endsWith('e') && /[aeiou][^aeiou]$/.test(w)) out.push(w + 'e');
+  out.push(w.split('').reverse().join('') === w ? w + w.slice(-1) : w.slice(0, -1) + w.slice(-1) + w.slice(-1));
+  return out;
+}
