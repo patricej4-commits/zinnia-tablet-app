@@ -5,7 +5,7 @@ import { pick, shuffle, esc } from './util.js';
 import { shapeSVG, numberLine } from './visuals.js';
 
 const PRAISE = ['Yes! Brilliant!', 'Woo-hoo! You got it!', 'Super star!', 'Amazing!', 'Wow, clever girl!', 'Fantastic!', 'You are on fire!', 'Correct! High five!', 'Awesome job!', 'Yay!'];
-const RETRY = ['Oops! Try again.', 'Almost! Have another go.', 'Not quite. You can do it!', 'Hmm, look again.'];
+const RETRY = ['Oops! Try again.', 'Almost! Have another go.', 'Not quite. You can do it!', 'Hmm, look again.', 'Listen carefully and try again.', 'Let\'s listen again and have another go.'];
 
 const h = (html) => { const t = document.createElement('template'); t.innerHTML = html.trim(); return t.content.firstElementChild; };
 
@@ -23,6 +23,7 @@ export function runQuestion(q, root) {
     const ask = h(`<div class="ask"><div class="mascot">🦉</div><div class="bubble">${shownText}</div><button class="icon-btn ear" aria-label="Hear it again">👂</button></div>`);
     const owl = ask.querySelector('.mascot');
     const ear = ask.querySelector('.ear');
+    if (q.preSay) root.append(h(`<div class="listen-tip">👂 ${esc(q.preSay)}</div>`));
     root.append(ask);
 
     const speak = async (text, opts) => { owl.classList.add('talk'); await say(text, opts); owl.classList.remove('talk'); };
@@ -36,7 +37,7 @@ export function runQuestion(q, root) {
     };
 
     // Reading questions: Ollie says the instruction, but never reads the words for her.
-    const intro = speak(q.readFirst ? `${pick(['Reading time!', 'You can read this!', 'Use your reading eyes!'])} ${q.say}` : q.say);
+    const intro = speak((q.preSay ? q.preSay + ' ' : '') + (q.readFirst ? `${pick(['Reading time!', 'You can read this!', 'Use your reading eyes!'])} ${q.say}` : q.say));
 
     const vis = q.visual ? h(`<div class="visual">${q.visual}</div>`) : null;
     if (vis) root.append(vis);

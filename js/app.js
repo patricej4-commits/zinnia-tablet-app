@@ -3,6 +3,7 @@ import { say, sfx, stopSpeaking, listVoices, refreshVoice, micSupported } from '
 import { runQuestion } from './games.js';
 import { pick, shuffle, esc, rnd } from './util.js';
 import { WORLDS, ALL_SKILLS } from './worlds.js';
+import { EXAMS, examReadiness, examSkills, daysUntil, nextExam } from './exam.js';
 
 const app = document.getElementById('app');
 const h = html => { const t = document.createElement('template'); t.innerHTML = html.trim(); return t.content.firstElementChild; };
@@ -18,7 +19,7 @@ const PETS = {
 };
 const PET_STEPS = [0, 5, 15, 35];
 // From the Grade 1B Christmas term revision guide
-const EXAMS = [['2026-12-02', 'Phonics and Spelling'], ['2026-12-03', 'English Grammar, Penmanship and Music'], ['2026-12-04', 'Integrated Studies'], ['2026-12-07', 'Mathematics'], ['2026-12-08', 'Bible and IT']];
+const LISTEN_TIPS = ['Remember to listen carefully!', 'Listening ears on!', 'Listen closely to every word.', 'Good listeners hear the whole question.', 'Ears ready? Listen carefully!', 'Listen first, then answer.'];
 const STICKERS = ['🦋', '🐬', '🕊️', '🌈', '✝️', '📖', '🙏', '⛪', '💖', '🍦', '🧁', '🎀', '👑', '🐠', '🦩', '🐼', '🐨', '🦊', '🐯', '🐸', '🐙', '🦀', '🐳', '🌻', '🌺', '🍓', '🍉', '🍍', '🥭', '🎈', '🎨', '🎵', '🚀', '⭐', '🌙', '☀️', '🪐', '💎', '🏆', '🎁', '🍭', '🐝', '🐞', '🦜', '🐢', '🦒', '🐘', '🦓', '🐧', '🦉', '🌴', '🏝️', '🎠', '🎡', '🛼', '🪁', '🧸', '🍩', '🥥', '🐚', '🦕', '🐿️', '🦔', '🌷'];
 
 if (store.pet && !PETS[store.pet.kind]) { store.pet = null; save(); }
@@ -165,6 +166,13 @@ function map(greet) {
   const adv = h(`<button class="big-btn adventure-btn"><span style="font-size:44px">🗺️</span> Today's Adventure</button>`);
   adv.onclick = () => { sfx.tap(); play({ title: "Today's Adventure", skills: ALL_SKILLS, mixed: true }); };
   s.append(adv);
+  const ex = nextExam();
+  if (ex) {
+    const d = daysUntil(ex.date);
+    const eb = h(`<button class="big-btn green adventure-btn" style="font-size:clamp(20px,3.4vw,30px)"><span style="font-size:36px">📝</span> Exam Practice: ${ex.emoji} ${ex.name} <small style="font-size:.6em">(${d === 0 ? 'today!' : d === 1 ? 'tomorrow' : 'in ' + d + ' days'})</small></button>`);
+    eb.onclick = () => { sfx.tap(); play({ title: 'Exam Practice: ' + ex.name, skills: examSkills(ex), mixed: true }); };
+    s.append(eb);
+  }
 
   const grid = h('<div class="islands"></div>');
   for (const w of WORLDS) {
@@ -286,6 +294,10 @@ async function play({ title, skills, mixed }) {
       q.say = 'Challenge time! ' + q.say;
     }
     if (mode === 'boost') q.say = pick(['Here is one you know!', 'You can do this one!', 'Let\'s warm up!']) + ' ' + q.say;
+    // Listening reminders: start of the game, every third question, and before listening questions
+    if (count === 1) q.preSay = `${pick(['Let\'s go', 'Here we go', 'Ready'])}, ${name()}! Remember to listen carefully to every question.`;
+    else if (q.listenOnly) q.preSay = pick(['Listening question! Ears ready?', 'Super listening ears on!', 'Listen very carefully to this one.']);
+    else if (count % 3 === 0) q.preSay = pick(LISTEN_TIPS);
     const res = await runQuestion(q, stage);
     if (quit) break;
     // A missed challenge question is never counted against her
@@ -427,7 +439,15 @@ function parentZone() {
     <div class="card">Today: <b>${Math.round(d.secs / 60)} min</b> played · <b>${d.right}/${d.total}</b> right first time
       <br>Total: 🪙 ${store.coins} coins · ⭐ ${store.stars} stars · 📒 ${store.stickers.length} stickers · ${store.sessions.length} games played</div>
     <div class="card"><b>Last 7 days</b><br>${days.map(([k, v]) => `${k}: ${Math.round(v.secs / 60)} min, ${v.right}/${v.total} right`).join('<br>') || 'No play yet'}</div>
-    <div class="card"><b>📝 Christmas term exams</b><br>${EXAMS.map(([d, subj]) => { const days = Math.ceil((new Date(d + 'T08:00:00') - new Date()) / 864e5); return `${new Date(d + 'T12:00:00').toDateString().slice(0, 10)}: ${subj} — ${days > 0 ? days + ' day' + (days === 1 ? '' : 's') + ' to go' : days === 0 ? 'today' : 'done'}`; }).join('<br>')}<br><small>Reading & comprehension is tested every day.</small></div>
+    <div class="card"><b>📝 Exam readiness</b> <small>(Christmas term exams, measured from how she plays)</small>
+      <table class="ptable" style="margin-top:8px"><tr><th>Exam</th><th>Ready?</th><th>Practise next</th></tr>
+      ${EXAMS.map(e => { const r = examReadiness(e); const d = daysUntil(e.date);
+        const when = !e.date ? 'every day' : `${new Date(e.date + 'T12:00:00').toDateString().slice(0, 10)} · ${d > 1 ? d + ' days' : d === 1 ? 'tomorrow' : d === 0 ? 'today' : 'done'}`;
+        return `<tr><td>${e.emoji} <b>${esc(e.name)}</b><br><small>${when}</small></td>
+          <td style="min-width:140px"><div class="bar"><i style="width:${r.pct}%;background:${r.colour}"></i></div><b>${r.pct}%</b> ${r.label}<br><small>${r.tried} of ${r.total} topics tried</small></td>
+          <td><small>${r.pct >= 75 ? 'Keep it up!' : r.weakest.map(sk => sk.emoji + ' ' + esc(sk.name)).join('<br>')}</small></td></tr>`; }).join('')}
+      </table>
+      <small>Readiness = recent accuracy × level reached × amount of practice, for every topic in the revision guide. 75%+ means she is answering harder questions correctly and consistently.</small></div>
     <div class="card"><b>Needs the most practice</b><br>${weakest.map(sk => `${sk.emoji} ${esc(sk.name)} — ${Math.round(mastery(sk.id) * 100)}%`).join('<br>') || 'Not enough play yet'}</div>
   </div>`));
 

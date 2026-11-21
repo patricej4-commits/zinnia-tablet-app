@@ -77,7 +77,7 @@ const FACTS = {
 
 const META = {
   'w-body': ['My body', '🧍‍♀️'], 'w-food': ['Healthy food', '🥗'], 'w-groups': ['Groups & rules', '👨‍👩‍👧‍👦'],
-  'w-habits': ['Good & bad habits', '🌟'], 'w-computer': ['Computers', '💻'], 'w-music': ['Music symbols', '🎼'], 'w-spanish': ['Spanish', '🇪🇸'],
+  'w-habits': ['Good & bad habits', '🌟'], 'w-computer': ['Computers', '💻'], 'w-music': ['Music notes & symbols', '🎼'], 'w-spanish': ['Spanish', '🇪🇸'],
 };
 
 

@@ -55,3 +55,8 @@ Built from the class **1B Christmas Term Revision Guide** (exams Dec 2–8, 2026
 - **IT:** what is a computer, hardware & software, input/output/processing, parts (monitor, mouse, keyboard, system unit), types and uses
 - **Bible:** verses Aa–Ii (extra focus), Bible drills, Salvation
 - Not in the app: penmanship (cursive) and the poem "The Secret" (text not available yet)
+
+## Listening and exam readiness
+- **Listening reminders:** Ollie reminds her to listen at the start of every game, every third question and before every listening question (spoken and shown as a 👂 line). Some "try again" messages also remind her to listen.
+- **Exam readiness (Parent Zone):** a score for each exam subject = recent accuracy × level reached × amount of practice, across every topic in the revision guide. 75%+ = Ready ✅, 50–74% = Almost ready, 25–49% = Getting there, below 25% = Needs lots of practice. Each subject lists the 3 topics to practise next.
+- **📝 Exam Practice button** on the map: practises the next exam coming up (the weaker subject if two are on the same day), focusing on her weakest topics.
