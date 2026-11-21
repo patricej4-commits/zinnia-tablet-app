@@ -74,9 +74,50 @@ WORLDS.forEach(w => w.skills.forEach(sk => (WORLD_OF[sk.id] = w.id)));
 const dayRec = (d = today()) => (store.daily[d] ||= { secs: 0, right: 0, total: 0 });
 const perWorld = () => store.settings.dailyPerWorld || 0;
 const worldDoneToday = (w, d = today()) => store.daily[d]?.worlds?.[w.id] || 0;
-const missionLeft = w => Math.max(0, perWorld() - worldDoneToday(w));
+// An area is 'retry' when she got most of a round wrong: she must redo it before moving on.
+const areaStatus = (w, d = today()) => store.daily[d]?.areas?.[w.id];
+const missionLeft = w => {
+  const left = Math.max(0, perWorld() - worldDoneToday(w));
+  return left === 0 && areaStatus(w) === 'retry' ? perWorld() : left;
+};
 function missionDone() { return perWorld() === 0 || WORLDS.every(w => missionLeft(w) === 0); }
-const nextMissionWorld = () => WORLDS.find(w => missionLeft(w) > 0);
+const retryWorld = () => WORLDS.find(w => areaStatus(w) === 'retry');
+const nextMissionWorld = () => retryWorld() || WORLDS.find(w => missionLeft(w) > 0);
+const PASS_MARK = 0.5; // she must get at least half right first time to move on
+
+// ---------- Daily log: every question she answers, kept for 120 days ----------
+const plainText = html => { const d = document.createElement('div'); d.innerHTML = html || ''; return d.textContent.trim(); };
+function answerOf(q) {
+  const t = q.type || 'choice';
+  if (t === 'choice') {
+    const o = (q.options || []).find(o => o.value === q.answer);
+    const written = o ? plainText(o.html) : '';
+    return (/[a-z0-9]/i.test(written) ? written : o && o.say) || String(q.answer);
+  }
+  if (t === 'build') return q.word;
+  if (t === 'order') return q.answer.join(' ');
+  if (t === 'mark') return q.word + ' (marked)';
+  if (t === 'numline') return String(q.mode === 'tap' ? q.target : q.start + q.hops);
+  if (t === 'read') return q.sentence;
+  return '';
+}
+function logAnswer(q, sk, res) {
+  store.log ||= {};
+  const d = today();
+  (store.log[d] ||= []).push({
+    t: new Date().toTimeString().slice(0, 5), w: WORLD_OF[sk.id], s: sk.id,
+    q: (() => {
+      // What was asked + what was on screen (word, sentence, sum...) so you can see exactly what she struggled with
+      const asked = plainText(q.say);
+      const shown = plainText(q.visual).replace(/\s+/g, ' ');
+      const extra = q.sentence ? `"${q.sentence}"` : q.word && q.type !== 'mark' ? `[${q.word}]` : shown && !asked.includes(shown) ? `[${shown.slice(0, 80)}]` : '';
+      return (asked + (extra ? ' ' + extra : '')).slice(0, 220);
+    })(),
+    a: answerOf(q).slice(0, 80), r: res.correct ? 1 : 0, f: res.firstTry ? 1 : 0,
+  });
+  const days = Object.keys(store.log).sort();
+  while (days.length > 120) delete store.log[days.shift()];
+}
 function missionStreak() {
   let n = 0;
   const d = new Date();
@@ -91,7 +132,8 @@ function missionStreak() {
 function playMission() {
   const w = nextMissionWorld();
   if (!w) return map(false);
-  play({ title: 'Daily Mission: ' + w.name, skills: w.skills, mixed: true, length: Math.max(3, missionLeft(w)), mission: true });
+  const redo = areaStatus(w) === 'retry';
+  play({ title: (redo ? 'Practise again: ' : 'Daily Mission: ') + w.name, skills: w.skills, mixed: true, length: Math.max(3, redo ? perWorld() : missionLeft(w)), mission: true, world: w });
 }
 
 function greeting() {
@@ -178,7 +220,9 @@ function map(greet) {
   const s = h('<div class="screen"></div>');
   s.append(topbar(null));
   let line = greet ? `${greeting()}, ${name()}! Where shall we go today?` : 'Where shall we go next?';
-  if (perWorld() > 0 && !missionDone()) { const left = WORLDS.filter(w => missionLeft(w) > 0).length; line += ` You have ${left} area${left === 1 ? '' : 's'} left in today's mission. Let's do it!`; }
+  const rw = perWorld() > 0 ? retryWorld() : null;
+  if (rw) line = `${greet ? greeting() + ', ' + name() + '! ' : ''}Let's practise ${rw.name} again before we move on. I will help you!`;
+  if (!rw && perWorld() > 0 && !missionDone()) { const left = WORLDS.filter(w => missionLeft(w) > 0).length; line += ` You have ${left} area${left === 1 ? '' : 's'} left in today's mission. Let's do it!`; }
   const hello = h(`<div class="hello">
     <div class="mascot">🦉</div>
     <div class="say" style="flex:1">${esc(line)}</div>
@@ -197,11 +241,12 @@ function map(greet) {
     const doneN = WORLDS.filter(w => missionLeft(w) === 0).length;
     const card = h(`<div class="mission">
       <h3>📋 Today's Mission: ${doneN} of ${WORLDS.length} areas done ${missionDone() ? '🏆' : ''}</h3>
-      <div class="mchips">${WORLDS.map(w => `<span class="mchip ${missionLeft(w) === 0 ? 'ok' : ''}">${w.emo} ${missionLeft(w) === 0 ? '✅' : `${worldDoneToday(w)}/${perWorld()}`}</span>`).join('')}</div>
+      <div class="mchips">${WORLDS.map(w => `<span class="mchip ${missionLeft(w) === 0 ? 'ok' : ''}">${w.emo} ${areaStatus(w) === 'retry' ? '🔁 again' : missionLeft(w) === 0 ? '✅' : `${worldDoneToday(w)}/${perWorld()}`}</span>`).join('')}</div>
     </div>`);
     if (!missionDone()) {
       const nw = nextMissionWorld();
-      const mb = h(`<button class="big-btn green adventure-btn" style="margin:0"><span style="font-size:40px">▶</span> Do my mission: ${nw.emo} ${nw.name}</button>`);
+      const redo = areaStatus(nw) === 'retry';
+      const mb = h(`<button class="big-btn green adventure-btn" style="margin:0"><span style="font-size:40px">${redo ? '🔁' : '▶'}</span> ${redo ? 'Practise again' : 'Do my mission'}: ${nw.emo} ${nw.name}</button>`);
       mb.onclick = () => { sfx.tap(); playMission(); };
       card.append(mb);
     } else {
@@ -212,8 +257,8 @@ function map(greet) {
   }
   const adv = h(`<button class="big-btn adventure-btn"><span style="font-size:44px">🗺️</span> Today's Adventure</button>`);
   adv.onclick = () => { sfx.tap(); play({ title: "Today's Adventure", skills: ALL_SKILLS, mixed: true }); };
-  s.append(adv);
-  const ex = nextExam();
+  if (!rw) s.append(adv); // locked until the area she needs to redo is passed
+  const ex = rw ? null : nextExam();
   if (ex) {
     const d = daysUntil(ex.date);
     const eb = h(`<button class="big-btn green adventure-btn" style="font-size:clamp(20px,3.4vw,30px)"><span style="font-size:36px">📝</span> Exam Practice: ${ex.emoji} ${ex.name} <small style="font-size:.6em">(${d === 0 ? 'today!' : d === 1 ? 'tomorrow' : 'in ' + d + ' days'})</small></button>`);
@@ -225,7 +270,12 @@ function map(greet) {
   for (const w of WORLDS) {
     const badge = perWorld() > 0 ? `<span class="mbadge">${missionLeft(w) === 0 ? '✅' : `${worldDoneToday(w)}/${perWorld()}`}</span>` : '';
     const b = h(`<button class="island ${w.cls}" style="position:relative">${badge}<div class="emo">${w.emo}</div><div class="name">${w.name}</div><div class="stars">${worldStars(w)}</div></button>`);
-    b.onclick = () => { sfx.tap(); island(w); };
+    if (rw && w !== rw) b.style.opacity = '.45';
+    b.onclick = () => {
+      sfx.tap();
+      if (rw && w !== rw) { say(`Let's finish ${rw.name} first. Then you can go to ${w.name}!`); return; }
+      island(w);
+    };
     grid.append(b);
   }
   s.append(grid);
@@ -305,7 +355,7 @@ function pickTopics(skills, n) {
   return out;
 }
 
-async function play({ title, skills, mixed, length, mission }) {
+async function play({ title, skills, mixed, length, mission, world }) {
   onMap = false;
   stopSpeaking();
   if (overTime()) return breakTime();
@@ -355,6 +405,12 @@ async function play({ title, skills, mixed, length, mission }) {
 
   const timesAsked = {};    // topic -> questions asked this game (max 2 each, so it does not repeat)
   const gameMisses = {};    // topic -> misses this game
+  const tally = {};         // area -> { n, right, missed: [] } to decide if she can move on
+  // Redoing an area: re-teach (worked example first) the topics she missed, and practise them first
+  const reteach = world && areaStatus(world) === 'retry' ? (dayRec().missed?.[world.id] || []) : [];
+  for (const id of reteach) gameMisses[id] = 2;
+  const firstUp = skills.filter(sk => reteach.includes(sk.id)).slice(0, 3); // asked first, with a worked example
+  for (const sk of firstUp) if (!pool.includes(sk)) pool.push(sk);
   const strongest = [...pool].filter(sk => store.skills[sk.id]?.seen >= 3).sort((a, b) => mastery(b.id) - mastery(a.id))[0];
   let missRun = 0;          // wrong answers in a row this game
   let challengeNext = false; // she is on a streak: offer a harder bonus question
@@ -366,7 +422,8 @@ async function play({ title, skills, mixed, length, mission }) {
       sk = [...pool].sort((a, b) => mastery(b.id) - mastery(a.id))[0];
       mode = 'boost';
       missRun = 0;
-    } else if (firstLesson) { sk = firstLesson; firstLesson = null; }
+    } else if (firstUp.length) { sk = firstUp.shift(); }
+    else if (firstLesson) { sk = firstLesson; firstLesson = null; }
     else if (retry.length && (done >= total - retry.length || Math.random() < 0.35)) sk = retry.shift();
     else if (count === 0 && strongest && mastery(strongest.id) >= 0.6) { sk = strongest; mode = 'warm'; }
     else {
@@ -402,6 +459,13 @@ async function play({ title, skills, mixed, length, mission }) {
     // Count towards today's mission (every answered question counts in its area)
     const dr = dayRec(); dr.worlds ||= {};
     dr.worlds[WORLD_OF[sk.id]] = (dr.worlds[WORLD_OF[sk.id]] || 0) + 1;
+    logAnswer(q, sk, res);
+    if (mode !== 'challenge') {
+      const tl = (tally[WORLD_OF[sk.id]] ||= { n: 0, right: 0, missed: [] });
+      tl.n++;
+      if (res.correct && res.firstTry) tl.right++;
+      else if (!tl.missed.includes(sk.id)) tl.missed.push(sk.id);
+    }
     if (res.correct) {
       done++; missRun = 0;
       const c = (res.firstTry ? 3 : 1) * (mode === 'challenge' ? 2 : 1);
@@ -432,6 +496,18 @@ async function play({ title, skills, mixed, length, mission }) {
   const stars = acc >= 0.85 ? 3 : acc >= 0.6 ? 2 : 1;
   const beforeStage = petStage();
   store.stars += stars;
+  // Did she get most of an area wrong? Then she must redo it before moving on.
+  const dr2 = dayRec(); dr2.areas ||= {}; dr2.missed ||= {};
+  let retryArea = null;
+  for (const [wid, tl] of Object.entries(tally)) {
+    if (tl.n < 3) continue; // too few questions in this area to judge
+    if (tl.right / tl.n < PASS_MARK) {
+      dr2.areas[wid] = 'retry'; dr2.missed[wid] = tl.missed;
+      retryArea = retryArea || WORLDS.find(w => w.id === wid);
+    } else {
+      dr2.areas[wid] = 'pass'; delete dr2.missed[wid];
+    }
+  }
   // Whole daily mission finished?
   let missionComplete = false;
   if (perWorld() > 0 && missionDone() && !dayRec().missionDone) {
@@ -439,10 +515,10 @@ async function play({ title, skills, mixed, length, mission }) {
     store.coins += 20; earned += 20;
   }
   save();
-  results({ stars, earned, bestCombo, grew: petStage() > beforeStage, title, missionComplete });
+  results({ stars, earned, bestCombo, grew: petStage() > beforeStage, title, missionComplete, retryArea });
 }
 
-function results({ stars, earned, bestCombo, grew, missionComplete }) {
+function results({ stars, earned, bestCombo, grew, missionComplete, retryArea }) {
   app.innerHTML = '';
   const s = h(`<div class="screen center">
     <div class="title">${stars === 3 ? 'SUPERSTAR!' : stars === 2 ? 'Great job!' : 'Well done!'}</div>
@@ -481,10 +557,14 @@ function results({ stars, earned, bestCombo, grew, missionComplete }) {
       setTimeout(() => say(`Hooray ${name()}! You finished your whole mission today! ${st > 1 ? st + ' days in a row!' : ''} I am so proud of you!`), 2600);
     }
     const row = h('<div style="display:flex;gap:14px;flex-wrap:wrap;justify-content:center"></div>');
+    if (retryArea && perWorld() > 0) {
+      after.append(h(`<div class="bubble">🔁 Let's practise ${esc(retryArea.name)} again. I will show you how!</div>`));
+      setTimeout(() => say(`That was tricky! Let's practise ${retryArea.name} again before we move on. I will show you how!`), grew ? 5000 : 2400);
+    }
     const nw = !missionDone() && nextMissionWorld();
-    const again = h(`<button class="big-btn green">${nw ? `Next mission: ${nw.emo} ${nw.name} ▶` : 'Play more ▶'}</button>`);
+    const again = h(`<button class="big-btn green">${nw ? (areaStatus(nw) === 'retry' ? `🔁 Practise ${nw.emo} ${nw.name} again` : `Next mission: ${nw.emo} ${nw.name} ▶`) : 'Play more ▶'}</button>`);
     const home = h('<button class="big-btn">🗺️ Map</button>');
-    if (nw) setTimeout(() => say(`Next, let's do ${nw.name}!`), grew ? 5000 : 2400);
+    if (nw && !retryArea) setTimeout(() => say(`Next, let's do ${nw.name}!`), grew ? 5000 : 2400);
     again.onclick = () => { sfx.tap(); if (nw) playMission(); else play({ title: "Today's Adventure", skills: ALL_SKILLS, mixed: true }); };
     home.onclick = () => { sfx.tap(); map(false); };
     row.append(again, home);
@@ -526,6 +606,31 @@ function stickerBook() {
 }
 
 // ---------- Parent zone ----------
+// Everything she did on one day: per area summary, then every question
+function dayReport(d) {
+  const log = store.log?.[d] || [];
+  const rec = store.daily[d];
+  if (!log.length) return '<p>No questions answered on this day.</p>';
+  const byW = {};
+  for (const e of log) (byW[e.w] ||= []).push(e);
+  const mins = rec ? Math.round(rec.secs / 60) : 0;
+  let html = `<p><b>${log.length}</b> questions · <b>${log.filter(e => e.f).length}</b> right first time · ${mins} min · ${rec?.missionDone ? '✅ mission done' : perWorld() ? '❌ mission not finished' : ''}</p>`;
+  html += '<table class="ptable"><tr><th>Area</th><th>Questions</th><th>Right first time</th><th>Result</th></tr>';
+  for (const w of WORLDS) {
+    const es = byW[w.id] || [];
+    const right = es.filter(e => e.f).length;
+    const st = rec?.areas?.[w.id];
+    html += `<tr><td>${w.emo} ${w.name}</td><td>${es.length}${perWorld() ? ' / ' + perWorld() : ''}</td><td>${es.length ? Math.round((right / es.length) * 100) + '%' : '—'}</td><td>${st === 'retry' ? '🔁 must redo' : st === 'pass' ? '✅ passed' : es.length ? '' : 'not done'}</td></tr>`;
+  }
+  html += '</table><details style="margin-top:8px"><summary><b>Every question</b> (tap to open)</summary><table class="ptable" style="margin-top:6px">';
+  const skName = id => ALL_SKILLS.find(k => k.id === id)?.name || id;
+  for (const e of log) {
+    const w = WORLDS.find(x => x.id === e.w);
+    html += `<tr><td>${e.t}</td><td>${w ? w.emo : ''} ${esc(skName(e.s))}<br><small>${esc(e.q)}</small></td><td>${e.f ? '✅' : e.r ? '🟡 2nd try' : '❌'}${e.f ? '' : `<br><small>Answer: ${esc(e.a)}</small>`}</td></tr>`;
+  }
+  return html + '</table></details>';
+}
+
 function parentGate() {
   onMap = false;
   stopSpeaking();
@@ -555,6 +660,9 @@ function parentZone() {
     <h2>${esc(name())}'s progress</h2>
     <div class="card">Today: <b>${Math.round(d.secs / 60)} min</b> played · <b>${d.right}/${d.total}</b> right first time
       <br>Total: 🪙 ${store.coins} coins · ⭐ ${store.stars} stars · 📒 ${store.stickers.length} stickers · ${store.sessions.length} games played</div>
+    <div class="card"><b>📅 Day report</b> — what she did on any day
+      <div class="prow">Day <input type="date" class="rep-date" value="${today()}" max="${today()}"></div>
+      <div class="rep-body"></div></div>
     <div class="card"><b>Last 7 days</b> ${perWorld() ? `· mission streak 🔥 ${missionStreak()}` : ''}<br>${days.map(([k, v]) => `${k}: ${v.missionDone ? '✅ mission done' : perWorld() ? '❌ mission not finished' : ''} · ${Math.round(v.secs / 60)} min, ${v.right}/${v.total} right first time<br><small>${WORLDS.map(w => `${w.emo} ${v.worlds?.[w.id] || 0}`).join(' &nbsp; ')}</small>`).join('<br>') || 'No play yet'}</div>
     <div class="card"><b>📝 Exam readiness</b> <small>(Christmas term exams, measured from how she plays)</small>
       <table class="ptable" style="margin-top:8px"><tr><th>Exam</th><th>Ready?</th><th>Practise next</th></tr>
@@ -612,6 +720,10 @@ function parentZone() {
     };
   });
   s.append(st);
+  const repDate = s.querySelector('.rep-date'), repBody = s.querySelector('.rep-body');
+  const drawReport = () => (repBody.innerHTML = dayReport(repDate.value));
+  repDate.onchange = drawReport;
+  drawReport();
   s.querySelectorAll('[data-a]').forEach(b => {
     b.onclick = () => {
       const a = b.dataset.a;
