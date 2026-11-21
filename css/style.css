@@ -215,3 +215,12 @@ button { font-family: inherit; color: inherit; border: none; cursor: pointer; }
   .options { grid-template-columns: 1fr 1fr; }
   .ask .mascot { font-size: 44px; }
 }
+
+/* column (vertical) sums */
+.vert { background: #fff; border-radius: 24px; padding: 14px 30px 18px; font-family: var(--fun); font-weight: 800; font-size: clamp(54px, 10vw, 92px); line-height: 1.05; display: inline-flex; flex-direction: column; align-items: flex-end; }
+.vrow { display: grid; grid-auto-flow: column; grid-auto-columns: 0.9em; align-items: center; }
+.vrow .vop { width: 0.9em; text-align: center; color: var(--pink); }
+.vrow .vd { text-align: center; }
+.vhead { font-size: .38em; color: #9a8fd6; }
+.vline { height: 7px; background: var(--ink); border-radius: 4px; width: 100%; margin: 6px 0 8px; }
+.vans { text-align: center; color: var(--purple); border: 5px dashed var(--purple); border-radius: 14px; line-height: 1.1; }

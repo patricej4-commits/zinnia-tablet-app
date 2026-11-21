@@ -86,3 +86,22 @@ export function lineSVG(kind) {
   };
   return `<svg viewBox="0 0 200 100" style="width:clamp(120px,22vw,200px)">${paths[kind]}</svg>`;
 }
+
+// Column (vertical) sum, the way it is written in class:
+//     1 0
+//   −   2
+//   -----
+//      ?
+// Digits line up in tens (T) and ones (O) columns.
+export function vertical(top, op, bottom) {
+  const two = top >= 10 || bottom >= 10;
+  const digits = n => (two ? [n >= 10 ? String(Math.floor(n / 10)) : '', String(n % 10)] : [String(n)]);
+  const cells = arr => arr.map(d => `<span class="vd">${d}</span>`).join('');
+  const head = two ? `<div class="vrow vhead"><span class="vop"></span><span class="vd">T</span><span class="vd">O</span></div>` : '';
+  return `<div class="vert">${head}
+    <div class="vrow"><span class="vop"></span>${cells(digits(top))}</div>
+    <div class="vrow"><span class="vop">${op}</span>${cells(digits(bottom))}</div>
+    <div class="vline"></div>
+    <div class="vrow"><span class="vop"></span><span class="vans" style="grid-column: span ${two ? 2 : 1}">?</span></div>
+  </div>`;
+}

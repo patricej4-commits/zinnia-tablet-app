@@ -2,7 +2,7 @@
 // shapes, patterns, ordering, partitioning, tens & ones, addition and
 // subtraction (take away, ten frames, number bonds, number sentences).
 import { rnd, pick, shuffle, numOptions, textOptions, NUM_WORDS, cap, sample } from '../util.js';
-import { tenFrames, numberBond, tensOnes, group, equation, lineSVG } from '../visuals.js';
+import { tenFrames, numberBond, tensOnes, group, equation, lineSVG, vertical } from '../visuals.js';
 
 const THINGS = [
   ['🥭', 'mangoes'], ['🍌', 'bananas'], ['🐟', 'fish'], ['🌺', 'flowers'], ['🐢', 'turtles'],
@@ -152,6 +152,17 @@ export const mathSkills = [
       const a = rnd(1, Math.min(9, max - 1)), b = rnd(0, Math.min(9, max - a));
       const [e, w] = pick(THINGS);
       const name = pick(NAMES);
+      if (l > 1 && Math.random() < 0.35) {
+        // Column addition (no carrying): ones add to 9 or less
+        const top = l === 3 ? rnd(10, 18) : rnd(2, 9);
+        const bot = rnd(0, Math.min(9, 9 - (top % 10)));
+        return {
+          say: `${top} plus ${bot}. How many altogether?`,
+          visual: vertical(top, '+', bot),
+          options: numOptions(top + bot, 0, 19), answer: top + bot,
+          explain: top >= 10 ? `Add the ones: ${top % 10} plus ${bot} is ${top % 10 + bot}. Keep the 1 ten. The answer is ${top + bot}.` : `${top} plus ${bot} is ${top + bot}.`,
+        };
+      }
       if (l === 1 || Math.random() < 0.4) return {
         say: `${name} has ${a} ${w}, and gets ${b} more. How many now?`,
         visual: `<div class="groups">${group(e, a)}<div class="eq">+</div>${group(e, b)}</div>`,
@@ -173,7 +184,19 @@ export const mathSkills = [
       const a = rnd(l === 1 ? 2 : 3, 10);
       const b = rnd(0, a);
       const [e, w] = pick(THINGS);
-      const mode = l === 1 ? 0 : rnd(0, 2);
+      const mode = l === 1 ? pick([0, 3]) : pick([0, 1, 2, 3, 3]);
+      if (mode === 3) {
+        // Column subtraction: big number on top, take-away number below, line, answer.
+        // Level 3 uses teen numbers in tens & ones (no borrowing).
+        let top = a, bot = b;
+        if (l === 3 && Math.random() < 0.5) { top = rnd(11, 19); bot = rnd(0, top % 10); }
+        return {
+          say: `${top} take away ${bot}. How many are left?`,
+          visual: vertical(top, '−', bot) + (top <= 10 ? tenFrames(top, bot) : ''),
+          options: numOptions(top - bot, 0, 19), answer: top - bot,
+          explain: top >= 10 ? `Start with the ones: ${top % 10} take away ${bot} is ${top % 10 - bot}. The 1 ten stays. So the answer is ${top - bot}.` : `${top} take away ${bot} is ${top - bot}.`,
+        };
+      }
       if (mode === 0) return {
         say: `There are ${a} dots. Take away ${b}. How many are left?`,
         visual: tenFrames(a, b) + equation([a, '−', b, '=', '?']),
