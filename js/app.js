@@ -101,12 +101,41 @@ setInterval(() => {
   if (document.hidden || !timing) return;
   addTime(10);
   const c = curSitting();
-  if (c) { c.secs += 10; c.end = Date.now(); save(); }
+  if (c) { c.secs += 10; c.end = Date.now(); checkBreakCues(c); save(); }
   document.querySelectorAll('.sitpill').forEach(el => (el.textContent = sitPillText()));
   // Time is up while she is on the map or a menu: straight to the break screen
   if (sitLimit() && !curSitting() && onMap && !breakShown) breakScreen(sittingState());
 }, 10000);
 const hhmm = t => new Date(t).toLocaleTimeString([], { hour: 'numeric', minute: '2-digit' });
+const minsWord = m => `${m} minute${m === 1 ? '' : 's'}`;
+// Break cues: halfway, 5 minutes left, 1 minute left. Shown at once; spoken before the next question
+// (or straight away on the map), so Ollie never talks over a question.
+let pendingCue = null;
+function checkBreakCues(c) {
+  const lim = sitLimit();
+  if (!lim) return;
+  c.cues ||= [];
+  const played = Math.round(c.secs / 60), left = Math.max(0, Math.round((lim - c.secs) / 60));
+  const cues = [
+    ['half', lim / 2, `You've been playing for ${minsWord(played)}. Great job! ${minsWord(left)} more until your break.`],
+    ['five', lim - 300, `You've been playing for ${minsWord(played)}. ${minsWord(left)} left, then it's break time!`],
+    ['one', lim - 60, `You've been playing for ${minsWord(played)}. Almost break time! Let's finish this one.`],
+  ];
+  for (const [id, at, text] of cues) {
+    if (at <= 0 || c.secs < at || c.cues.includes(id)) continue;
+    c.cues.push(id);
+    bigToast(`⏰ ${text}`);
+    sfx.pop();
+    if (onMap) say(text); else pendingCue = text;
+    break;
+  }
+}
+function bigToast(text) {
+  const t = h(`<div class="toast" style="font-size:22px;max-width:90vw;text-align:center;background:#fff8d6;border:3px solid #ffd23f">${esc(text)}</div>`);
+  document.body.append(t);
+  setTimeout(() => t.remove(), 6000);
+}
+const todayMinutes = () => Math.round(sittings().reduce((a, x) => a + x.secs, 0) / 60);
 
 // ---------- Daily mission: a set number of questions in EVERY area, every day ----------
 const WORLD_OF = {};
@@ -622,8 +651,10 @@ async function play({ title, skills, mixed, length, mission, world, examPractice
       if (canDemo(demo)) { await runDemo(demo, stage); if (quit) break; }
       gameMisses[sk.id] = 0;
     }
+    if (pendingCue) { q.preSay = pendingCue + (q.preSay ? ' ' + q.preSay : ''); pendingCue = null; }
     // Listening reminders: start of the game, every third question, and before listening questions
-    if (count === 1) q.preSay = `${pick(['Let\'s go', 'Here we go', 'Ready'])}, ${name()}! Remember to listen carefully to every question.`;
+    if (q.preSay) { /* break cue already set */ }
+    else if (count === 1) q.preSay = `${pick(['Let\'s go', 'Here we go', 'Ready'])}, ${name()}! Remember to listen carefully to every question.`;
     else if (q.listenOnly) q.preSay = pick(['Listening question! Ears ready?', 'Super listening ears on!', 'Listen very carefully to this one.']);
     else if (count % 3 === 0 && !q.preSay) q.preSay = pick(LISTEN_TIPS);
     const res = await runQuestion(q, stage);
@@ -765,11 +796,11 @@ function results({ stars, earned, bestCombo, grew, missionComplete, retryArea, p
     if (timeUp) {
       // 20 minutes are up: everything is saved, time for a break
       const st = sittingState();
-      after.append(h(`<div class="bubble">⏰ ${store.settings.sittingMinutes} minutes done! Time for a brain break. Your work is saved.</div>`));
+      after.append(h(`<div class="bubble">⏰ You've been playing for ${store.settings.sittingMinutes} minutes. Time to take a break! Your work is saved.</div>`));
       const ok = h('<button class="big-btn green">😴 OK, break time</button>');
       ok.onclick = () => { sfx.tap(); breakScreen(st); };
       after.append(ok);
-      setTimeout(() => say(`Great work! ${store.settings.sittingMinutes} minutes are done. Time for a brain break. Your work is saved!`), grew ? 5000 : 2400);
+      setTimeout(() => say(`Great work! You've been playing for ${store.settings.sittingMinutes} minutes. Time to take a break. Your work is saved!`), grew ? 5000 : 2400);
       return;
     }
     // Lead her straight to the next step of today's plan
@@ -791,9 +822,10 @@ function breakScreen(st) {
   app.innerHTML = '';
   const done = Object.keys(dayRec().skills || {}).length;
   const allDone = st.why === 'done';
+  const lastMins = Math.round((sittings()[sittings().length - 1]?.secs || 0) / 60);
   const msg = allDone
-    ? `You did all ${st.n} sittings today, ${name()}! Well done. See you tomorrow!`
-    : `Brain break time! Sitting ${st.n} of ${st.per} is done. Go play, drink some water, and come back at ${hhmm(st.until)}.`;
+    ? `You did all ${st.n} sittings today, ${name()}! You played for ${minsWord(todayMinutes())} today. Well done. See you tomorrow!`
+    : `You've been playing for ${minsWord(lastMins)}. Time to take a break! Sitting ${st.n} of ${st.per} is done. Come back at ${hhmm(st.until)}.`;
   const s = h(`<div class="screen center">
     <div class="mascot">${allDone ? '🎉🦉' : '😴🦉'}</div>
     <div class="title">${allDone ? 'All done for today!' : 'Brain break time!'}</div>
@@ -801,6 +833,8 @@ function breakScreen(st) {
     <div class="mission" style="margin-top:16px;min-width:300px">
       <div style="font-size:20px">Sittings today: ${'✅'.repeat(Math.min(st.n, st.per))}${'⬜'.repeat(Math.max(0, st.per - st.n))}</div>
       <div style="font-size:18px;margin-top:6px">✅ ${done} topics done today ${planDone() ? '· 🏆 plan complete' : ''}</div>
+      <div style="font-size:18px;margin-top:4px">⏱️ Today: ${minsWord(todayMinutes())} in ${st.n} sitting${st.n === 1 ? '' : 's'}</div>
+      ${allDone ? '' : `<div style="font-size:18px;margin-top:10px;text-align:left"><b>Break ideas:</b><br>🤸 Stretch and jump<br>💧 Drink some water<br>👀 Rest your eyes: look far away out of the window<br>🌳 Play outside</div>`}
       <div class="cd" style="font-size:22px;font-weight:700;margin-top:8px"></div>
     </div>
     <div class="go" style="margin-top:14px"></div>
