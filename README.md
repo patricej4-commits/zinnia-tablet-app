@@ -99,3 +99,6 @@ Added from Ms Bennett's posts and slides: Opposites (her full list), one more / 
 - **📊 Readiness meter on the map:** a bar for each upcoming exam with the days left, and a "Take a practice test" button.
 - **📝 Practice tests (mock exams):** 10 questions across all of an exam's topics at exam difficulty, one try each, no hints or worked examples, scored like a test (e.g. 9 out of 10 = 90%). Start one from the map or from the Parent Zone (a button for each exam). They also count as exam practice.
 - **Readiness score** = half daily practice (accuracy × level × amount of practice on every revision-guide topic) + half her last two practice tests from the past 14 days. 75%+ = Ready.
+
+## "Done today" is kept
+The day changes at midnight on the tablet's own clock (it used to change at 7 pm Jamaica time because of GMT). Each time the app opens it re-ticks every topic she practised today (from the question log and each topic's last-practised time) and moves any work filed under "tomorrow" back to today. A finished mission or plan stays finished for the rest of the day. The map shows how many topics she has done today.

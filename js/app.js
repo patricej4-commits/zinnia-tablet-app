@@ -1,4 +1,4 @@
-import { store, save, record, mastery, needWeight, addTime, today, resetAll, skill } from './store.js';
+import { store, save, record, mastery, needWeight, addTime, today, dayKey, resetAll, skill } from './store.js';
 import { say, sfx, stopSpeaking, listVoices, refreshVoice, micSupported } from './speech.js';
 import { runQuestion, runDemo, canDemo } from './games.js';
 import { pick, shuffle, esc, rnd } from './util.js';
@@ -86,7 +86,7 @@ const missionLeft = w => {
   const left = Math.max(0, areaTarget(w) - worldDoneToday(w));
   return left === 0 && areaStatus(w) === 'retry' ? 1 : left;
 };
-function missionDone() { return perWorld() === 0 || WORLDS.every(w => missionLeft(w) === 0); }
+function missionDone() { return perWorld() === 0 || !!store.daily[today()]?.missionDone || WORLDS.every(w => missionLeft(w) === 0); }
 const retryWorld = () => WORLDS.find(w => areaStatus(w) === 'retry');
 const nextMissionWorld = () => retryWorld() || WORLDS.find(w => missionLeft(w) > 0);
 const PASS_MARK = 0.5; // she must get at least half right first time to move on
@@ -129,7 +129,7 @@ function missionStreak() {
   const d = new Date();
   if (!store.daily[today()]?.missionDone) d.setDate(d.getDate() - 1);
   for (;;) {
-    const key = d.toISOString().slice(0, 10);
+    const key = dayKey(d);
     if (!store.daily[key]?.missionDone) break;
     n++; d.setDate(d.getDate() - 1);
   }
@@ -177,7 +177,7 @@ const examDoneToday = () => dayRec().examDone || 0;
 const examLeftFor = it => Math.max(0, it.n - examDoneFor(it.name));
 const examLeft = () => { const g = examGoal(); return g ? g.items.reduce((a, it) => a + examLeftFor(it), 0) : 0; };
 const nextExamItem = () => examGoal()?.items.find(it => examLeftFor(it) > 0);
-function planDone() { return missionDone() && !retryWorld() && examLeft() === 0; }
+function planDone() { return !!store.daily[today()]?.planDone || (missionDone() && !retryWorld() && examLeft() === 0); }
 function nextStep() {
   const rw = retryWorld();
   if (rw) return { kind: 'retry', w: rw, label: `🔁 Practise again: ${rw.emo} ${rw.name}`, say: `Let's practise ${rw.name} again before we move on. I will help you!` };
@@ -299,10 +299,11 @@ function map(greet) {
   s.append(topbar(null));
   const step = nextStep();
   const locked = !!step; // free exploring only after today's plan is done
+  const doneTopics = Object.keys(store.daily[today()]?.skills || {}).length;
   let line;
   if (step) {
     const first = step.kind === 'mission' && WORLDS.every(w => worldDoneToday(w) === 0) && !store.daily[today()]?.examDone;
-    line = `${greet ? greeting() + ', ' + name() + '! ' : ''}${first ? "Here is today's plan. First, " : 'Next, '}${step.say.charAt(0).toLowerCase() + step.say.slice(1)} Tap the green button.`;
+    line = `${greet ? greeting() + ', ' + name() + '! ' : ''}${!first && greet && doneTopics ? `You have already done ${doneTopics} topics today. Well done! ` : ''}${first ? "Here is today's plan. First, " : 'Next, '}${step.say.charAt(0).toLowerCase() + step.say.slice(1)} Tap the green button.`;
   } else {
     line = greet ? `${greeting()}, ${name()}! You finished today's plan. Explore anything you like!` : 'Today\'s plan is done! Where shall we explore?';
   }
@@ -324,7 +325,7 @@ function map(greet) {
   const g = examGoal();
   const doneN = WORLDS.filter(w => missionLeft(w) === 0).length;
   const card = h(`<div class="mission">
-    <h3>📋 Today's Plan ${planDone() ? '🏆' : ''}</h3>
+    <h3>📋 Today's Plan ${planDone() ? '🏆' : ''} <small style="font-size:.65em;color:#2ec27e">${doneTopics ? `✅ ${doneTopics} topics done today` : ''}</small></h3>
     ${perWorld() > 0 ? `<div style="font-size:18px;margin-bottom:4px"><b>1.</b> Mission in every area: ${doneN} of ${WORLDS.length} ${missionDone() ? '✅' : ''}</div>
     <div class="mchips">${WORLDS.map(w => `<span class="mchip ${missionLeft(w) === 0 ? 'ok' : ''}">${w.emo} ${areaStatus(w) === 'retry' ? '🔁 again' : missionLeft(w) === 0 ? '✅' : `${worldDoneToday(w)}/${areaTarget(w)}`}</span>`).join('')}</div>` : ''}
     ${g ? `<div style="font-size:18px;margin-bottom:4px"><b>${perWorld() > 0 ? '2.' : '1.'}</b> 📝 Exam practice ${examLeft() === 0 ? '✅' : ''}</div>
@@ -904,6 +905,42 @@ function parentZone() {
 }
 
 // ---------- start ----------
+// Keep everything she has done today marked as done (runs every time the app opens):
+//  - work saved under "tomorrow" by the old GMT day change is moved back to today
+//  - topics she practised today (from the question log, and each topic's last-practised time) are ticked
+function restoreToday() {
+  const t = today();
+  const dr = (store.daily[t] ||= { secs: 0, right: 0, total: 0 });
+  // a) records filed under a future date (old GMT clock) belong to today
+  for (const k of Object.keys(store.daily)) {
+    if (k <= t) continue;
+    const f = store.daily[k];
+    dr.secs += f.secs || 0; dr.right += f.right || 0; dr.total += f.total || 0;
+    for (const field of ['skills', 'worlds', 'examDoneBy']) {
+      if (!f[field]) continue;
+      dr[field] ||= {};
+      for (const [id, n] of Object.entries(f[field])) dr[field][id] = (dr[field][id] || 0) + n;
+    }
+    dr.examDone = (dr.examDone || 0) + (f.examDone || 0);
+    for (const flag of ['missionDone', 'planDone']) if (f[flag]) dr[flag] = true;
+    if (f.areas) dr.areas = { ...f.areas, ...(dr.areas || {}) };
+    delete store.daily[k];
+  }
+  if (store.log) for (const k of Object.keys(store.log)) {
+    if (k <= t) continue;
+    (store.log[t] ||= []).push(...store.log[k]);
+    delete store.log[k];
+  }
+  // b) tick every topic she practised today
+  dr.skills ||= {};
+  for (const e of store.log?.[t] || []) if (!dr.skills[e.s]) dr.skills[e.s] = 1;
+  for (const [id, st] of Object.entries(store.skills)) {
+    if (st.last && dayKey(st.last) === t && !dr.skills[id]) dr.skills[id] = 1;
+  }
+  save();
+}
+restoreToday();
+
 // One-time upgrade for tablets that already had the app: switch to the every-topic daily mission
 if (!store.settings.everyTopicV1) {
   if (store.settings.dailyPerWorld === 5) store.settings.dailyPerWorld = 'all';

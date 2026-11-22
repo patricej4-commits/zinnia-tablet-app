@@ -47,7 +47,12 @@ export function resetAll() {
   save();
 }
 
-export const today = () => new Date().toISOString().slice(0, 10);
+// The tablet's own calendar day (local time), so the day ends at midnight in Jamaica, not 7 pm
+export const dayKey = (t = new Date()) => {
+  const d = new Date(t);
+  return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
+};
+export const today = () => dayKey();
 
 export function skill(id) {
   if (!store.skills[id]) store.skills[id] = { seen: 0, right: 0, streak: 0, wrongRun: 0, level: 1, last: 0, history: [] };
