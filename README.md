@@ -102,3 +102,6 @@ Added from Ms Bennett's posts and slides: Opposites (her full list), one more / 
 
 ## "Done today" is kept
 The day changes at midnight on the tablet's own clock (it used to change at 7 pm Jamaica time because of GMT). Each time the app opens it re-ticks every topic she practised today (from the question log and each topic's last-practised time) and moves any work filed under "tomorrow" back to today. A finished mission or plan stays finished for the rest of the day. The map shows how many topics she has done today.
+
+## 📈 How am I doing? (daily scores)
+On the map (📈 button) and in the Parent Zone: a chart of her score every day (questions right first time) for the last 14 days, and a day-by-day list (last 30 days) with each day compared with the day before (⬆️ better / ⬇️ lower / ➡️ same), stars, questions, topics, minutes, mission done, and a score for each area with its own ⬆️⬇️. Ollie reads out today's score and how it compares with the day before.

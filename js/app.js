@@ -266,6 +266,7 @@ function topbar(back) {
     <div class="pill">🪙 ${store.coins}</div>
     <div class="pill">⭐ ${store.stars}</div>
     <div class="spacer"></div>
+    <button class="icon-btn" data-a="progress" aria-label="How am I doing?">📈</button>
     <button class="icon-btn" data-a="stickers" aria-label="Sticker book">📒</button>
     <button class="icon-btn" data-a="parent" aria-label="Grown-ups" style="font-size:18px">👪</button>
   </div>`);
@@ -275,6 +276,7 @@ function topbar(back) {
       const a = b.dataset.a;
       if (a === 'back') back();
       if (a === 'stickers') stickerBook();
+      if (a === 'progress') progressScreen();
       if (a === 'parent') parentGate();
     };
   });
@@ -740,6 +742,90 @@ function breakTime() {
   say(`Brain break time! You did lots of learning today, ${name()}. Come back tomorrow!`);
 }
 
+// ---------- 📈 How am I doing? Daily scores, compared day by day ----------
+const pctOf = (r, t) => (t ? Math.round((r / t) * 100) : null);
+const scoreColour = p => (p >= 85 ? '#2ec27e' : p >= 70 ? '#9ccc3c' : p >= 50 ? '#ffb020' : '#ff5964');
+const prettyDay = k => new Date(k + 'T12:00:00').toDateString().slice(0, 10);
+
+// Every day she played, oldest first: overall score + score in each area
+function dailyScores() {
+  return Object.keys(store.daily).filter(k => (store.daily[k].total || 0) > 0).sort().map(k => {
+    const d = store.daily[k];
+    const log = store.log?.[k] || [];
+    const areas = {};
+    for (const w of WORLDS) {
+      const es = log.filter(e => e.w === w.id);
+      if (es.length) areas[w.id] = { pct: pctOf(es.filter(e => e.f).length, es.length), n: es.length };
+    }
+    return { k, pct: pctOf(d.right, d.total), right: d.right, total: d.total, mins: Math.round((d.secs || 0) / 60),
+      topics: Object.keys(d.skills || {}).length, mission: !!d.missionDone, plan: !!d.planDone, areas };
+  });
+}
+
+function scoreChart(days) {
+  const last = days.slice(-14);
+  const W = 700, H = 230, n = last.length, bw = Math.min(60, (W - 66) / Math.max(n, 1) - 10);
+  const x = i => 56 + i * ((W - 66) / Math.max(n, 1)) + ((W - 66) / Math.max(n, 1) - bw) / 2;
+  const y = p => 190 - p * 1.6;
+  let s = `<svg viewBox="0 0 ${W} ${H}" style="width:100%;height:auto" role="img" aria-label="Daily scores">`;
+  for (const g of [50, 75, 100]) s += `<line x1="50" x2="${W - 6}" y1="${y(g)}" y2="${y(g)}" stroke="#e3ddff" stroke-width="2" ${g === 75 ? 'stroke-dasharray="6 5"' : ''}/><text x="44" y="${y(g) + 5}" font-size="13" text-anchor="end" fill="#9a8fd6">${g}%</text>`;
+  last.forEach((d, i) => {
+    s += `<rect x="${x(i)}" y="${y(d.pct)}" width="${bw}" height="${190 - y(d.pct)}" rx="8" fill="${scoreColour(d.pct)}"/>`;
+    s += `<text x="${x(i) + bw / 2}" y="${y(d.pct) - 6}" font-size="15" font-weight="800" text-anchor="middle" fill="#2b2250">${d.pct}%</text>`;
+    s += `<text x="${x(i) + bw / 2}" y="${210}" font-size="12" text-anchor="middle" fill="#2b2250">${prettyDay(d.k).slice(4, 10)}</text>`;
+  });
+  return s + '</svg>';
+}
+
+function progressScreen() {
+  onMap = false;
+  stopSpeaking();
+  app.innerHTML = '';
+  const s = h('<div class="screen"></div>');
+  s.append(topbar(() => map(false)));
+  s.append(h(`<div class="title" style="text-align:center">📈 How am I doing?</div>`));
+  const days = dailyScores();
+  if (!days.length) {
+    s.append(h('<div class="bubble" style="margin:auto">Play today and your score will show here!</div>'));
+    app.append(s);
+    say('Play today and your score will show here!');
+    return;
+  }
+  const t = days[days.length - 1], prev = days[days.length - 2];
+  const diff = prev ? t.pct - prev.pct : null;
+  const isToday = t.k === today();
+  let line = `${isToday ? 'Today' : 'On ' + prettyDay(t.k)} you got ${t.pct} percent right the first time.`;
+  if (prev) line += diff > 2 ? ` That is better than ${prettyDay(prev.k)}, when you got ${prev.pct} percent. You are getting better!` : diff < -2 ? ` That is a little lower than ${prettyDay(prev.k)}, when you got ${prev.pct} percent. Let's practise and beat it tomorrow!` : ` That is about the same as ${prettyDay(prev.k)}. Keep going!`;
+  const best = days.reduce((m, d) => (d.pct > m.pct ? d : m), days[0]);
+  s.append(h(`<div class="hello"><div class="mascot">🦉</div><div class="say" style="flex:1">${esc(line)}<br><small>⭐ Best day: ${prettyDay(best.k)} with ${best.pct}%</small></div></div>`));
+  s.append(h(`<div class="mission"><h3>My score each day</h3>${scoreChart(days)}<div style="font-size:14px;color:#7a70b0">Score = questions right the first time. The dashed line is 75%.</div></div>`));
+
+  // Day by day, newest first, compared with the day before
+  let rows = '';
+  for (let i = days.length - 1; i >= 0 && i >= days.length - 30; i--) {
+    const d = days[i], p = days[i - 1];
+    const ch = p ? d.pct - p.pct : null;
+    const arrow = ch === null ? '' : ch > 2 ? `<span style="color:#2ec27e">⬆️ +${ch}</span>` : ch < -2 ? `<span style="color:#ff5964">⬇️ ${ch}</span>` : '➡️ same';
+    const stars = d.pct >= 85 ? '⭐⭐⭐' : d.pct >= 60 ? '⭐⭐' : '⭐';
+    const areas = WORLDS.filter(w => d.areas[w.id]).map(w => {
+      const a = d.areas[w.id], pa = p?.areas[w.id];
+      const tag = pa ? (a.pct - pa.pct > 2 ? '⬆️' : a.pct - pa.pct < -2 ? '⬇️' : '') : '';
+      return `<span class="mchip" style="background:${scoreColour(a.pct)}22">${w.emo} ${a.pct}%${tag}</span>`;
+    }).join(' ');
+    rows += `<div class="mission" style="margin-bottom:10px">
+      <div style="display:flex;flex-wrap:wrap;align-items:center;gap:12px;font-size:20px">
+        <b>${prettyDay(d.k)}${d.k === today() ? ' (today)' : ''}</b>
+        <span style="font-size:28px;font-weight:800;color:${scoreColour(d.pct)}">${d.pct}%</span> ${arrow} <span>${stars}</span>
+      </div>
+      <div style="font-size:16px;margin:4px 0">${d.right} of ${d.total} right first time · ${d.topics} topics · ${d.mins} min ${d.mission ? '· 📋 mission ✅' : ''} ${d.plan ? '· 🏆 plan done' : ''}</div>
+      ${areas ? `<div class="mchips" style="margin:6px 0 0">${areas}</div>` : ''}
+    </div>`;
+  }
+  s.append(h(`<div><h3 style="font-family:var(--fun);color:#fff;text-shadow:0 2px 0 rgba(0,0,0,.2)">Day by day</h3>${rows}</div>`));
+  app.append(s);
+  say(line);
+}
+
 function stickerBook() {
   onMap = false;
   stopSpeaking();
@@ -815,6 +901,7 @@ function parentZone() {
     <h2>${esc(name())}'s progress</h2>
     <div class="card">Today: <b>${Math.round(d.secs / 60)} min</b> played · <b>${d.right}/${d.total}</b> right first time
       <br>Total: 🪙 ${store.coins} coins · ⭐ ${store.stars} stars · 📒 ${store.stickers.length} stickers · ${store.sessions.length} games played</div>
+    <div class="card"><b>📈 Daily scores</b> — her score every day, compared with the day before (also on her 📈 button on the map) <button class="pbtn" data-a="progress" style="padding:4px 10px;font-size:14px">Open</button></div>
     <div class="card"><b>📅 Day report</b> — what she did on any day
       <div class="prow">Day <input type="date" class="rep-date" value="${today()}" max="${today()}"></div>
       <div class="rep-body"></div></div>
@@ -896,6 +983,7 @@ function parentZone() {
     b.onclick = () => {
       const a = b.dataset.a;
       if (a === 'exit') map(false);
+      if (a === 'progress') progressScreen();
       if (a === 'test') say(`Hello ${name()}! I am Ollie. Let's learn and play!`);
       if (a === 'pet') { store.pet = null; save(); petPicker(); }
       if (a === 'reset' && confirm('Delete all coins, stars, stickers and progress?')) { resetAll(); splash(); }
