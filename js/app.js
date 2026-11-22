@@ -106,7 +106,10 @@ setInterval(() => {
   // Time is up while she is on the map or a menu: straight to the break screen
   if (sitLimit() && !curSitting() && onMap && !breakShown) breakScreen(sittingState());
 }, 10000);
-const hhmm = t => new Date(t).toLocaleTimeString([], { hour: 'numeric', minute: '2-digit' });
+// Always the 12-hour clock (she has not learned the 24-hour clock): "8:46 in the evening"
+const clock12 = t => { const d = new Date(t), h = d.getHours(); return `${h % 12 || 12}:${String(d.getMinutes()).padStart(2, '0')}`; };
+const partOfDay = t => { const h = new Date(t).getHours(); return h < 12 ? 'in the morning' : h < 17 ? 'in the afternoon' : 'in the evening'; };
+const hhmm = t => `${clock12(t)} ${partOfDay(t)}`;
 const minsWord = m => `${m} minute${m === 1 ? '' : 's'}`;
 // Break cues: halfway, 5 minutes left, 1 minute left. Shown at once; spoken before the next question
 // (or straight away on the map), so Ollie never talks over a question.
@@ -180,7 +183,7 @@ function logAnswer(q, sk, res) {
   store.log ||= {};
   const d = today();
   (store.log[d] ||= []).push({
-    t: new Date().toTimeString().slice(0, 5), w: WORLD_OF[sk.id], s: sk.id,
+    t: (() => { const d = new Date(); return `${clock12(d)} ${d.getHours() < 12 ? 'am' : 'pm'}`; })(), w: WORLD_OF[sk.id], s: sk.id,
     q: (() => {
       // What was asked + what was on screen (word, sentence, sum...) so you can see exactly what she struggled with
       const asked = plainText(q.say);
