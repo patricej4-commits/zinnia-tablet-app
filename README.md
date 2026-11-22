@@ -63,7 +63,7 @@ Built from the class **1B Christmas Term Revision Guide** (exams Dec 2–8, 2026
 - **📝 Exam Practice button** on the map: practises the next exam coming up (the weaker subject if two are on the same day), focusing on her weakest topics.
 
 ## Easy first, understanding, variety, and hearing herself read
-- **Watch me first:** the first time she meets a topic (and again if she misses it twice in a game), Ollie shows a worked example with the answer and the reason, then says "Now it is your turn!"
+- ~~Watch me first~~ worked examples were removed at the parent's request. After a second wrong answer Ollie still explains the rule and shows the right answer.
 - **Easy to hard:** every topic starts at level 1 and only gets harder after 3 right in a row; games start with a warm-up question she knows; at most 2 brand-new topics per game.
 - **Less repetition:** the app remembers the last 400 questions and avoids repeating them, picks a fresh mix of topics each game (topics from the last game are less likely), and asks each topic at most twice per game.
 - **Recording:** in "Read it out loud" her reading is recorded and played straight back ("Listen to yourself reading!"), with a ▶️ Hear myself again button. Every reading question also has a 🎙️ button to record and hear herself. Recordings are kept only in memory and deleted when the question ends; nothing is saved or sent anywhere.

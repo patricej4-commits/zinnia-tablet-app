@@ -1,6 +1,6 @@
 import { store, save, record, mastery, needWeight, addTime, today, dayKey, resetAll, skill } from './store.js';
 import { say, sfx, stopSpeaking, listVoices, refreshVoice, micSupported } from './speech.js';
-import { runQuestion, runDemo, canDemo } from './games.js';
+import { runQuestion } from './games.js';
 import { pick, shuffle, esc, rnd } from './util.js';
 import { WORLDS, ALL_SKILLS } from './worlds.js';
 import { EXAMS, examReadiness, examSkills, daysUntil, nextExam, examNeed, skillReadiness, mocksFor } from './exam.js';
@@ -644,13 +644,6 @@ async function play({ title, skills, mixed, length, mission, world, examPractice
       toast(`📝 Exam practice: ${weaveExam.exam.emoji} ${weaveExam.exam.name}`);
       q.preSay = `Exam practice! Your ${weaveExam.exam.name} test is ${d === 0 ? 'today' : d === 1 ? 'tomorrow' : 'in ' + d + ' days'}.`;
     } else sinceExam++;
-    // First time on a topic, or she is finding it hard: Ollie shows a worked example first
-    const st = store.skills[sk.id];
-    if (mode !== 'challenge' && !mock && (!st || !st.seen || (gameMisses[sk.id] || 0) >= 2)) {
-      const demo = makeQuestion(sk, 1);
-      if (canDemo(demo)) { await runDemo(demo, stage); if (quit) break; }
-      gameMisses[sk.id] = 0;
-    }
     if (pendingCue) { q.preSay = pendingCue + (q.preSay ? ' ' + q.preSay : ''); pendingCue = null; }
     // Listening reminders: start of the game, every third question, and before listening questions
     if (q.preSay) { /* break cue already set */ }
