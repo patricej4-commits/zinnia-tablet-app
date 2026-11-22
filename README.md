@@ -94,3 +94,8 @@ Added from Ms Bennett's posts and slides: Opposites (her full list), one more / 
 - **Daily mission = every topic in every area** (about 100 questions; each topic at least once a day). Areas run in rounds of up to 8 new topics. Each topic shows its level (1–3) and a ✅ once done today. Parents can switch to a lighter mission (3–10 per area) in the Parent Zone.
 - **Exam practice everywhere:** in every game, every third question is an extra 📝 exam question from the weakest topic of an upcoming exam (more urgent exams more often). These count toward the day's exam practice.
 - Spanish has been removed.
+
+## Measuring exam readiness
+- **📊 Readiness meter on the map:** a bar for each upcoming exam with the days left, and a "Take a practice test" button.
+- **📝 Practice tests (mock exams):** 10 questions across all of an exam's topics at exam difficulty, one try each, no hints or worked examples, scored like a test (e.g. 9 out of 10 = 90%). Start one from the map or from the Parent Zone (a button for each exam). They also count as exam practice.
+- **Readiness score** = half daily practice (accuracy × level × amount of practice on every revision-guide topic) + half her last two practice tests from the past 14 days. 75%+ = Ready.

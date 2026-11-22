@@ -3,7 +3,7 @@ import { say, sfx, stopSpeaking, listVoices, refreshVoice, micSupported } from '
 import { runQuestion, runDemo, canDemo } from './games.js';
 import { pick, shuffle, esc, rnd } from './util.js';
 import { WORLDS, ALL_SKILLS } from './worlds.js';
-import { EXAMS, examReadiness, examSkills, daysUntil, nextExam, examNeed, skillReadiness } from './exam.js';
+import { EXAMS, examReadiness, examSkills, daysUntil, nextExam, examNeed, skillReadiness, mocksFor } from './exam.js';
 
 const app = document.getElementById('app');
 const h = html => { const t = document.createElement('template'); t.innerHTML = html.trim(); return t.content.firstElementChild; };
@@ -202,6 +202,11 @@ function weaveExamSkill(excludeId) {
   return weakest.length ? { sk: pick(weakest), exam } : null;
 }
 
+// 📝 Practice test (mock exam): 10 questions across all the exam's topics, exam difficulty, one try each
+function playMock(exam) {
+  play({ title: 'Practice Test: ' + exam.name, skills: examSkills(exam), mock: exam, length: 10, examPractice: exam.name });
+}
+
 function playStep() {
   const st = nextStep();
   if (!st) return map(false);
@@ -336,6 +341,25 @@ function map(greet) {
   }
   s.append(card);
 
+  // ----- 📊 Exam readiness meter (every upcoming exam) -----
+  const upcoming = EXAMS.filter(e => e.date && daysUntil(e.date) >= 0);
+  if (upcoming.length) {
+    const rc = h(`<div class="mission"><h3>📊 How ready am I for my exams?</h3>
+      ${upcoming.map(e => { const r = examReadiness(e); const d = daysUntil(e.date);
+        return `<div style="display:flex;align-items:center;gap:10px;margin:6px 0;font-size:18px">
+          <span style="width:190px">${e.emoji} ${esc(e.name)}<br><small style="color:#7a70b0">${d === 0 ? 'today!' : d === 1 ? 'tomorrow' : 'in ' + d + ' days'}</small></span>
+          <div class="bar" style="flex:1;height:18px"><i style="width:${r.pct}%;background:${r.colour}"></i></div>
+          <b style="width:110px">${r.pct}% ${r.pct >= 75 ? '✅' : ''}</b></div>`; }).join('')}
+    </div>`);
+    const nx = nextExam();
+    if (nx) {
+      const mb2 = h(`<button class="big-btn adventure-btn" style="margin:8px 0 0;font-size:clamp(20px,3.2vw,28px)">📝 Take a practice test: ${nx.emoji} ${nx.name}</button>`);
+      mb2.onclick = () => { sfx.tap(); playMock(nx); };
+      rc.append(mb2);
+    }
+    s.append(rc);
+  }
+
   // ----- Free exploring (unlocked after the plan) -----
   if (!locked) {
     const adv = h(`<button class="big-btn adventure-btn"><span style="font-size:44px">🗺️</span> Today's Adventure</button>`);
@@ -440,7 +464,7 @@ function pickTopics(skills, n) {
   return out;
 }
 
-async function play({ title, skills, mixed, length, mission, world, examPractice, coverAll }) {
+async function play({ title, skills, mixed, length, mission, world, examPractice, coverAll, mock }) {
   onMap = false;
   stopSpeaking();
   if (overTime()) return breakTime();
@@ -499,7 +523,9 @@ async function play({ title, skills, mixed, length, mission, world, examPractice
   const easyMode = !!(world && areaStatus(world) === 'retry' && (dayRec().fails?.[world.id] || 0) >= 2);
   if (easyMode) for (const sk of skills) gameMisses[sk.id] = 2;
   const firstUp = skills.filter(sk => reteach.includes(sk.id)).slice(0, 3); // asked first, with a worked example
-  const coverQueue = coverAll ? shuffle(skills) : null; // every-topic mission: each topic once, none skipped
+  // every-topic mission: each topic once, none skipped. Practice test: spread across all the exam's topics.
+  const coverQueue = coverAll ? shuffle(skills) : mock ? (sh => Array.from({ length: total }, (_, i) => sh[i % sh.length]))(shuffle(skills)) : null;
+  if (mock) toast(`📝 Practice test: ${mock.name}. One try for each question. Do your best!`);
   for (const sk of firstUp) if (!pool.includes(sk)) pool.push(sk);
   const strongest = [...pool].filter(sk => store.skills[sk.id]?.seen >= 3).sort((a, b) => mastery(b.id) - mastery(a.id))[0];
   let missRun = 0;          // wrong answers in a row this game
@@ -507,30 +533,31 @@ async function play({ title, skills, mixed, length, mission, world, examPractice
 
   while (done < total && count < maxQ && !quit) {
     let sk, mode = 'normal';
-    if (missRun >= 2) {
+    if (missRun >= 2 && !mock) {
       // Two misses in a row: give her an easy win from something she knows well
       sk = [...pool].sort((a, b) => mastery(b.id) - mastery(a.id))[0];
       mode = 'boost';
       missRun = 0;
     } else if (firstUp.length) { sk = firstUp.shift(); }
-    else if (!examPractice && !easyMode && sinceExam >= 2 && (weaveExam = weaveExamSkill(last))) {
+    else if (!examPractice && !mock && !easyMode && sinceExam >= 2 && (weaveExam = weaveExamSkill(last))) {
       // Every third question: a woven-in exam practice question (extra, does not replace a mission topic)
       sk = weaveExam.sk; mode = 'exam'; sinceExam = 0;
     }
     else if (coverQueue && coverQueue.length) { sk = coverQueue.shift(); }
     else if (firstLesson) { sk = firstLesson; firstLesson = null; }
     else if (retry.length && (done >= total - retry.length || Math.random() < 0.35)) sk = retry.shift();
-    else if (count === 0 && !coverAll && strongest && mastery(strongest.id) >= 0.6) { sk = strongest; mode = 'warm'; }
+    else if (count === 0 && !coverAll && !mock && strongest && mastery(strongest.id) >= 0.6) { sk = strongest; mode = 'warm'; }
     else {
       const open = pool.filter(p => (timesAsked[p.id] || 0) < 2);
       sk = chooseSkill(open.length ? open : pool, last);
     }
     timesAsked[sk.id] = (timesAsked[sk.id] || 0) + 1;
-    if (mode === 'normal' && challengeNext && !easyMode) { mode = 'challenge'; challengeNext = false; }
+    if (mode === 'normal' && challengeNext && !easyMode && !mock) { mode = 'challenge'; challengeNext = false; }
     last = sk.id;
     count++;
     const lvl = skill(sk.id).level;
-    const q = makeQuestion(sk, mode === 'boost' || easyMode ? 1 : mode === 'challenge' ? Math.min(3, lvl + 1) : lvl);
+    const q = makeQuestion(sk, mode === 'boost' || easyMode ? 1 : mode === 'challenge' || mock ? Math.max(2, Math.min(3, mode === 'challenge' ? lvl + 1 : lvl)) : lvl);
+    if (mock) { q.tries = 1; q.preSay = count === 1 ? `Practice test time! Listen carefully and do your best. You get one try for each question.` : q.preSay; }
     if (mode === 'challenge') {
       toast('⭐ Challenge question! Bonus coins! ⭐');
       q.say = 'Challenge time! ' + q.say;
@@ -544,7 +571,7 @@ async function play({ title, skills, mixed, length, mission, world, examPractice
     } else sinceExam++;
     // First time on a topic, or she is finding it hard: Ollie shows a worked example first
     const st = store.skills[sk.id];
-    if (mode !== 'challenge' && (!st || !st.seen || (gameMisses[sk.id] || 0) >= 2)) {
+    if (mode !== 'challenge' && !mock && (!st || !st.seen || (gameMisses[sk.id] || 0) >= 2)) {
       const demo = makeQuestion(sk, 1);
       if (canDemo(demo)) { await runDemo(demo, stage); if (quit) break; }
       gameMisses[sk.id] = 0;
@@ -567,7 +594,7 @@ async function play({ title, skills, mixed, length, mission, world, examPractice
       const en = mode === 'exam' ? weaveExam.exam.name : typeof examPractice === 'string' ? examPractice : EXAMS.find(e => examSkills(e).includes(sk))?.name;
       if (en) { dr.examDoneBy ||= {}; dr.examDoneBy[en] = (dr.examDoneBy[en] || 0) + 1; }
     }
-    if (mode !== 'challenge' && mode !== 'exam') {
+    if (mode !== 'challenge' && mode !== 'exam' && !mock) {
       const tl = (tally[WORLD_OF[sk.id]] ||= { n: 0, right: 0, missed: [] });
       tl.n++;
       if (res.correct && res.firstTry) tl.right++;
@@ -584,7 +611,7 @@ async function play({ title, skills, mixed, length, mission, world, examPractice
     } else {
       combo = 0;
       if (!extra) done++;
-      if (mode !== 'challenge' && !extra) {
+      if (mode !== 'challenge' && !extra && !mock) {
         missRun++;
         gameMisses[sk.id] = (gameMisses[sk.id] || 0) + 1;
         if (retry.length < 3) retry.push(sk);
@@ -618,6 +645,12 @@ async function play({ title, skills, mixed, length, mission, world, examPractice
       dr2.areas[wid] = 'pass'; delete dr2.missed[wid];
     }
   }
+  let mockScore = null;
+  if (mock) {
+    mockScore = Math.round((firstRight / Math.max(1, count)) * 100);
+    store.mocks ||= {};
+    (store.mocks[mock.name] ||= []).push({ d: today(), s: mockScore, n: count, right: firstRight });
+  }
   // Whole daily mission finished?
   let missionComplete = false;
   if (perWorld() > 0 && missionDone() && !dayRec().missionDone) {
@@ -628,13 +661,15 @@ async function play({ title, skills, mixed, length, mission, world, examPractice
   let planComplete = false;
   if (!dayRec().planDone && planDone()) { dayRec().planDone = true; planComplete = true; store.coins += 10; earned += 10; }
   save();
-  results({ stars, earned, bestCombo, grew: petStage() > beforeStage, title, missionComplete, retryArea, planComplete });
+  results({ stars, earned, bestCombo, grew: petStage() > beforeStage, title, missionComplete, retryArea, planComplete, mockScore, mock, mockRight: firstRight, mockTotal: count });
 }
 
-function results({ stars, earned, bestCombo, grew, missionComplete, retryArea, planComplete }) {
+function results({ stars, earned, bestCombo, grew, missionComplete, retryArea, planComplete, mockScore, mock, mockRight, mockTotal }) {
   app.innerHTML = '';
+  const r = mock ? examReadiness(mock) : null;
   const s = h(`<div class="screen center">
     <div class="title">${stars === 3 ? 'SUPERSTAR!' : stars === 2 ? 'Great job!' : 'Well done!'}</div>
+    ${mock ? `<div class="bubble" style="margin:8px 0">📝 ${esc(mock.name)} practice test: <b>${mockRight} out of ${mockTotal}</b> (${mockScore}%)<br>Exam readiness: <b>${r.pct}%</b> ${r.label}</div>` : ''}
     <div class="result-stars">${[1, 2, 3].map(i => `<span class="${i <= stars ? '' : 'off'}" style="animation-delay:${i * 0.25}s">⭐</span>`).join('')}</div>
     <div class="white">+${earned} 🪙 coins ${bestCombo >= 3 ? ` · best streak 🔥${bestCombo}` : ''}</div>
     <div class="bubble" style="margin:16px 0">Tap the treasure chest!</div>
@@ -643,6 +678,7 @@ function results({ stars, earned, bestCombo, grew, missionComplete, retryArea, p
   </div>`);
   app.append(s);
   sfx.fanfare(); confetti(stars * 20);
+  if (mock) setTimeout(() => say(`You got ${mockRight} out of ${mockTotal} on your ${mock.name} practice test! ${mockScore >= 75 ? 'You are getting ready!' : 'Keep practising, you are getting stronger every day!'}`), 3500);
   const praise = stars === 3 ? `Wow ${name()}! Three stars! You are a superstar!` : stars === 2 ? `Great job ${name()}! Two stars!` : `Well done ${name()}! Every try makes your brain stronger!`;
   say(praise + ' Tap the treasure chest!');
   const chest = s.querySelector('.chest');
@@ -788,15 +824,16 @@ function parentZone() {
       ${planDone() ? '✅ <b>Plan complete</b> — free play is unlocked' : '⏳ <b>Not finished yet</b> — free play stays locked until it is'}<br>
       <small>Exam practice is worked out each morning from the exam dates and her readiness so she is ready in time (about 8–25 questions a day, shared across the upcoming exams by how much each still needs; exams in the next 3 days get extra). Done in exam-date order.</small></div>
     <div class="card"><b>📝 Exam readiness</b> <small>(Christmas term exams, measured from how she plays)</small>
-      <table class="ptable" style="margin-top:8px"><tr><th>Exam</th><th>Ready?</th><th>Still needed</th><th>Practise next</th></tr>
+      <table class="ptable" style="margin-top:8px"><tr><th>Exam</th><th>Ready?</th><th>Practice test</th><th>Still needed</th><th>Practise next</th></tr>
       ${EXAMS.map(e => { const r = examReadiness(e); const d = daysUntil(e.date);
         const when = !e.date ? 'every day' : `${new Date(e.date + 'T12:00:00').toDateString().slice(0, 10)} · ${d > 1 ? d + ' days' : d === 1 ? 'tomorrow' : d === 0 ? 'today' : 'done'}`;
         return `<tr><td>${e.emoji} <b>${esc(e.name)}</b><br><small>${when}</small></td>
-          <td style="min-width:140px"><div class="bar"><i style="width:${r.pct}%;background:${r.colour}"></i></div><b>${r.pct}%</b> ${r.label}<br><small>${r.tried} of ${r.total} topics tried</small></td>
+          <td style="min-width:140px"><div class="bar"><i style="width:${r.pct}%;background:${r.colour}"></i></div><b>${r.pct}%</b> ${r.label}<br><small>Daily practice ${r.practicePct}% · ${r.tried} of ${r.total} topics tried</small></td>
+          <td><small>${r.lastMock ? `Last: <b>${r.lastMock.s}%</b> (${r.lastMock.right ?? '?'}/${r.lastMock.n}) on ${r.lastMock.d}<br>${mocksFor(e).length} taken` : 'None yet'}</small><br><button class="pbtn" style="padding:4px 8px;font-size:13px;margin-top:4px" data-mock="${esc(e.name)}">Start test</button></td>
           <td><small>${(() => { const n = examNeed(e); if (!n) return 'On track ✅'; if (!e.date) return `~${n} questions`; return d > 0 ? `~${n} questions<br>(~${Math.ceil(n / d)} a day)` : d === 0 ? 'Exam today' : '—'; })()}</small></td>
           <td><small>${r.pct >= 75 ? 'Keep it up!' : r.weakest.map(sk => sk.emoji + ' ' + esc(sk.name)).join('<br>')}</small></td></tr>`; }).join('')}
       </table>
-      <small>Readiness = recent accuracy × level reached × amount of practice, for every topic in the revision guide. 75%+ means she is answering harder questions correctly and consistently.</small></div>
+      <small><b>How readiness is measured:</b> half from daily practice (recent accuracy × level reached × amount of practice on every topic in the revision guide) and half from her last two practice tests (10 questions across all the exam's topics, exam difficulty, one try each, no hints). 75%+ = Ready. Take a practice test every few days to keep the measure accurate.</small></div>
     <div class="card"><b>Needs the most practice</b><br>${weakest.map(sk => `${sk.emoji} ${esc(sk.name)} — ${Math.round(mastery(sk.id) * 100)}%`).join('<br>') || 'Not enough play yet'}</div>
   </div>`));
 
@@ -851,6 +888,9 @@ function parentZone() {
   const drawReport = () => (repBody.innerHTML = dayReport(repDate.value));
   repDate.onchange = drawReport;
   drawReport();
+  s.querySelectorAll('[data-mock]').forEach(b => {
+    b.onclick = () => { const e = EXAMS.find(x => x.name === b.dataset.mock); if (e) playMock(e); };
+  });
   s.querySelectorAll('[data-a]').forEach(b => {
     b.onclick = () => {
       const a = b.dataset.a;

@@ -27,13 +27,21 @@ export function skillReadiness(id) {
   return mastery(id) * levelFactor * practice;
 }
 
+// Practice tests (mock exams) taken for this exam, newest last: { d: 'YYYY-MM-DD', s: 0..100, n }
+export const mocksFor = exam => (store.mocks && store.mocks[exam.name]) || [];
+
 export function examReadiness(exam) {
   const sks = examSkills(exam);
   const scores = sks.map(sk => ({ sk, r: skillReadiness(sk.id) }));
-  const pct = Math.round((scores.reduce((a, b) => a + b.r, 0) / Math.max(1, sks.length)) * 100);
+  const practicePct = Math.round((scores.reduce((a, b) => a + b.r, 0) / Math.max(1, sks.length)) * 100);
+  // Readiness = half daily practice, half her last two practice-test scores (from the last 14 days)
+  const recent = mocksFor(exam).filter(m => daysUntil(m.d) >= -14).slice(-2);
+  const mockPct = recent.length ? Math.round(recent.reduce((a, m) => a + m.s, 0) / recent.length) : null;
+  const pct = mockPct === null ? practicePct : Math.round((practicePct + mockPct) / 2);
   const tried = sks.filter(sk => store.skills[sk.id]?.seen).length;
   const weakest = scores.sort((a, b) => a.r - b.r).slice(0, 3).map(x => x.sk);
-  return { pct, tried, total: sks.length, weakest, label: label(pct), colour: pct >= 75 ? '#2ec27e' : pct >= 50 ? '#9ccc3c' : pct >= 25 ? '#ffb020' : '#ff5964' };
+  const lastMock = mocksFor(exam).slice(-1)[0] || null;
+  return { pct, practicePct, mockPct, lastMock, tried, total: sks.length, weakest, label: label(pct), colour: pct >= 75 ? '#2ec27e' : pct >= 50 ? '#9ccc3c' : pct >= 25 ? '#ffb020' : '#ff5964' };
 }
 
 function label(pct) {
