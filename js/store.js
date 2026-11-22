@@ -17,7 +17,8 @@ const defaults = () => ({
     speechRate: 1,
     voiceName: '',
     sessionLength: 8,
-    dailyPerWorld: 5,     // daily mission: questions in EVERY area each day (0 = off)
+    dailyPerWorld: 5,
+    examPerDay: 'auto',   // exam practice questions per day after the mission ('auto' = based on exam dates and readiness)     // daily mission: questions in EVERY area each day (0 = off)
     dailyMinutes: 0,      // 0 = no limit
     extraNumberLines: true, // she finds number lines hard: practise them in every adventure
   },

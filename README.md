@@ -78,3 +78,10 @@ The app checks for a new version when it opens, whenever she comes back to it, a
 - **Day report (Parent Zone):** pick any date to see every question she answered: the time, the area, the topic, the question and the word or sentence shown, whether she got it right first time (✅), on a second try (🟡) or wrong (❌), and the right answer. There is also a summary per area and whether the daily mission was finished. Kept for 120 days.
 - **Must pass to move on:** if she gets more than half of an area's questions wrong (first try) in a round, that area is marked "🔁 practise again". The mission will not count it done, Today's Adventure, Exam Practice and the other areas are locked, and Ollie re-teaches the topics she missed first with a worked example. When she gets at least half right, the area passes and she moves on.
 - After 2 failed redos of the same area in one day, the redo uses the easiest level with a worked example for every topic, so she can always get through. The Day report shows how many times each area had to be redone.
+
+## Today's Plan (guided every day)
+1. **Mission in every area** (with the "redo if most is wrong" rule)
+2. **Exam Practice**: worked out each morning from the exam dates and her readiness, so she is ready by each exam day. About 8–25 questions a day, shared across all upcoming exams by how much each still needs (at least 2 each; exams in the next 3 days get extra), done in exam-date order. Change it in the Parent Zone ("Exam practice each day": Automatic, 10–25, or Off).
+3. **Explore**: Today's Adventure, any area and extra exam practice unlock only after steps 1 and 2.
+
+Ollie tells her each step, and after every game the big green button takes her straight to the next one. The Parent Zone shows today's plan and, for each exam, roughly how many more practice questions she still needs and how many a day that is.

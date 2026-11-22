@@ -3,7 +3,7 @@ import { say, sfx, stopSpeaking, listVoices, refreshVoice, micSupported } from '
 import { runQuestion, runDemo, canDemo } from './games.js';
 import { pick, shuffle, esc, rnd } from './util.js';
 import { WORLDS, ALL_SKILLS } from './worlds.js';
-import { EXAMS, examReadiness, examSkills, daysUntil, nextExam } from './exam.js';
+import { EXAMS, examReadiness, examSkills, daysUntil, nextExam, examNeed } from './exam.js';
 
 const app = document.getElementById('app');
 const h = html => { const t = document.createElement('template'); t.innerHTML = html.trim(); return t.content.firstElementChild; };
@@ -65,7 +65,7 @@ function stopClock() { clearInterval(tick); }
 function overTime() {
   const lim = store.settings.dailyMinutes;
   // The time limit only applies once today's mission is finished
-  return lim > 0 && (store.daily[today()]?.secs || 0) >= lim * 60 && missionDone();
+  return lim > 0 && (store.daily[today()]?.secs || 0) >= lim * 60 && planDone();
 }
 
 // ---------- Daily mission: a set number of questions in EVERY area, every day ----------
@@ -134,6 +134,54 @@ function playMission() {
   if (!w) return map(false);
   const redo = areaStatus(w) === 'retry';
   play({ title: (redo ? 'Practise again: ' : 'Daily Mission: ') + w.name, skills: w.skills, mixed: true, length: Math.max(3, redo ? perWorld() : missionLeft(w)), mission: true, world: w });
+}
+
+// ---------- Today's Plan: 1) mission in every area, 2) exam practice, 3) then free play ----------
+// Exam practice: worked out each morning from the exam dates and how ready she is.
+// The day's questions are shared across ALL upcoming exams by how much each still needs per day,
+// with extra for exams in the next 3 days, done in exam-date order.
+function examGoal() {
+  const dr = dayRec();
+  if (dr.examGoal && dr.examGoal.items) return dr.examGoal;
+  if (dr.examGoal === null) return null;
+  const setting = store.settings.examPerDay ?? 'auto';
+  const upcoming = EXAMS.filter(e => e.date && daysUntil(e.date) >= 0)
+    .map(e => ({ e, d: daysUntil(e.date), perDay: examNeed(e) / Math.max(1, daysUntil(e.date)) }))
+    .filter(x => x.perDay > 0 || x.d <= 3);
+  if (!upcoming.length || setting === 0) { dr.examGoal = null; save(); return null; }
+  const sum = upcoming.reduce((a, x) => a + x.perDay, 0);
+  const total = setting === 'auto' ? Math.max(8, Math.min(25, Math.ceil(sum))) : Number(setting);
+  let items = upcoming.map(x => ({ name: x.e.name, date: x.e.date, n: Math.round((total * x.perDay) / Math.max(sum, 0.001)) + (x.d <= 3 ? 3 : 0) }))
+    .sort((a, b) => a.date.localeCompare(b.date)); // every upcoming exam gets some practice
+  // keep within the day's total, at least 2 questions per exam that made the list
+  while (items.reduce((a, x) => a + x.n, 0) > total + 6) { const big = items.reduce((m, x) => (x.n > m.n ? x : m)); big.n--; }
+  items.forEach(x => (x.n = Math.max(2, x.n)));
+  dr.examGoal = { n: items.reduce((a, x) => a + x.n, 0), items };
+  save();
+  return dr.examGoal;
+}
+const examDoneFor = name => dayRec().examDoneBy?.[name] || 0;
+const examDoneToday = () => dayRec().examDone || 0;
+const examLeftFor = it => Math.max(0, it.n - examDoneFor(it.name));
+const examLeft = () => { const g = examGoal(); return g ? g.items.reduce((a, it) => a + examLeftFor(it), 0) : 0; };
+const nextExamItem = () => examGoal()?.items.find(it => examLeftFor(it) > 0);
+function planDone() { return missionDone() && !retryWorld() && examLeft() === 0; }
+function nextStep() {
+  const rw = retryWorld();
+  if (rw) return { kind: 'retry', w: rw, label: `🔁 Practise again: ${rw.emo} ${rw.name}`, say: `Let's practise ${rw.name} again before we move on. I will help you!` };
+  if (!missionDone()) { const w = nextMissionWorld(); return { kind: 'mission', w, label: `▶ ${w.emo} ${w.name}`, say: `Let's do ${w.name}!` }; }
+  const it = nextExamItem();
+  if (it) {
+    const e = EXAMS.find(x => x.name === it.name);
+    return { kind: 'exam', e, it, label: `📝 Exam Practice: ${e.emoji} ${e.name}`, say: `Now it is exam practice time! Let's get ready for ${e.name}.` };
+  }
+  return null;
+}
+function playStep() {
+  const st = nextStep();
+  if (!st) return map(false);
+  if (st.kind === 'exam') return play({ title: 'Exam Practice: ' + st.e.name, skills: examSkills(st.e), mixed: true, length: Math.max(2, Math.min(store.settings.sessionLength + 2, examLeftFor(st.it))), examPractice: st.e.name });
+  playMission();
 }
 
 function greeting() {
@@ -219,10 +267,15 @@ function map(greet) {
   app.innerHTML = '';
   const s = h('<div class="screen"></div>');
   s.append(topbar(null));
-  let line = greet ? `${greeting()}, ${name()}! Where shall we go today?` : 'Where shall we go next?';
-  const rw = perWorld() > 0 ? retryWorld() : null;
-  if (rw) line = `${greet ? greeting() + ', ' + name() + '! ' : ''}Let's practise ${rw.name} again before we move on. I will help you!`;
-  if (!rw && perWorld() > 0 && !missionDone()) { const left = WORLDS.filter(w => missionLeft(w) > 0).length; line += ` You have ${left} area${left === 1 ? '' : 's'} left in today's mission. Let's do it!`; }
+  const step = nextStep();
+  const locked = !!step; // free exploring only after today's plan is done
+  let line;
+  if (step) {
+    const first = step.kind === 'mission' && WORLDS.every(w => worldDoneToday(w) === 0) && !store.daily[today()]?.examDone;
+    line = `${greet ? greeting() + ', ' + name() + '! ' : ''}${first ? "Here is today's plan. First, " : 'Next, '}${step.say.charAt(0).toLowerCase() + step.say.slice(1)} Tap the green button.`;
+  } else {
+    line = greet ? `${greeting()}, ${name()}! You finished today's plan. Explore anything you like!` : 'Today\'s plan is done! Where shall we explore?';
+  }
   const hello = h(`<div class="hello">
     <div class="mascot">🦉</div>
     <div class="say" style="flex:1">${esc(line)}</div>
@@ -237,43 +290,49 @@ function map(greet) {
   };
   s.append(hello);
 
-  if (perWorld() > 0) {
-    const doneN = WORLDS.filter(w => missionLeft(w) === 0).length;
-    const card = h(`<div class="mission">
-      <h3>📋 Today's Mission: ${doneN} of ${WORLDS.length} areas done ${missionDone() ? '🏆' : ''}</h3>
-      <div class="mchips">${WORLDS.map(w => `<span class="mchip ${missionLeft(w) === 0 ? 'ok' : ''}">${w.emo} ${areaStatus(w) === 'retry' ? '🔁 again' : missionLeft(w) === 0 ? '✅' : `${worldDoneToday(w)}/${perWorld()}`}</span>`).join('')}</div>
-    </div>`);
-    if (!missionDone()) {
-      const nw = nextMissionWorld();
-      const redo = areaStatus(nw) === 'retry';
-      const mb = h(`<button class="big-btn green adventure-btn" style="margin:0"><span style="font-size:40px">${redo ? '🔁' : '▶'}</span> ${redo ? 'Practise again' : 'Do my mission'}: ${nw.emo} ${nw.name}</button>`);
-      mb.onclick = () => { sfx.tap(); playMission(); };
-      card.append(mb);
-    } else {
-      const st = missionStreak();
-      card.append(h(`<div style="font-size:20px">🎉 Mission complete! ${st > 1 ? `🔥 ${st} days in a row!` : 'Great work today!'}</div>`));
-    }
-    s.append(card);
+  // ----- Today's Plan card -----
+  const g = examGoal();
+  const doneN = WORLDS.filter(w => missionLeft(w) === 0).length;
+  const card = h(`<div class="mission">
+    <h3>📋 Today's Plan ${planDone() ? '🏆' : ''}</h3>
+    ${perWorld() > 0 ? `<div style="font-size:18px;margin-bottom:4px"><b>1.</b> Mission in every area: ${doneN} of ${WORLDS.length} ${missionDone() ? '✅' : ''}</div>
+    <div class="mchips">${WORLDS.map(w => `<span class="mchip ${missionLeft(w) === 0 ? 'ok' : ''}">${w.emo} ${areaStatus(w) === 'retry' ? '🔁 again' : missionLeft(w) === 0 ? '✅' : `${worldDoneToday(w)}/${perWorld()}`}</span>`).join('')}</div>` : ''}
+    ${g ? `<div style="font-size:18px;margin-bottom:4px"><b>${perWorld() > 0 ? '2.' : '1.'}</b> 📝 Exam practice ${examLeft() === 0 ? '✅' : ''}</div>
+    <div class="mchips">${g.items.map(it => { const e = EXAMS.find(x => x.name === it.name); return `<span class="mchip ${examLeftFor(it) === 0 ? 'ok' : ''}">${e.emoji} ${esc(it.name)} ${examLeftFor(it) === 0 ? '✅' : `${Math.min(examDoneFor(it.name), it.n)}/${it.n}`}</span>`; }).join('')}</div>` : ''}
+    <div style="font-size:18px;margin-bottom:10px"><b>${(perWorld() > 0 ? 1 : 0) + (g ? 1 : 0) + 1}.</b> 🗺️ Explore anything ${locked ? '🔒' : '🔓'}</div>
+  </div>`);
+  if (step) {
+    const mb = h(`<button class="big-btn green adventure-btn" style="margin:0">${step.label}</button>`);
+    mb.onclick = () => { sfx.tap(); playStep(); };
+    card.append(mb);
+  } else {
+    const st = missionStreak();
+    card.append(h(`<div style="font-size:20px">🎉 All done for today! ${st > 1 ? `🔥 ${st} days in a row!` : ''}</div>`));
   }
-  const adv = h(`<button class="big-btn adventure-btn"><span style="font-size:44px">🗺️</span> Today's Adventure</button>`);
-  adv.onclick = () => { sfx.tap(); play({ title: "Today's Adventure", skills: ALL_SKILLS, mixed: true }); };
-  if (!rw) s.append(adv); // locked until the area she needs to redo is passed
-  const ex = rw ? null : nextExam();
-  if (ex) {
-    const d = daysUntil(ex.date);
-    const eb = h(`<button class="big-btn green adventure-btn" style="font-size:clamp(20px,3.4vw,30px)"><span style="font-size:36px">📝</span> Exam Practice: ${ex.emoji} ${ex.name} <small style="font-size:.6em">(${d === 0 ? 'today!' : d === 1 ? 'tomorrow' : 'in ' + d + ' days'})</small></button>`);
-    eb.onclick = () => { sfx.tap(); play({ title: 'Exam Practice: ' + ex.name, skills: examSkills(ex), mixed: true }); };
-    s.append(eb);
+  s.append(card);
+
+  // ----- Free exploring (unlocked after the plan) -----
+  if (!locked) {
+    const adv = h(`<button class="big-btn adventure-btn"><span style="font-size:44px">🗺️</span> Today's Adventure</button>`);
+    adv.onclick = () => { sfx.tap(); play({ title: "Today's Adventure", skills: ALL_SKILLS, mixed: true }); };
+    s.append(adv);
+    const ex = nextExam();
+    if (ex) {
+      const d = daysUntil(ex.date);
+      const eb = h(`<button class="big-btn green adventure-btn" style="font-size:clamp(20px,3.4vw,30px)"><span style="font-size:36px">📝</span> More Exam Practice: ${ex.emoji} ${ex.name} <small style="font-size:.6em">(${d === 0 ? 'today!' : d === 1 ? 'tomorrow' : 'in ' + d + ' days'})</small></button>`);
+      eb.onclick = () => { sfx.tap(); play({ title: 'Exam Practice: ' + ex.name, skills: examSkills(ex), mixed: true, examPractice: ex.name }); };
+      s.append(eb);
+    }
   }
 
   const grid = h('<div class="islands"></div>');
   for (const w of WORLDS) {
-    const badge = perWorld() > 0 ? `<span class="mbadge">${missionLeft(w) === 0 ? '✅' : `${worldDoneToday(w)}/${perWorld()}`}</span>` : '';
+    const badge = perWorld() > 0 ? `<span class="mbadge">${areaStatus(w) === 'retry' ? '🔁' : missionLeft(w) === 0 ? '✅' : `${worldDoneToday(w)}/${perWorld()}`}</span>` : '';
     const b = h(`<button class="island ${w.cls}" style="position:relative">${badge}<div class="emo">${w.emo}</div><div class="name">${w.name}</div><div class="stars">${worldStars(w)}</div></button>`);
-    if (rw && w !== rw) b.style.opacity = '.45';
+    if (locked) b.style.opacity = '.45';
     b.onclick = () => {
       sfx.tap();
-      if (rw && w !== rw) { say(`Let's finish ${rw.name} first. Then you can go to ${w.name}!`); return; }
+      if (locked) { say(`Let's finish today's plan first. Then you can explore ${w.name}! Tap the green button.`); return; }
       island(w);
     };
     grid.append(b);
@@ -355,7 +414,7 @@ function pickTopics(skills, n) {
   return out;
 }
 
-async function play({ title, skills, mixed, length, mission, world }) {
+async function play({ title, skills, mixed, length, mission, world, examPractice }) {
   onMap = false;
   stopSpeaking();
   if (overTime()) return breakTime();
@@ -464,6 +523,11 @@ async function play({ title, skills, mixed, length, mission, world }) {
     const dr = dayRec(); dr.worlds ||= {};
     dr.worlds[WORLD_OF[sk.id]] = (dr.worlds[WORLD_OF[sk.id]] || 0) + 1;
     logAnswer(q, sk, res);
+    if (examPractice) {
+      dr.examDone = (dr.examDone || 0) + 1;
+      const en = typeof examPractice === 'string' ? examPractice : EXAMS.find(e => examSkills(e).includes(sk))?.name;
+      if (en) { dr.examDoneBy ||= {}; dr.examDoneBy[en] = (dr.examDoneBy[en] || 0) + 1; }
+    }
     if (mode !== 'challenge') {
       const tl = (tally[WORLD_OF[sk.id]] ||= { n: 0, right: 0, missed: [] });
       tl.n++;
@@ -520,10 +584,13 @@ async function play({ title, skills, mixed, length, mission, world }) {
     store.coins += 20; earned += 20;
   }
   save();
-  results({ stars, earned, bestCombo, grew: petStage() > beforeStage, title, missionComplete, retryArea });
+  let planComplete = false;
+  if (!dayRec().planDone && planDone()) { dayRec().planDone = true; planComplete = true; store.coins += 10; earned += 10; }
+  save();
+  results({ stars, earned, bestCombo, grew: petStage() > beforeStage, title, missionComplete, retryArea, planComplete });
 }
 
-function results({ stars, earned, bestCombo, grew, missionComplete, retryArea }) {
+function results({ stars, earned, bestCombo, grew, missionComplete, retryArea, planComplete }) {
   app.innerHTML = '';
   const s = h(`<div class="screen center">
     <div class="title">${stars === 3 ? 'SUPERSTAR!' : stars === 2 ? 'Great job!' : 'Well done!'}</div>
@@ -566,11 +633,16 @@ function results({ stars, earned, bestCombo, grew, missionComplete, retryArea })
       after.append(h(`<div class="bubble">🔁 Let's practise ${esc(retryArea.name)} again. I will show you how!</div>`));
       setTimeout(() => say(`That was tricky! Let's practise ${retryArea.name} again before we move on. I will show you how!`), grew ? 5000 : 2400);
     }
-    const nw = !missionDone() && nextMissionWorld();
-    const again = h(`<button class="big-btn green">${nw ? (areaStatus(nw) === 'retry' ? `🔁 Practise ${nw.emo} ${nw.name} again` : `Next mission: ${nw.emo} ${nw.name} ▶`) : 'Play more ▶'}</button>`);
+    if (planComplete) {
+      after.append(h(`<div class="bubble">🎉 Today's plan is complete! +10 🪙 Now you can explore anything!</div>`));
+      setTimeout(() => say(`Well done ${name()}! You finished everything for today. Now you can explore anything you like!`), missionComplete ? 7000 : 2600);
+    }
+    // Lead her straight to the next step of today's plan
+    const step = nextStep();
+    const again = h(`<button class="big-btn green">${step ? `Next: ${step.label}` : 'Play more ▶'}</button>`);
     const home = h('<button class="big-btn">🗺️ Map</button>');
-    if (nw && !retryArea) setTimeout(() => say(`Next, let's do ${nw.name}!`), grew ? 5000 : 2400);
-    again.onclick = () => { sfx.tap(); if (nw) playMission(); else play({ title: "Today's Adventure", skills: ALL_SKILLS, mixed: true }); };
+    if (step && !retryArea && !planComplete) setTimeout(() => say(`Next: ${step.say}`), grew ? 5000 : 2400);
+    again.onclick = () => { sfx.tap(); if (step) playStep(); else play({ title: "Today's Adventure", skills: ALL_SKILLS, mixed: true }); };
     home.onclick = () => { sfx.tap(); map(false); };
     row.append(again, home);
     after.append(row);
@@ -669,12 +741,18 @@ function parentZone() {
       <div class="prow">Day <input type="date" class="rep-date" value="${today()}" max="${today()}"></div>
       <div class="rep-body"></div></div>
     <div class="card"><b>Last 7 days</b> ${perWorld() ? `· mission streak 🔥 ${missionStreak()}` : ''}<br>${days.map(([k, v]) => `${k}: ${v.missionDone ? '✅ mission done' : perWorld() ? '❌ mission not finished' : ''} · ${Math.round(v.secs / 60)} min, ${v.right}/${v.total} right first time<br><small>${WORLDS.map(w => `${w.emo} ${v.worlds?.[w.id] || 0}`).join(' &nbsp; ')}</small>`).join('<br>') || 'No play yet'}</div>
+    <div class="card"><b>📋 Today's plan</b><br>
+      ${perWorld() ? `1. Mission in every area: ${WORLDS.filter(w => missionLeft(w) === 0).length} of ${WORLDS.length} done${retryWorld() ? ` (🔁 must redo ${retryWorld().name})` : ''}<br>` : ''}
+      ${examGoal() ? `2. Exam practice: ${examGoal().items.map(it => `${esc(it.name)} ${Math.min(examDoneFor(it.name), it.n)}/${it.n}`).join(', ')}<br>` : 'No exam practice needed today<br>'}
+      ${planDone() ? '✅ <b>Plan complete</b> — free play is unlocked' : '⏳ <b>Not finished yet</b> — free play stays locked until it is'}<br>
+      <small>Exam practice is worked out each morning from the exam dates and her readiness so she is ready in time (about 8–25 questions a day, shared across the upcoming exams by how much each still needs; exams in the next 3 days get extra). Done in exam-date order.</small></div>
     <div class="card"><b>📝 Exam readiness</b> <small>(Christmas term exams, measured from how she plays)</small>
-      <table class="ptable" style="margin-top:8px"><tr><th>Exam</th><th>Ready?</th><th>Practise next</th></tr>
+      <table class="ptable" style="margin-top:8px"><tr><th>Exam</th><th>Ready?</th><th>Still needed</th><th>Practise next</th></tr>
       ${EXAMS.map(e => { const r = examReadiness(e); const d = daysUntil(e.date);
         const when = !e.date ? 'every day' : `${new Date(e.date + 'T12:00:00').toDateString().slice(0, 10)} · ${d > 1 ? d + ' days' : d === 1 ? 'tomorrow' : d === 0 ? 'today' : 'done'}`;
         return `<tr><td>${e.emoji} <b>${esc(e.name)}</b><br><small>${when}</small></td>
           <td style="min-width:140px"><div class="bar"><i style="width:${r.pct}%;background:${r.colour}"></i></div><b>${r.pct}%</b> ${r.label}<br><small>${r.tried} of ${r.total} topics tried</small></td>
+          <td><small>${(() => { const n = examNeed(e); if (!n) return 'On track ✅'; if (!e.date) return `~${n} questions`; return d > 0 ? `~${n} questions<br>(~${Math.ceil(n / d)} a day)` : d === 0 ? 'Exam today' : '—'; })()}</small></td>
           <td><small>${r.pct >= 75 ? 'Keep it up!' : r.weakest.map(sk => sk.emoji + ' ' + esc(sk.name)).join('<br>')}</small></td></tr>`; }).join('')}
       </table>
       <small>Readiness = recent accuracy × level reached × amount of practice, for every topic in the revision guide. 75%+ means she is answering harder questions correctly and consistently.</small></div>
@@ -706,6 +784,7 @@ function parentZone() {
       <div class="prow">Voice <select data-k="voiceName"><option value="">Automatic</option>${voices.map(v => `<option ${v.name === set.voiceName ? 'selected' : ''}>${esc(v.name)}</option>`).join('')}</select> <button class="pbtn" data-a="test">Test voice</button></div>
       <div class="prow">Talking speed <select data-k="speechRate">${[0.75, 0.85, 1, 1.15].map(r => `<option value="${r}" ${r == set.speechRate ? 'selected' : ''}>${r === 1 ? 'Normal' : r < 1 ? 'Slower' + (r < 0.8 ? ' still' : '') : 'Faster'}</option>`).join('')}</select></div>
       <div class="prow">Daily mission: questions in EVERY area each day <select data-k="dailyPerWorld">${[0, 3, 5, 8, 10].map(n => `<option value="${n}" ${n == set.dailyPerWorld ? 'selected' : ''}>${n ? n + ' per area (' + n * WORLDS.length + ' a day)' : 'Off'}</option>`).join('')}</select></div>
+      <div class="prow">Exam practice each day (after the mission) <select data-k="examPerDay">${['auto', 0, 10, 15, 20, 25].map(n => `<option value="${n}" ${String(n) === String(set.examPerDay ?? 'auto') ? 'selected' : ''}>${n === 'auto' ? 'Automatic (recommended)' : n ? n + ' questions' : 'Off'}</option>`).join('')}</select></div>
       <div class="prow">Questions per game <select data-k="sessionLength">${[5, 8, 10, 12, 15].map(n => `<option ${n == set.sessionLength ? 'selected' : ''}>${n}</option>`).join('')}</select></div>
       <div class="prow"><label><input type="checkbox" data-k="extraNumberLines" ${set.extraNumberLines ? 'checked' : ''}> Extra number line practice in every Today's Adventure</label></div>
       <div class="prow">Daily time limit <select data-k="dailyMinutes">${[0, 15, 20, 30, 45, 60].map(n => `<option value="${n}" ${n == set.dailyMinutes ? 'selected' : ''}>${n ? n + ' minutes' : 'No limit'}</option>`).join('')}</select></div>
@@ -717,6 +796,7 @@ function parentZone() {
     el.onchange = () => {
       const k = el.dataset.k;
       if (k === 'name') store.playerName = el.value.trim() || 'Zinnia';
+      else if (k === 'examPerDay') { set.examPerDay = el.value === 'auto' ? 'auto' : Number(el.value); delete dayRec().examGoal; }
       else if (el.type === 'checkbox') set[k] = el.checked;
       else if (['speechRate', 'sessionLength', 'dailyMinutes', 'dailyPerWorld'].includes(k)) set[k] = Number(el.value);
       else set[k] = el.value;

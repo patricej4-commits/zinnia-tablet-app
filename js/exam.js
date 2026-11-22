@@ -43,6 +43,15 @@ function label(pct) {
   return 'Needs lots of practice';
 }
 
+// Rough number of practice questions still needed to be ready for an exam:
+// every topic practised at least 6 times, plus extra for topics not yet at 75% readiness.
+export function examNeed(exam) {
+  return examSkills(exam).reduce((a, sk) => {
+    const seen = store.skills[sk.id]?.seen || 0;
+    return a + Math.max(0, 6 - seen) + (skillReadiness(sk.id) < 0.75 ? 3 : 0);
+  }, 0);
+}
+
 export function daysUntil(date) {
   if (!date) return null;
   return Math.round((new Date(date + 'T00:00:00') - new Date(today() + 'T00:00:00')) / 864e5);
