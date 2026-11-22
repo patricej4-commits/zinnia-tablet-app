@@ -105,3 +105,6 @@ The day changes at midnight on the tablet's own clock (it used to change at 7 pm
 
 ## 📈 How am I doing? (daily scores)
 On the map (📈 button) and in the Parent Zone: a chart of her score every day (questions right first time) for the last 14 days, and a day-by-day list (last 30 days) with each day compared with the day before (⬆️ better / ⬇️ lower / ➡️ same), stars, questions, topics, minutes, mission done, and a score for each area with its own ⬆️⬇️. Ollie reads out today's score and how it compares with the day before.
+
+## Sittings (time on the tablet)
+Default: **5 sittings of 20 minutes a day, with at least 30 minutes break between them.** A timer shows the minutes left and which sitting it is. When time is up she finishes the question she is on, sees her results, and goes to the break screen (work saved). During a break the game is locked; when the break is over a "Start sitting" button appears. After the last sitting the game is done for the day. Parent Zone: change sitting length, number of sittings and break length, or give one extra sitting now.

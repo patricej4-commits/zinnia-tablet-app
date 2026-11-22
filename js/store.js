@@ -19,7 +19,10 @@ const defaults = () => ({
     sessionLength: 8,
     dailyPerWorld: 'all',  // daily mission: 'all' = every topic in every area; a number = questions per area; 0 = off
     examPerDay: 'auto',   // exam practice questions per day after the mission ('auto' = based on exam dates and readiness)     // daily mission: questions in EVERY area each day (0 = off)
-    dailyMinutes: 0,      // 0 = no limit
+    dailyMinutes: 0,      // (old setting, replaced by sittings)
+    sittingMinutes: 20,   // one sitting = 20 minutes of play (0 = no limit)
+    sittingsPerDay: 5,    // up to 5 sittings a day
+    breakMinutes: 30,     // a break of at least 30 minutes between sittings
     extraNumberLines: true, // she finds number lines hard: practise them in every adventure
   },
 });

@@ -55,18 +55,58 @@ function toast(text) {
   setTimeout(() => t.remove(), 2200);
 }
 
-// ---------- timing ----------
-let tick = null;
-function startClock() {
-  stopClock();
-  tick = setInterval(() => { if (!document.hidden) addTime(10); }, 10000);
+// ---------- Sittings: 20-minute sessions, a break between, up to 5 a day ----------
+let timing = false;   // true while she is in the game (not on the start, break or grown-up screens)
+let breakShown = false;
+function startClock() {}   // time is counted by the sitting ticker below
+function stopClock() {}
+const sitLimit = () => (store.settings.sittingMinutes || 0) * 60;
+const sittings = () => (dayRec().sittings ||= []);
+function curSitting() {
+  const a = sittings(), s = a[a.length - 1];
+  return s && s.secs < sitLimit() ? s : null;
 }
-function stopClock() { clearInterval(tick); }
-function overTime() {
-  const lim = store.settings.dailyMinutes;
-  // The time limit only applies once today's mission is finished
-  return lim > 0 && (store.daily[today()]?.secs || 0) >= lim * 60 && planDone();
+function sittingState() {
+  if (!sitLimit()) return { ok: true };
+  const a = sittings(), per = (store.settings.sittingsPerDay || 5) + (dayRec().extraSittings || 0);
+  const cur = curSitting();
+  if (cur) return { ok: true, cur, left: sitLimit() - cur.secs, n: a.length, per };
+  if (a.length >= per) return { ok: false, why: 'done', n: a.length, per };
+  const last = a[a.length - 1];
+  const until = last ? last.end + (store.settings.breakMinutes || 0) * 60000 : 0;
+  if (last && Date.now() < until && !dayRec().skipBreak) return { ok: false, why: 'break', until, n: a.length, per };
+  return { ok: true, needNew: true, n: a.length, per };
 }
+const sittingUp = () => sitLimit() > 0 && !curSitting();
+// Called before any game screen: starts a new sitting if allowed, otherwise shows the break screen
+function gate() {
+  let st = sittingState();
+  if (st.ok && st.needNew) {
+    sittings().push({ start: Date.now(), secs: 0, end: Date.now() });
+    dayRec().skipBreak = false;
+    save();
+    st = sittingState();
+  }
+  if (!st.ok) { breakScreen(st); return false; }
+  timing = true; breakShown = false;
+  return true;
+}
+function sitPillText() {
+  if (!sitLimit()) return '';
+  const st = sittingState();
+  if (!st.ok || !st.cur) return '';
+  return `⏱️ ${Math.max(1, Math.ceil(st.left / 60))} min · ${st.n} of ${st.per}`;
+}
+setInterval(() => {
+  if (document.hidden || !timing) return;
+  addTime(10);
+  const c = curSitting();
+  if (c) { c.secs += 10; c.end = Date.now(); save(); }
+  document.querySelectorAll('.sitpill').forEach(el => (el.textContent = sitPillText()));
+  // Time is up while she is on the map or a menu: straight to the break screen
+  if (sitLimit() && !curSitting() && onMap && !breakShown) breakScreen(sittingState());
+}, 10000);
+const hhmm = t => new Date(t).toLocaleTimeString([], { hour: 'numeric', minute: '2-digit' });
 
 // ---------- Daily mission: a set number of questions in EVERY area, every day ----------
 const WORLD_OF = {};
@@ -221,6 +261,7 @@ function greeting() {
 
 // ========== SCREENS ==========
 function splash() {
+  timing = false;
   stopSpeaking();
   app.innerHTML = '';
   const s = h(`<div class="screen center splash">
@@ -265,6 +306,7 @@ function topbar(back) {
     ${back ? '<button class="icon-btn" data-a="back" aria-label="Back">⬅️</button>' : ''}
     <div class="pill">🪙 ${store.coins}</div>
     <div class="pill">⭐ ${store.stars}</div>
+    <div class="pill sitpill" style="font-size:18px">${sitPillText()}</div>
     <div class="spacer"></div>
     <button class="icon-btn" data-a="progress" aria-label="How am I doing?">📈</button>
     <button class="icon-btn" data-a="stickers" aria-label="Sticker book">📒</button>
@@ -295,7 +337,7 @@ function map(greet) {
   onMap = true;
   stopSpeaking();
   document.getElementById('confetti').innerHTML = '';
-  if (overTime()) return breakTime();
+  if (!gate()) return;
   app.innerHTML = '';
   const s = h('<div class="screen"></div>');
   s.append(topbar(null));
@@ -470,7 +512,7 @@ function pickTopics(skills, n) {
 async function play({ title, skills, mixed, length, mission, world, examPractice, coverAll, mock }) {
   onMap = false;
   stopSpeaking();
-  if (overTime()) return breakTime();
+  if (!gate()) return;
   const total = length || store.settings.sessionLength;
   let pool = skills;
   if (mixed) {
@@ -495,6 +537,7 @@ async function play({ title, skills, mixed, length, mission, world, examPractice
       <button class="icon-btn" aria-label="Stop">🏠</button>
       <div class="progress"><i style="width:0%"></i></div>
       <div class="combo"></div>
+      <div class="pill sitpill" style="font-size:16px">${sitPillText()}</div>
       <div class="pill">🪙 <span class="c">${store.coins}</span></div>
     </div>
     <div class="stage"></div>
@@ -534,7 +577,7 @@ async function play({ title, skills, mixed, length, mission, world, examPractice
   let missRun = 0;          // wrong answers in a row this game
   let challengeNext = false; // she is on a streak: offer a harder bonus question
 
-  while (done < total && count < maxQ && !quit) {
+  while (done < total && count < maxQ && !quit && !sittingUp()) {
     let sk, mode = 'normal';
     if (missRun >= 2 && !mock) {
       // Two misses in a row: give her an easy win from something she knows well
@@ -628,6 +671,8 @@ async function play({ title, skills, mixed, length, mission, world, examPractice
   }
   stopClock();
   if (quit) return;
+  const timeUp = sittingUp();
+  if (timeUp && count === 0) return breakScreen(sittingState());
   const secs = Math.round((Date.now() - started) / 1000);
   store.sessions.push({ date: new Date().toISOString(), title, right: firstRight, total: count, secs });
   if (store.sessions.length > 300) store.sessions.shift();
@@ -664,10 +709,10 @@ async function play({ title, skills, mixed, length, mission, world, examPractice
   let planComplete = false;
   if (!dayRec().planDone && planDone()) { dayRec().planDone = true; planComplete = true; store.coins += 10; earned += 10; }
   save();
-  results({ stars, earned, bestCombo, grew: petStage() > beforeStage, title, missionComplete, retryArea, planComplete, mockScore, mock, mockRight: firstRight, mockTotal: count });
+  results({ stars, earned, bestCombo, grew: petStage() > beforeStage, title, missionComplete, retryArea, planComplete, mockScore, mock, mockRight: firstRight, mockTotal: count, timeUp });
 }
 
-function results({ stars, earned, bestCombo, grew, missionComplete, retryArea, planComplete, mockScore, mock, mockRight, mockTotal }) {
+function results({ stars, earned, bestCombo, grew, missionComplete, retryArea, planComplete, mockScore, mock, mockRight, mockTotal, timeUp }) {
   app.innerHTML = '';
   const r = mock ? examReadiness(mock) : null;
   const s = h(`<div class="screen center">
@@ -717,6 +762,16 @@ function results({ stars, earned, bestCombo, grew, missionComplete, retryArea, p
       after.append(h(`<div class="bubble">🎉 Today's plan is complete! +10 🪙 Now you can explore anything!</div>`));
       setTimeout(() => say(`Well done ${name()}! You finished everything for today. Now you can explore anything you like!`), missionComplete ? 7000 : 2600);
     }
+    if (timeUp) {
+      // 20 minutes are up: everything is saved, time for a break
+      const st = sittingState();
+      after.append(h(`<div class="bubble">⏰ ${store.settings.sittingMinutes} minutes done! Time for a brain break. Your work is saved.</div>`));
+      const ok = h('<button class="big-btn green">😴 OK, break time</button>');
+      ok.onclick = () => { sfx.tap(); breakScreen(st); };
+      after.append(ok);
+      setTimeout(() => say(`Great work! ${store.settings.sittingMinutes} minutes are done. Time for a brain break. Your work is saved!`), grew ? 5000 : 2400);
+      return;
+    }
     // Lead her straight to the next step of today's plan
     const step = nextStep();
     const again = h(`<button class="big-btn green">${step ? `Next: ${step.label}` : 'Play more ▶'}</button>`);
@@ -729,8 +784,51 @@ function results({ stars, earned, bestCombo, grew, missionComplete, retryArea, p
   };
 }
 
+function breakScreen(st) {
+  timing = false; breakShown = true; onMap = false;
+  stopSpeaking();
+  document.getElementById('confetti').innerHTML = '';
+  app.innerHTML = '';
+  const done = Object.keys(dayRec().skills || {}).length;
+  const allDone = st.why === 'done';
+  const msg = allDone
+    ? `You did all ${st.n} sittings today, ${name()}! Well done. See you tomorrow!`
+    : `Brain break time! Sitting ${st.n} of ${st.per} is done. Go play, drink some water, and come back at ${hhmm(st.until)}.`;
+  const s = h(`<div class="screen center">
+    <div class="mascot">${allDone ? '🎉🦉' : '😴🦉'}</div>
+    <div class="title">${allDone ? 'All done for today!' : 'Brain break time!'}</div>
+    <div class="bubble">${esc(msg)}</div>
+    <div class="mission" style="margin-top:16px;min-width:300px">
+      <div style="font-size:20px">Sittings today: ${'✅'.repeat(Math.min(st.n, st.per))}${'⬜'.repeat(Math.max(0, st.per - st.n))}</div>
+      <div style="font-size:18px;margin-top:6px">✅ ${done} topics done today ${planDone() ? '· 🏆 plan complete' : ''}</div>
+      <div class="cd" style="font-size:22px;font-weight:700;margin-top:8px"></div>
+    </div>
+    <div class="go" style="margin-top:14px"></div>
+    <div style="margin-top:20px;display:flex;gap:10px"><button class="icon-btn" data-a="prog" style="font-size:18px">📈 How am I doing?</button><button class="icon-btn" data-a="parent" style="font-size:18px">👪 Grown-ups</button></div>
+  </div>`);
+  app.append(s);
+  s.querySelector('[data-a=parent]').onclick = parentGate;
+  s.querySelector('[data-a=prog]').onclick = () => { breakShown = false; progressScreen(); };
+  say(msg);
+  if (allDone) return;
+  const cd = s.querySelector('.cd'), go = s.querySelector('.go');
+  const refresh = () => {
+    if (!document.body.contains(cd)) { clearInterval(iv); return; }
+    const left = st.until - Date.now();
+    if (left > 0) { cd.textContent = `⏳ Next sitting in ${Math.ceil(left / 60000)} min`; return; }
+    clearInterval(iv);
+    cd.textContent = '✅ Break is over!';
+    const b = h(`<button class="big-btn green">▶ Start sitting ${st.n + 1}</button>`);
+    b.onclick = () => { sfx.unlock(); sfx.tap(); map(true); };
+    go.append(b);
+    say(`Break is over! Tap the green button to start sitting ${st.n + 1}.`);
+  };
+  const iv = setInterval(refresh, 15000);
+  refresh();
+}
+
 function breakTime() {
-  stopClock();
+  return breakScreen(sittingState());
   app.innerHTML = '';
   app.append(h(`<div class="screen center">
     <div class="mascot">😴🦉</div>
@@ -873,6 +971,7 @@ function dayReport(d) {
 }
 
 function parentGate() {
+  timing = false; onMap = false;
   onMap = false;
   stopSpeaking();
   const a = rnd(6, 9), b = rnd(6, 9);
@@ -953,7 +1052,11 @@ function parentZone() {
       <div class="prow">Exam practice each day (after the mission) <select data-k="examPerDay">${['auto', 0, 10, 15, 20, 25].map(n => `<option value="${n}" ${String(n) === String(set.examPerDay ?? 'auto') ? 'selected' : ''}>${n === 'auto' ? 'Automatic (recommended)' : n ? n + ' questions' : 'Off'}</option>`).join('')}</select></div>
       <div class="prow">Questions per game <select data-k="sessionLength">${[5, 8, 10, 12, 15].map(n => `<option ${n == set.sessionLength ? 'selected' : ''}>${n}</option>`).join('')}</select></div>
       <div class="prow"><label><input type="checkbox" data-k="extraNumberLines" ${set.extraNumberLines ? 'checked' : ''}> Extra number line practice in every Today's Adventure</label></div>
-      <div class="prow">Daily time limit <select data-k="dailyMinutes">${[0, 15, 20, 30, 45, 60].map(n => `<option value="${n}" ${n == set.dailyMinutes ? 'selected' : ''}>${n ? n + ' minutes' : 'No limit'}</option>`).join('')}</select></div>
+      <div class="prow">Each sitting <select data-k="sittingMinutes">${[0, 15, 20, 25, 30].map(n => `<option value="${n}" ${n == set.sittingMinutes ? 'selected' : ''}>${n ? n + ' minutes' : 'No limit'}</option>`).join('')}</select>
+        Sittings a day <select data-k="sittingsPerDay">${[2, 3, 4, 5, 6, 8].map(n => `<option ${n == set.sittingsPerDay ? 'selected' : ''}>${n}</option>`).join('')}</select>
+        Break between <select data-k="breakMinutes">${[0, 15, 30, 45, 60, 90].map(n => `<option value="${n}" ${n == set.breakMinutes ? 'selected' : ''}>${n ? n + ' min' : 'No break'}</option>`).join('')}</select></div>
+      <div class="prow"><button class="pbtn" data-a="extra">Give one extra sitting now</button> <small>Today: ${sittings().length} sitting${sittings().length === 1 ? '' : 's'} (${sittings().map(x => Math.round(x.secs / 60) + ' min').join(' + ') || 'none yet'})</small></div>
+      <div class="prow" style="display:none">Daily time limit <select data-k="dailyMinutes">${[0, 15, 20, 30, 45, 60].map(n => `<option value="${n}" ${n == set.dailyMinutes ? 'selected' : ''}>${n ? n + ' minutes' : 'No limit'}</option>`).join('')}</select></div>
       <div class="prow"><button class="pbtn" data-a="pet">Choose a new pet</button><button class="pbtn danger" data-a="reset">Reset all progress</button></div>
     </div>
     <p style="color:#666;font-size:14px">All progress is saved only on this tablet.</p>
@@ -965,7 +1068,7 @@ function parentZone() {
       else if (k === 'examPerDay') { set.examPerDay = el.value === 'auto' ? 'auto' : Number(el.value); delete dayRec().examGoal; }
       else if (el.type === 'checkbox') set[k] = el.checked;
       else if (k === 'dailyPerWorld') set[k] = el.value === 'all' ? 'all' : Number(el.value);
-      else if (['speechRate', 'sessionLength', 'dailyMinutes'].includes(k)) set[k] = Number(el.value);
+      else if (['speechRate', 'sessionLength', 'dailyMinutes', 'sittingMinutes', 'sittingsPerDay', 'breakMinutes'].includes(k)) set[k] = Number(el.value);
       else set[k] = el.value;
       if (k === 'voiceName') refreshVoice();
       save();
@@ -983,6 +1086,7 @@ function parentZone() {
     b.onclick = () => {
       const a = b.dataset.a;
       if (a === 'exit') map(false);
+      if (a === 'extra') { dayRec().extraSittings = (dayRec().extraSittings || 0) + 1; dayRec().skipBreak = true; save(); map(true); }
       if (a === 'progress') progressScreen();
       if (a === 'test') say(`Hello ${name()}! I am Ollie. Let's learn and play!`);
       if (a === 'pet') { store.pet = null; save(); petPicker(); }
