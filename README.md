@@ -3,18 +3,19 @@
 A learning game for Zinnia's tablet, built from her Grade 1 class work (Google Classroom, Term 1 2026–27).
 Ollie the owl talks to her, shows pictures, makes her read, and rewards her with coins, stars, stickers and a pet that grows. No fantasy or magic content (no monsters, witches, wizards, unicorns, fairies or dragons).
 
-## The seven worlds
+## The eight areas
 
 | World | What she practises (from her class materials) |
 |---|---|
 | 🦁 **Sound Safari** | Vowels & consonants, Special Sounds Charts 6, 7 & 8, chart key words, one- and two-vowel rules, **marking vowels** (smile ˘ / dash ¯ / slash, never mark the u after q), C/K rule, ck/k/ke endings, double endings (ff, ll, ss, zz). **Spelling:** spell what she hears (sound-chunk tiles like sh, igh, ck at higher levels, spelling-test mode), missing letters, Abeka vowel blends (ba, be, bi…), spot the right spelling |
+| 🐝 **Spelling Bee** | Her Abeka **Spelling Lists 1–12** (exam: lists 1–11) with the book's rules: spell the word she hears (sound-chunk tiles; spelling-test mode at level 3), fill in the missing special sound, unscramble, finish the sentence (workbook sentences), clue words, rhyming words, sight words |
 | 🏰 **Word Castle** | Nouns (person/place/animal/thing), common & proper nouns, singular & plural (s / es), a/an/the, pronouns (I, me, my, mine, you, your, yours, he, she, they…), am/is/are, was/were, verbs, adjectives, compound words, writing a correct sentence. **Parts of speech:** say what kind of word it is (noun, verb, adjective, pronoun), find it in a sentence, use the right kind of word to finish a sentence, **build sentences** from word tiles |
 | 🐒 **Number Jungle** | Counting, number names 0–19, counting on & back, more/fewer, one-to-one, ordering, tens & ones, number bonds (part-part-whole), adding, **take away with ten frames, number sentences and column layout** (big number on top, minus and number below, line, answer; within 10 like class, teen numbers in tens & ones at level 3), column adding, patterns (incl. finding the core), regrouping sets, before/after/between, maths story problems, spelling number words, partitioning, shapes (natural/man-made), straight & curved lines |
 | 🐸 **Number lines** (in Number Jungle) | Watch-and-learn lessons (Froggy hops while Ollie counts), building the line (missing numbers), reading where the arrow points, tapping a number, **hopping to add (right) and take away (left)** one tap per hop, bigger/smaller. First visit starts with the lesson; Today's Adventure always includes number lines (switch in Parent Zone) |
 | 🐬 **Listening Lagoon** | Following spoken instructions, listening to short stories, hearing words, first sounds, rhymes, counting words she hears (limited replays to build focus) |
 | 🌳 **Story Tree** | Reading sentences **out loud** (the microphone checks her reading), reading and matching pictures, sight words, 12 short stories with who/what/where/why/what-happened-first questions |
 | 📖 **Bible Time** | The class **A–Z Bible memory verses** (KJV, from her teacher's Bible Cards): finish the verse, which letter, what it means, where it is found; Bible stories (Creation, Noah, David & Goliath, Jonah, Daniel, Baby Jesus, feeding the 5000, the lost sheep) |
-| 🌎 **My World** | My body, healthy food, groups & rules, religious & ethnic groups, good & bad habits, computers (IT study guide), music symbols, Spanish greetings |
+| 🌎 **My World** | My body, healthy food, groups & rules, religious & ethnic groups, good & bad habits, computers (IT study guide), music notes & symbols |
 
 ## How it teaches
 - **Adaptive:** every skill has 3 levels. Three right in a row → harder. Mistakes → easier, and the skill comes back more often. "Today's Adventure" always picks the skills she needs most.
@@ -88,3 +89,8 @@ Ollie tells her each step, and after every game the big green button takes her s
 
 ## From the Google Classroom log (Sept–Nov 2026)
 Added from Ms Bennett's posts and slides: Opposites (her full list), one more / one less, measuring with body parts (hand span, cubit, foot pace, foot span, arm span), centimetres vs metres, tall/short and wide/narrow, analogue vs digital clocks, Go/Glow/Grow foods and traffic light foods in her words, all six food providers, needs vs wants, iris and hair follicles, exercise, the 16 Bible doctrinal drills, IT step-by-step instructions (ordering steps) and her hardware/software definitions.
+
+## Every topic, every day, with exam practice woven in
+- **Daily mission = every topic in every area** (about 100 questions; each topic at least once a day). Areas run in rounds of up to 8 new topics. Each topic shows its level (1–3) and a ✅ once done today. Parents can switch to a lighter mission (3–10 per area) in the Parent Zone.
+- **Exam practice everywhere:** in every game, every third question is an extra 📝 exam question from the weakest topic of an upcoming exam (more urgent exams more often). These count toward the day's exam practice.
+- Spanish has been removed.

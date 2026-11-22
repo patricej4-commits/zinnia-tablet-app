@@ -3,7 +3,7 @@ import { say, sfx, stopSpeaking, listVoices, refreshVoice, micSupported } from '
 import { runQuestion, runDemo, canDemo } from './games.js';
 import { pick, shuffle, esc, rnd } from './util.js';
 import { WORLDS, ALL_SKILLS } from './worlds.js';
-import { EXAMS, examReadiness, examSkills, daysUntil, nextExam, examNeed } from './exam.js';
+import { EXAMS, examReadiness, examSkills, daysUntil, nextExam, examNeed, skillReadiness } from './exam.js';
 
 const app = document.getElementById('app');
 const h = html => { const t = document.createElement('template'); t.innerHTML = html.trim(); return t.content.firstElementChild; };
@@ -72,13 +72,19 @@ function overTime() {
 const WORLD_OF = {};
 WORLDS.forEach(w => w.skills.forEach(sk => (WORLD_OF[sk.id] = w.id)));
 const dayRec = (d = today()) => (store.daily[d] ||= { secs: 0, right: 0, total: 0 });
-const perWorld = () => store.settings.dailyPerWorld || 0;
-const worldDoneToday = (w, d = today()) => store.daily[d]?.worlds?.[w.id] || 0;
+// Mission mode: 'all' = at least one question on EVERY topic in every area each day (default),
+// a number = that many questions per area, 0 = off.
+const missionMode = () => store.settings.dailyPerWorld ?? 'all';
+const coversAll = () => missionMode() === 'all';
+const perWorld = () => (Number(missionMode()) === 0 && !coversAll() ? 0 : 1); // mission on?
+const topicDoneToday = (sk, d = today()) => (store.daily[d]?.skills?.[sk.id] || 0) > 0;
+const worldDoneToday = (w, d = today()) => (coversAll() ? w.skills.filter(sk => topicDoneToday(sk, d)).length : store.daily[d]?.worlds?.[w.id] || 0);
+const areaTarget = w => (coversAll() ? w.skills.length : Number(missionMode()));
 // An area is 'retry' when she got most of a round wrong: she must redo it before moving on.
 const areaStatus = (w, d = today()) => store.daily[d]?.areas?.[w.id];
 const missionLeft = w => {
-  const left = Math.max(0, perWorld() - worldDoneToday(w));
-  return left === 0 && areaStatus(w) === 'retry' ? perWorld() : left;
+  const left = Math.max(0, areaTarget(w) - worldDoneToday(w));
+  return left === 0 && areaStatus(w) === 'retry' ? 1 : left;
 };
 function missionDone() { return perWorld() === 0 || WORLDS.every(w => missionLeft(w) === 0); }
 const retryWorld = () => WORLDS.find(w => areaStatus(w) === 'retry');
@@ -133,7 +139,13 @@ function playMission() {
   const w = nextMissionWorld();
   if (!w) return map(false);
   const redo = areaStatus(w) === 'retry';
-  play({ title: (redo ? 'Practise again: ' : 'Daily Mission: ') + w.name, skills: w.skills, mixed: true, length: Math.max(3, redo ? perWorld() : missionLeft(w)), mission: true, world: w });
+  if (coversAll() && !redo) {
+    // Every topic in the area: rounds of up to 8 topics she has not done yet today, one question each
+    const todo = w.skills.filter(sk => !topicDoneToday(sk));
+    return play({ title: 'Daily Mission: ' + w.name, skills: todo, coverAll: true, length: Math.min(8, todo.length), mission: true, world: w });
+  }
+  const missed = dayRec().missed?.[w.id] || [];
+  play({ title: (redo ? 'Practise again: ' : 'Daily Mission: ') + w.name, skills: w.skills, mixed: true, length: Math.max(3, redo ? Math.min(8, missed.length + 3) : missionLeft(w)), mission: true, world: w });
 }
 
 // ---------- Today's Plan: 1) mission in every area, 2) exam practice, 3) then free play ----------
@@ -150,7 +162,7 @@ function examGoal() {
     .filter(x => x.perDay > 0 || x.d <= 3);
   if (!upcoming.length || setting === 0) { dr.examGoal = null; save(); return null; }
   const sum = upcoming.reduce((a, x) => a + x.perDay, 0);
-  const total = setting === 'auto' ? Math.max(8, Math.min(25, Math.ceil(sum))) : Number(setting);
+  const total = setting === 'auto' ? Math.max(8, Math.min(coversAll() ? 16 : 25, Math.ceil(sum))) : Number(setting);
   let items = upcoming.map(x => ({ name: x.e.name, date: x.e.date, n: Math.round((total * x.perDay) / Math.max(sum, 0.001)) + (x.d <= 3 ? 3 : 0) }))
     .sort((a, b) => a.date.localeCompare(b.date)); // every upcoming exam gets some practice
   // keep within the day's total, at least 2 questions per exam that made the list
@@ -177,6 +189,19 @@ function nextStep() {
   }
   return null;
 }
+// Exam practice woven into every game: pick an upcoming exam (more urgent = more likely)
+// and one of its weakest topics.
+function weaveExamSkill(excludeId) {
+  const ups = EXAMS.filter(e => e.date && daysUntil(e.date) >= 0)
+    .map(e => ({ e, u: examNeed(e) / Math.max(1, daysUntil(e.date)) + (daysUntil(e.date) <= 3 ? 2 : 0) }))
+    .filter(x => x.u > 0);
+  if (!ups.length) return null;
+  let r = Math.random() * ups.reduce((a, x) => a + x.u, 0), exam = ups[ups.length - 1].e;
+  for (const x of ups) { r -= x.u; if (r <= 0) { exam = x.e; break; } }
+  const weakest = examSkills(exam).filter(sk => sk.id !== excludeId).sort((a, b) => skillReadiness(a.id) - skillReadiness(b.id)).slice(0, 4);
+  return weakest.length ? { sk: pick(weakest), exam } : null;
+}
+
 function playStep() {
   const st = nextStep();
   if (!st) return map(false);
@@ -296,7 +321,7 @@ function map(greet) {
   const card = h(`<div class="mission">
     <h3>📋 Today's Plan ${planDone() ? '🏆' : ''}</h3>
     ${perWorld() > 0 ? `<div style="font-size:18px;margin-bottom:4px"><b>1.</b> Mission in every area: ${doneN} of ${WORLDS.length} ${missionDone() ? '✅' : ''}</div>
-    <div class="mchips">${WORLDS.map(w => `<span class="mchip ${missionLeft(w) === 0 ? 'ok' : ''}">${w.emo} ${areaStatus(w) === 'retry' ? '🔁 again' : missionLeft(w) === 0 ? '✅' : `${worldDoneToday(w)}/${perWorld()}`}</span>`).join('')}</div>` : ''}
+    <div class="mchips">${WORLDS.map(w => `<span class="mchip ${missionLeft(w) === 0 ? 'ok' : ''}">${w.emo} ${areaStatus(w) === 'retry' ? '🔁 again' : missionLeft(w) === 0 ? '✅' : `${worldDoneToday(w)}/${areaTarget(w)}`}</span>`).join('')}</div>` : ''}
     ${g ? `<div style="font-size:18px;margin-bottom:4px"><b>${perWorld() > 0 ? '2.' : '1.'}</b> 📝 Exam practice ${examLeft() === 0 ? '✅' : ''}</div>
     <div class="mchips">${g.items.map(it => { const e = EXAMS.find(x => x.name === it.name); return `<span class="mchip ${examLeftFor(it) === 0 ? 'ok' : ''}">${e.emoji} ${esc(it.name)} ${examLeftFor(it) === 0 ? '✅' : `${Math.min(examDoneFor(it.name), it.n)}/${it.n}`}</span>`; }).join('')}</div>` : ''}
     <div style="font-size:18px;margin-bottom:10px"><b>${(perWorld() > 0 ? 1 : 0) + (g ? 1 : 0) + 1}.</b> 🗺️ Explore anything ${locked ? '🔒' : '🔓'}</div>
@@ -327,7 +352,7 @@ function map(greet) {
 
   const grid = h('<div class="islands"></div>');
   for (const w of WORLDS) {
-    const badge = perWorld() > 0 ? `<span class="mbadge">${areaStatus(w) === 'retry' ? '🔁' : missionLeft(w) === 0 ? '✅' : `${worldDoneToday(w)}/${perWorld()}`}</span>` : '';
+    const badge = perWorld() > 0 ? `<span class="mbadge">${areaStatus(w) === 'retry' ? '🔁' : missionLeft(w) === 0 ? '✅' : `${worldDoneToday(w)}/${areaTarget(w)}`}</span>` : '';
     const b = h(`<button class="island ${w.cls}" style="position:relative">${badge}<div class="emo">${w.emo}</div><div class="name">${w.name}</div><div class="stars">${worldStars(w)}</div></button>`);
     if (locked) b.style.opacity = '.45';
     b.onclick = () => {
@@ -357,7 +382,8 @@ function island(w) {
     const m = mastery(sk.id);
     const seen = !!store.skills[sk.id];
     const n = !seen ? 0 : m > 0.85 ? 3 : m > 0.6 ? 2 : 1;
-    const b = h(`<button class="skill-btn"><span class="e">${sk.emoji}</span><span>${esc(sk.name)}<small>${'★'.repeat(n)}${'☆'.repeat(3 - n)}</small></span></button>`);
+    const lv = store.skills[sk.id]?.level || 1;
+    const b = h(`<button class="skill-btn"><span class="e">${sk.emoji}</span><span>${esc(sk.name)}<small>${'★'.repeat(n)}${'☆'.repeat(3 - n)} · Level ${lv} of 3${topicDoneToday(sk) ? ' · ✅ today' : ''}</small></span></button>`);
     b.onclick = () => { sfx.tap(); play({ title: sk.name, skills: [sk], world: w }); };
     list.append(b);
   }
@@ -414,7 +440,7 @@ function pickTopics(skills, n) {
   return out;
 }
 
-async function play({ title, skills, mixed, length, mission, world, examPractice }) {
+async function play({ title, skills, mixed, length, mission, world, examPractice, coverAll }) {
   onMap = false;
   stopSpeaking();
   if (overTime()) return breakTime();
@@ -460,7 +486,8 @@ async function play({ title, skills, mixed, length, mission, world, examPractice
   const retry = [];
   let last = null;
   let count = 0;
-  const maxQ = total + 3;
+  const maxQ = total * 2 + 3; // room for the woven-in exam questions
+  let sinceExam = 0, weaveExam = null;
 
   const timesAsked = {};    // topic -> questions asked this game (max 2 each, so it does not repeat)
   const gameMisses = {};    // topic -> misses this game
@@ -472,6 +499,7 @@ async function play({ title, skills, mixed, length, mission, world, examPractice
   const easyMode = !!(world && areaStatus(world) === 'retry' && (dayRec().fails?.[world.id] || 0) >= 2);
   if (easyMode) for (const sk of skills) gameMisses[sk.id] = 2;
   const firstUp = skills.filter(sk => reteach.includes(sk.id)).slice(0, 3); // asked first, with a worked example
+  const coverQueue = coverAll ? shuffle(skills) : null; // every-topic mission: each topic once, none skipped
   for (const sk of firstUp) if (!pool.includes(sk)) pool.push(sk);
   const strongest = [...pool].filter(sk => store.skills[sk.id]?.seen >= 3).sort((a, b) => mastery(b.id) - mastery(a.id))[0];
   let missRun = 0;          // wrong answers in a row this game
@@ -485,9 +513,14 @@ async function play({ title, skills, mixed, length, mission, world, examPractice
       mode = 'boost';
       missRun = 0;
     } else if (firstUp.length) { sk = firstUp.shift(); }
+    else if (!examPractice && !easyMode && sinceExam >= 2 && (weaveExam = weaveExamSkill(last))) {
+      // Every third question: a woven-in exam practice question (extra, does not replace a mission topic)
+      sk = weaveExam.sk; mode = 'exam'; sinceExam = 0;
+    }
+    else if (coverQueue && coverQueue.length) { sk = coverQueue.shift(); }
     else if (firstLesson) { sk = firstLesson; firstLesson = null; }
     else if (retry.length && (done >= total - retry.length || Math.random() < 0.35)) sk = retry.shift();
-    else if (count === 0 && strongest && mastery(strongest.id) >= 0.6) { sk = strongest; mode = 'warm'; }
+    else if (count === 0 && !coverAll && strongest && mastery(strongest.id) >= 0.6) { sk = strongest; mode = 'warm'; }
     else {
       const open = pool.filter(p => (timesAsked[p.id] || 0) < 2);
       sk = chooseSkill(open.length ? open : pool, last);
@@ -504,6 +537,11 @@ async function play({ title, skills, mixed, length, mission, world, examPractice
     }
     if (mode === 'boost') q.say = pick(['Here is one you know!', 'You can do this one!', 'Let\'s warm up!']) + ' ' + q.say;
     if (mode === 'warm') q.say = 'Let\'s warm up! ' + q.say;
+    if (mode === 'exam') {
+      const d = daysUntil(weaveExam.exam.date);
+      toast(`📝 Exam practice: ${weaveExam.exam.emoji} ${weaveExam.exam.name}`);
+      q.preSay = `Exam practice! Your ${weaveExam.exam.name} test is ${d === 0 ? 'today' : d === 1 ? 'tomorrow' : 'in ' + d + ' days'}.`;
+    } else sinceExam++;
     // First time on a topic, or she is finding it hard: Ollie shows a worked example first
     const st = store.skills[sk.id];
     if (mode !== 'challenge' && (!st || !st.seen || (gameMisses[sk.id] || 0) >= 2)) {
@@ -514,36 +552,39 @@ async function play({ title, skills, mixed, length, mission, world, examPractice
     // Listening reminders: start of the game, every third question, and before listening questions
     if (count === 1) q.preSay = `${pick(['Let\'s go', 'Here we go', 'Ready'])}, ${name()}! Remember to listen carefully to every question.`;
     else if (q.listenOnly) q.preSay = pick(['Listening question! Ears ready?', 'Super listening ears on!', 'Listen very carefully to this one.']);
-    else if (count % 3 === 0) q.preSay = pick(LISTEN_TIPS);
+    else if (count % 3 === 0 && !q.preSay) q.preSay = pick(LISTEN_TIPS);
     const res = await runQuestion(q, stage);
     if (quit) break;
     // A missed challenge question is never counted against her
     if (!(mode === 'challenge' && !res.correct)) record(sk.id, res.correct && res.firstTry);
     // Count towards today's mission (every answered question counts in its area)
-    const dr = dayRec(); dr.worlds ||= {};
+    const dr = dayRec(); dr.worlds ||= {}; dr.skills ||= {};
+    dr.skills[sk.id] = (dr.skills[sk.id] || 0) + 1; // topics covered today
     dr.worlds[WORLD_OF[sk.id]] = (dr.worlds[WORLD_OF[sk.id]] || 0) + 1;
     logAnswer(q, sk, res);
-    if (examPractice) {
+    if (examPractice || mode === 'exam') {
       dr.examDone = (dr.examDone || 0) + 1;
-      const en = typeof examPractice === 'string' ? examPractice : EXAMS.find(e => examSkills(e).includes(sk))?.name;
+      const en = mode === 'exam' ? weaveExam.exam.name : typeof examPractice === 'string' ? examPractice : EXAMS.find(e => examSkills(e).includes(sk))?.name;
       if (en) { dr.examDoneBy ||= {}; dr.examDoneBy[en] = (dr.examDoneBy[en] || 0) + 1; }
     }
-    if (mode !== 'challenge') {
+    if (mode !== 'challenge' && mode !== 'exam') {
       const tl = (tally[WORLD_OF[sk.id]] ||= { n: 0, right: 0, missed: [] });
       tl.n++;
       if (res.correct && res.firstTry) tl.right++;
       else if (!tl.missed.includes(sk.id)) tl.missed.push(sk.id);
     }
+    const extra = mode === 'exam'; // woven exam questions don't use up the game's questions
     if (res.correct) {
-      done++; missRun = 0;
+      if (!extra) done++;
+      missRun = 0;
       const c = (res.firstTry ? 3 : 1) * (mode === 'challenge' ? 2 : 1);
       earned += c; store.coins += c;
       if (res.firstTry) { firstRight++; combo++; bestCombo = Math.max(bestCombo, combo); } else combo = 0;
       if (combo > 0 && combo % 3 === 0) { store.coins += 2; earned += 2; toast('🔥 Combo bonus +2 🪙'); sfx.coin(); challengeNext = true; }
     } else {
       combo = 0;
-      done++;
-      if (mode !== 'challenge') {
+      if (!extra) done++;
+      if (mode !== 'challenge' && !extra) {
         missRun++;
         gameMisses[sk.id] = (gameMisses[sk.id] || 0) + 1;
         if (retry.length < 3) retry.push(sk);
@@ -697,7 +738,7 @@ function dayReport(d) {
     const es = byW[w.id] || [];
     const right = es.filter(e => e.f).length;
     const st = rec?.areas?.[w.id];
-    html += `<tr><td>${w.emo} ${w.name}</td><td>${es.length}${perWorld() ? ' / ' + perWorld() : ''}</td><td>${es.length ? Math.round((right / es.length) * 100) + '%' : '—'}</td><td>${st === 'retry' ? '🔁 must redo' : st === 'pass' ? '✅ passed' : es.length ? '' : 'not done'}${rec?.fails?.[w.id] ? `<br><small>had to redo ${rec.fails[w.id]}×</small>` : ''}</td></tr>`;
+    html += `<tr><td>${w.emo} ${w.name}</td><td>${es.length}${perWorld() ? ` · ${new Set(es.map(e => e.s)).size}/${w.skills.length} topics` : ''}</td><td>${es.length ? Math.round((right / es.length) * 100) + '%' : '—'}</td><td>${st === 'retry' ? '🔁 must redo' : st === 'pass' ? '✅ passed' : es.length ? '' : 'not done'}${rec?.fails?.[w.id] ? `<br><small>had to redo ${rec.fails[w.id]}×</small>` : ''}</td></tr>`;
   }
   html += '</table><details style="margin-top:8px"><summary><b>Every question</b> (tap to open)</summary><table class="ptable" style="margin-top:6px">';
   const skName = id => ALL_SKILLS.find(k => k.id === id)?.name || id;
@@ -783,7 +824,7 @@ function parentZone() {
       <div class="prow"><label><input type="checkbox" data-k="micOn" ${set.micOn ? 'checked' : ''}> Read-aloud with microphone ${micSupported ? '' : '(not supported in this browser — reading uses picture matching instead)'}</label></div>
       <div class="prow">Voice <select data-k="voiceName"><option value="">Automatic</option>${voices.map(v => `<option ${v.name === set.voiceName ? 'selected' : ''}>${esc(v.name)}</option>`).join('')}</select> <button class="pbtn" data-a="test">Test voice</button></div>
       <div class="prow">Talking speed <select data-k="speechRate">${[0.75, 0.85, 1, 1.15].map(r => `<option value="${r}" ${r == set.speechRate ? 'selected' : ''}>${r === 1 ? 'Normal' : r < 1 ? 'Slower' + (r < 0.8 ? ' still' : '') : 'Faster'}</option>`).join('')}</select></div>
-      <div class="prow">Daily mission: questions in EVERY area each day <select data-k="dailyPerWorld">${[0, 3, 5, 8, 10].map(n => `<option value="${n}" ${n == set.dailyPerWorld ? 'selected' : ''}>${n ? n + ' per area (' + n * WORLDS.length + ' a day)' : 'Off'}</option>`).join('')}</select></div>
+      <div class="prow">Daily mission <select data-k="dailyPerWorld">${['all', 3, 5, 8, 10, 0].map(n => `<option value="${n}" ${String(n) === String(set.dailyPerWorld ?? 'all') ? 'selected' : ''}>${n === 'all' ? `Every topic in every area (${ALL_SKILLS.length} a day)` : n ? n + ' per area (' + n * WORLDS.length + ' a day)' : 'Off'}</option>`).join('')}</select></div>
       <div class="prow">Exam practice each day (after the mission) <select data-k="examPerDay">${['auto', 0, 10, 15, 20, 25].map(n => `<option value="${n}" ${String(n) === String(set.examPerDay ?? 'auto') ? 'selected' : ''}>${n === 'auto' ? 'Automatic (recommended)' : n ? n + ' questions' : 'Off'}</option>`).join('')}</select></div>
       <div class="prow">Questions per game <select data-k="sessionLength">${[5, 8, 10, 12, 15].map(n => `<option ${n == set.sessionLength ? 'selected' : ''}>${n}</option>`).join('')}</select></div>
       <div class="prow"><label><input type="checkbox" data-k="extraNumberLines" ${set.extraNumberLines ? 'checked' : ''}> Extra number line practice in every Today's Adventure</label></div>
@@ -798,7 +839,8 @@ function parentZone() {
       if (k === 'name') store.playerName = el.value.trim() || 'Zinnia';
       else if (k === 'examPerDay') { set.examPerDay = el.value === 'auto' ? 'auto' : Number(el.value); delete dayRec().examGoal; }
       else if (el.type === 'checkbox') set[k] = el.checked;
-      else if (['speechRate', 'sessionLength', 'dailyMinutes', 'dailyPerWorld'].includes(k)) set[k] = Number(el.value);
+      else if (k === 'dailyPerWorld') set[k] = el.value === 'all' ? 'all' : Number(el.value);
+      else if (['speechRate', 'sessionLength', 'dailyMinutes'].includes(k)) set[k] = Number(el.value);
       else set[k] = el.value;
       if (k === 'voiceName') refreshVoice();
       save();
@@ -822,6 +864,12 @@ function parentZone() {
 }
 
 // ---------- start ----------
+// One-time upgrade for tablets that already had the app: switch to the every-topic daily mission
+if (!store.settings.everyTopicV1) {
+  if (store.settings.dailyPerWorld === 5) store.settings.dailyPerWorld = 'all';
+  store.settings.everyTopicV1 = true;
+  save();
+}
 // Updates: check when the app opens and whenever she comes back to it. A new version is
 // switched in only on the map screen (never in the middle of a question). Progress is kept.
 let updateReady = false;

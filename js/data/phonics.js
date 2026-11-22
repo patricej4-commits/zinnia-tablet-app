@@ -327,7 +327,7 @@ export const phonicsSkills = [
 
 // Split a word into Abeka special-sound chunks (longest first): "night" -> n, igh, t
 const CHUNKS = ['thr', 'squ', 'str', 'spr', 'spl', 'scr', 'igh', 'all', 'alk', 'wor', 'sh', 'ch', 'th', 'ck', 'qu', 'ar', 'or', 'ir', 'ur', 'er', 'oo', 'ou', 'ow', 'oi', 'oy', 'ay', 'ee', 'ea', 'oa', 'ai', 'ng'];
-function chunk(w) {
+export function chunk(w) {
   const out = [];
   for (let i = 0; i < w.length;) {
     const c = CHUNKS.find(k => w.startsWith(k, i));

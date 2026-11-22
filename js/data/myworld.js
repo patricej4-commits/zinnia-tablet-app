@@ -1,4 +1,4 @@
-// My World: Integrated Studies (from class slides), plus IT, Music and Spanish
+// My World: Integrated Studies (from class slides), plus IT and Music
 // topics from the Christmas mid-term revision guide.
 import { pick, shuffle, sample } from '../util.js';
 
@@ -66,18 +66,11 @@ const FACTS = {
     ['How many lines are on the staff?', '5', ['3', '10'], 'The staff has 5 lines and 4 spaces.', '🎼'],
     ['How many spaces are on the staff?', '4', ['5', '2'], 'The staff has 5 lines and 4 spaces between them.', '🎼'],
   ],
-  'w-spanish': [
-    ['How do you say "good morning" in Spanish?', 'Buenos días', ['Buenas noches', 'Buenas tardes'], 'Good morning is Buenos días!', '🌅'],
-    ['How do you say "good afternoon" in Spanish?', 'Buenas tardes', ['Buenos días', 'Buenas noches'], 'Good afternoon is Buenas tardes!', '🌤️'],
-    ['How do you say "good night" in Spanish?', 'Buenas noches', ['Buenos días', 'Buenas tardes'], 'Good night is Buenas noches!', '🌙'],
-    ['What does "Hola" mean?', 'Hello', ['Goodbye', 'Thank you'], 'Hola means hello!', '👋'],
-    ['How do you say "My name is Zinnia" in Spanish?', 'Me llamo Zinnia', ['Buenas noches Zinnia', 'Adiós Zinnia'], 'Me llamo means my name is. Me llamo Zinnia!', '🙋‍♀️'],
-  ],
 };
 
 const META = {
   'w-body': ['My body', '🧍‍♀️'], 'w-food': ['Healthy food', '🥗'], 'w-groups': ['Groups & rules', '👨‍👩‍👧‍👦'],
-  'w-habits': ['Good & bad habits', '🌟'], 'w-computer': ['Computers', '💻'], 'w-music': ['Music notes & symbols', '🎼'], 'w-spanish': ['Spanish', '🇪🇸'],
+  'w-habits': ['Good & bad habits', '🌟'], 'w-computer': ['Computers', '💻'], 'w-music': ['Music notes & symbols', '🎼'],
 };
 
 

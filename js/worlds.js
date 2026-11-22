@@ -5,9 +5,11 @@ import { listenSkills } from './data/listening.js';
 import { readingSkills } from './data/reading.js';
 import { worldSkills } from './data/myworld.js';
 import { bibleSkills } from './data/bible.js';
+import { spellingSkills } from './data/spelling.js';
 
 export const WORLDS = [
   { id: 'sound', name: 'Sound Safari', emo: '🦁', cls: 'w-sound', skills: phonicsSkills, intro: 'Welcome to Sound Safari! Let\'s hunt for special sounds!' },
+  { id: 'spell', name: 'Spelling Bee', emo: '🐝', cls: 'w-spell', skills: spellingSkills, intro: 'Welcome to the Spelling Bee! These are your spelling list words!' },
   { id: 'word', name: 'Word Castle', emo: '🏰', cls: 'w-word', skills: grammarSkills, intro: 'Welcome to Word Castle! Let us play with words!' },
   { id: 'number', name: 'Number Jungle', emo: '🐒', cls: 'w-number', skills: mathSkills, intro: 'Welcome to Number Jungle! Let\'s count with the monkeys!' },
   { id: 'listen', name: 'Listening Lagoon', emo: '🐬', cls: 'w-listen', skills: listenSkills, intro: 'Welcome to Listening Lagoon! Turn on your super listening ears!' },
