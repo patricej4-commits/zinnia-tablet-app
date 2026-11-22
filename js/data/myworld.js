@@ -46,16 +46,16 @@ const FACTS = {
   ],
   'w-computer': [
     ['What is a computer?', 'an electronic device', ['a toy car', 'a kind of food'], 'A computer is a machine. It takes in, thinks, keeps and shows information.', '💻'],
-    ['Which part of the computer do we type on?', 'keyboard', ['mouse', 'monitor'], 'We type letters and numbers on the keyboard.', '⌨️'],
-    ['Which part of the computer shows us pictures and words?', 'monitor', ['keyboard', 'mouse'], 'The monitor (screen) shows information. It is an output device.', '🖥️'],
-    ['Which part do we point and click with?', 'mouse', ['monitor', 'system unit'], 'We point and click with the mouse. It is an input device.', '🖱️'],
+    ['Which part of the computer do we type on?', 'keyboard', ['mouse', 'monitor (screen)'], 'We type letters and numbers on the keyboard.', '⌨️'],
+    ['Which part of the computer shows us pictures and words?', 'monitor (screen)', ['keyboard', 'mouse'], 'The monitor (screen) shows information. It is an output device.', '🖥️'],
+    ['Which part do we point and click with?', 'mouse', ['monitor (screen)', 'system unit'], 'We point and click with the mouse. It is an input device.', '🖱️'],
     ['Which part of the computer thinks?', 'system unit', ['mouse', 'keyboard'], 'The system unit processes. That means it thinks!', '🧠'],
     ['The keyboard is an...', 'input device', ['output device'], 'Input puts information in. Keyboard and mouse are input.', '⌨️'],
     ['The mouse is an...', 'input device', ['output device'], 'The mouse puts information inside the computer, so it is input.', '🖱️'],
     ['The monitor is an...', 'output device', ['input device'], 'The monitor shows information, so it is output.', '🖥️'],
     ['What does the system unit do?', 'process (it thinks)', ['input', 'output'], 'The system unit processes. That means it thinks!', '🧠'],
     ['Which one is a TYPE of computer?', 'tablet', ['mouse', 'keyboard'], 'Types: laptop, tablet, desktop, smartphone. A mouse is a PART.', '📱'],
-    ['Which one is a TYPE of computer?', 'laptop', ['monitor', 'mouse'], 'The four types of computer are: laptop, tablet, desktop and smartphone.', '💻'],
+    ['Which one is a TYPE of computer?', 'laptop', ['monitor (screen)', 'mouse'], 'The four types of computer are: laptop, tablet, desktop and smartphone.', '💻'],
     ['Which one is a PART of the computer?', 'keyboard', ['smartphone', 'laptop'], 'The four parts are: monitor, keyboard, mouse and system unit.', '⌨️'],
     ['A smartphone is a...', 'type of computer', ['part of a computer'], 'A smartphone is one of the four types of computer: laptop, tablet, desktop, smartphone.', '📱'],
   ],
@@ -117,6 +117,9 @@ Object.assign(FACTS, {
     ['What does a family tree show?', 'the people in my family', ['the trees in my yard', 'my toys'], 'A family tree shows the people in my family.', '🌳'],
     ['My mother\'s mother is my...', 'grandmother', ['sister', 'aunt'], 'My mother\'s mother is my grandmother.', '👵'],
     ['My father\'s brother is my...', 'uncle', ['cousin', 'grandfather'], 'My father\'s brother is my uncle.', '👨'],
+    ['Which one is a NEED?', 'food', ['a toy', 'a video game'], 'Needs are things we must have to live: food, clothing and shelter. Wants are nice to have.', '🍲'],
+    ['Which one is a WANT?', 'a new toy', ['water', 'a home'], 'A toy is a want. We can live without it. Food, clothes and a home are needs.', '🧸'],
+    ['A home is also called...', 'shelter', ['clothing', 'food'], 'Shelter is a home that keeps us safe. It is a basic need.', '🏠'],
   ],
   'w-animals': [
     ['Does a chick hatch or is it born?', 'hatch', ['born'], 'A chick hatches from an egg.', '🐣'],
@@ -136,8 +139,18 @@ Object.assign(FACTS, {
     ['A baby pig is called a...', 'piglet', ['kitten', 'lamb'], 'A baby pig is a piglet.', '🐷'],
   ],
   'w-foodmore': [
-    ['Green light foods are...', 'GO foods: eat them often', ['never eat them', 'only at parties'], 'Green light foods like fruits, vegetables and water are GO foods. Eat them often!', '🟢'],
-    ['Red light foods are...', 'WHOA foods: eat them only a little', ['eat them all day', 'the best foods'], 'Red light foods like candy, soda and chips are WHOA foods. Only a little!', '🔴'],
+    ['Green light foods mean...', 'Go: healthy, eat every day', ['Stop: never eat', 'only at parties'], 'Green light foods are healthy. Eat them every day. They should be at least half of your plate.', '🟢'],
+    ['Yellow light foods mean...', 'Slow down: eat small portions', ['eat lots and lots', 'never eat them'], 'Yellow light foods: slow down and eat small portions.', '🟡'],
+    ['Red light foods mean...', 'Stop: a treat once in a while', ['eat every day', 'the best foods'], 'Red light foods are unhealthy. Stop! Eat them once in a while as a treat, not every day.', '🔴'],
+    ['Go foods give us...', 'energy', ['shiny hair', 'strong teeth'], 'Go foods give us energy. We get carbohydrates from Go foods, like rice, yam, bread and potatoes.', '🍚'],
+    ['Glow foods give us...', 'vitamins and minerals', ['energy only', 'nothing'], 'Glow foods give us vitamins and minerals. They make our skin and hair shiny and healthy, like bananas, carrots, apples and cabbage.', '🥕'],
+    ['Grow foods give us...', 'protein', ['candy', 'sugar'], 'Grow foods give us protein. They build strong bones and teeth, like eggs, milk, chicken, fish, peas and beans.', '🥚'],
+    ['Rice is a...', 'Go food', ['Grow food', 'Glow food'], 'Rice gives us energy, so it is a Go food.', '🍚'],
+    ['Eggs are a...', 'Grow food', ['Go food', 'Glow food'], 'Eggs give us protein for strong bones, so they are a Grow food.', '🥚'],
+    ['Carrots are a...', 'Glow food', ['Go food', 'Grow food'], 'Carrots give us vitamins, so they are a Glow food.', '🥕'],
+    ['Fish is a...', 'Grow food', ['Go food', 'Glow food'], 'Fish gives us protein, so it is a Grow food.', '🐟'],
+    ['Bread is a...', 'Go food', ['Grow food', 'Glow food'], 'Bread gives us energy, so it is a Go food.', '🍞'],
+    ['Bananas are a...', 'Glow food', ['Grow food', 'Go food'], 'Bananas give us vitamins, so they are a Glow food.', '🍌'],
     ['Which is a green light food?', 'a mango', ['candy', 'soda'], 'Fruits and vegetables are green light GO foods.', '🥭'],
     ['Which is a red light food?', 'candy', ['carrots', 'water'], 'Candy is a red light food. Eat only a little.', '🍬'],
     ['Which part of the carrot do we eat?', 'root', ['leaf', 'flower'], 'We eat the root of the carrot.', '🥕'],
@@ -149,7 +162,12 @@ Object.assign(FACTS, {
     ['Who grows vegetables for us?', 'farmer', ['baker', 'fisherman'], 'Farmers grow fruits and vegetables. They are food providers.', '🧑‍🌾'],
     ['Who catches fish for us?', 'fisherman', ['farmer', 'baker'], 'Fishermen catch fish. They are food providers.', '🎣'],
     ['Who bakes bread for us?', 'baker', ['farmer', 'fisherman'], 'Bakers bake bread and cakes. They are food providers.', '🍞'],
-    ['Who gives us milk?', 'dairy farmer', ['baker', 'fisherman'], 'Dairy farmers get milk from cows.', '🥛'],
+    ['What are food providers?', 'people who grow, sell or produce our food', ['people who eat our food', 'people who throw food away'], 'Food providers grow, sell or produce the food we eat.', '🧺'],
+    ['Who gives us meat like beef, pork and chicken?', 'butcher', ['baker', 'fisherman'], 'The butcher gets meat from the animals that the farmer raises.', '🥩'],
+    ['Who plants food and raises animals?', 'farmer', ['butcher', 'baker'], 'The farmer plants food or raises animals and sells them to others.', '🧑‍🌾'],
+    ['Who buys food and sells it at the market?', 'vendor', ['fisherman', 'farmer'], 'The vendor buys food from the farmer, baker, butcher and fisherman and sells it.', '🛒'],
+    ['Where can we buy lots of different foods?', 'supermarket', ['library', 'church'], 'The supermarket buys food from farmers, bakers, butchers, fishermen and vendors.', '🏪'],
+    ['Who catches crab, lobster and shrimp?', 'fisherman', ['baker', 'butcher'], 'The fisherman catches all kinds of seafood.', '🦀'],
   ],
   'w-care': [
     ['How do I care for my body?', 'bathe every day', ['never bathe', 'eat only candy'], 'I bathe, brush my teeth, comb my hair and wear clean clothes.', '🛁'],
@@ -164,6 +182,9 @@ FACTS['w-body'].push(
   ['What do we use our hands for?', 'to hold and write', ['to hear', 'to smell'], 'Our hands help us hold things, write and clap.', '✋'],
   ['What do our feet help us do?', 'stand and walk', ['see and hear', 'taste'], 'Our feet help us stand and walk.', '🦶'],
   ['What makes my fingers special?', 'my fingerprints are unique', ['they are blue', 'they can fly'], 'Nobody else has fingerprints just like mine. God made me unique!', '👆'],
+  ['The coloured part of my eye is called the...', 'iris', ['nose', 'elbow'], 'The iris is the coloured part of the eye. Everyone\'s iris is unique!', '👁️'],
+  ['My hair grows from tiny holes in my skin called...', 'hair follicles', ['fingerprints', 'teeth'], 'Hair grows from hair follicles. They are unique too!', '💇‍♀️'],
+  ['Why should we exercise?', 'to keep our bodies strong and healthy', ['to feel sleepy', 'to get sick'], 'Exercise keeps our bodies strong and healthy.', '🤸'],
   ['Which joint is in the middle of my arm?', 'elbow', ['knee', 'ankle'], 'The elbow is in the middle of the arm. The knee is in the middle of the leg.', '💪'],
   ['Which joint is in the middle of my leg?', 'knee', ['elbow', 'wrist'], 'The knee is in the middle of the leg.', '🦵'],
 );
@@ -178,7 +199,11 @@ FACTS['w-music'].push(
 );
 FACTS['w-computer'].push(
   ['Hardware is the part of the computer we can...', 'touch', ['eat', 'hear only'], 'Hardware is the parts we can touch, like the mouse and keyboard.', '🖱️'],
-  ['Software is...', 'the programs and apps', ['the mouse', 'the keyboard'], 'Software is the programs and apps. We cannot touch software.', '💿'],
+  ['Software is...', 'instructions that tell the computer how to do a task', ['the mouse', 'the keyboard'], 'Software is a set of instructions that tells the computer how to do a task. We cannot touch it, but we can use it.', '💿'],
+  ['What does a computer need to do a task?', 'step-by-step instructions', ['a nap', 'a sandwich'], 'A computer needs step-by-step instructions to complete a task.', '🤖'],
+  ['What does step-by-step mean?', 'one at a time, in the correct order', ['all at once', 'in any order'], 'Step-by-step means doing things one at a time and in the correct order.', '🪜'],
+  ['Is the monitor hardware or software?', 'hardware', ['software'], 'We can touch the monitor, so it is hardware.', '🖥️'],
+  ['Is a drawing app hardware or software?', 'software', ['hardware'], 'An app is software. We cannot touch it, but we can use it.', '🎨'],
   ['Is a keyboard hardware or software?', 'hardware', ['software'], 'We can touch the keyboard, so it is hardware.', '⌨️'],
   ['Is a game app hardware or software?', 'software', ['hardware'], 'A game app is software. We cannot touch it.', '🎮'],
   ['How can we use a computer?', 'to learn and type', ['to cook rice', 'to sweep'], 'We use computers to learn, type, draw, play games and talk to family.', '💻'],
@@ -200,3 +225,25 @@ export const worldSkills = Object.keys(FACTS).map(id => ({
     };
   },
 }));
+
+// IT: put the steps in the correct order (step-by-step instructions)
+const STEPS = [
+  ['Brushing my teeth', ['Put toothpaste on the brush', 'Brush my teeth', 'Rinse my mouth']],
+  ['Washing my hands', ['Turn on the tap', 'Use soap', 'Rinse and dry']],
+  ['Making a sandwich', ['Get two slices of bread', 'Put cheese inside', 'Eat the sandwich']],
+  ['Planting a seed', ['Dig a hole', 'Put in the seed', 'Water it']],
+  ['Getting ready for school', ['Wake up', 'Get dressed', 'Go to school']],
+  ['Using the computer', ['Turn on the computer', 'Open the app', 'Use the mouse to click']],
+];
+worldSkills.push({
+  id: 'w-steps', name: 'Step-by-step', emoji: '🪜', type: 'order',
+  gen() {
+    const [task, steps] = pick(STEPS);
+    return {
+      type: 'order', say: `${task}. Tap the steps in the correct order.`, text: `${task}: tap the steps in order`,
+      items: shuffle(steps), answer: steps,
+      explain: `Step-by-step means one at a time, in the correct order: ${steps.join(', then ')}.`,
+    };
+  },
+});
+

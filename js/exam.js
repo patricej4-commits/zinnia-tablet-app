@@ -11,7 +11,7 @@ export const EXAMS = [
   { date: '2026-12-04', name: 'Integrated Studies', emoji: '🌎', skills: ['w-body', 'w-food', 'w-groups', 'w-habits', 'w-senses', 'w-plants', 'w-family', 'w-animals', 'w-foodmore', 'w-care'] },
   { date: '2026-12-07', name: 'Mathematics', emoji: '🐒', skills: ['m-'] },
   { date: '2026-12-08', name: 'Bible', emoji: '📖', skills: ['b-'] },
-  { date: '2026-12-08', name: 'Information Technology', emoji: '💻', skills: ['w-computer'] },
+  { date: '2026-12-08', name: 'Information Technology', emoji: '💻', skills: ['w-computer', 'w-steps'] },
   { date: null, name: 'Reading & Comprehension', emoji: '🌳', skills: ['r-', 'l-story'] },
 ];
 

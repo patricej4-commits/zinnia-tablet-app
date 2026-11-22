@@ -715,5 +715,81 @@ export const mathSkills = [
       };
     },
   },
+
+  {
+    id: 'm-onemore', name: 'One more, one less', emoji: '➕1',
+    gen(l) {
+      const n = rnd(1, l === 1 ? 9 : 18);
+      const more = Math.random() < 0.5;
+      const ans = more ? n + 1 : n - 1;
+      const [e] = pick(THINGS);
+      return {
+        say: `What is one ${more ? 'more' : 'less'} than ${n}?`,
+        visual: (l === 1 ? group(e, n) : '') + `<div class="eq">${n} ${more ? '+' : '−'} 1 = <span class="gap">?</span></div>`,
+        options: numOptions(ans, 0, 20), answer: ans,
+        explain: more ? `One more than ${n} is ${ans}. Count on one: ${n}, ${ans}.` : `One less than ${n} is ${ans}. Count back one: ${n}, ${ans}.`,
+      };
+    },
+  },
+  {
+    id: 'm-measure', name: 'Measuring', emoji: '📐',
+    gen(l) {
+      const mode = pick(l === 1 ? ['body', 'tall'] : ['body', 'tall', 'unit', 'unit', 'wide']);
+      if (mode === 'body') {
+        const BODY = [['hand span', '🖐️', 'the stretch from your thumb to your little finger'], ['foot span', '🦶', 'the length of your foot'], ['arm span', '🙆‍♀️', 'from one hand to the other with your arms stretched out'],
+          ['cubit', '💪', 'from your elbow to the tip of your middle finger'], ['foot pace', '🚶‍♀️', 'one step when you walk']];
+        const [name, pic, what] = pick(BODY);
+        return {
+          say: `We can measure with parts of our body. Which one is ${what}?`, visual: '<div style="font-size:80px">📏</div>',
+          options: shuffle([name, ...sample(BODY.map(b => b[0]).filter(x => x !== name), 2)]).map(x => ({ html: `<span class="lbl">${x}</span>`, value: x, say: x })), answer: name,
+          explain: `A ${name} is ${what}. These are non-standard units: everyone's body is a different size.`,
+        };
+      }
+      if (mode === 'unit') {
+        const SMALL = [['pencil', '✏️'], ['book', '📖'], ['crayon', '🖍️'], ['spoon', '🥄'], ['shoe', '👟']];
+        const BIG = [['door', '🚪'], ['classroom', '🏫'], ['road', '🛣️'], ['fence', '🚧'], ['swimming pool', '🏊']];
+        const cm = Math.random() < 0.5;
+        const [thing, pic] = pick(cm ? SMALL : BIG);
+        return {
+          say: `Should we measure the ${thing} in centimetres or metres?`, visual: `<div style="font-size:100px">${pic}</div>`,
+          options: [{ html: 'centimetres (cm)', value: 'cm', say: 'centimetres' }, { html: 'metres (m)', value: 'm', say: 'metres' }], cols: 'two', answer: cm ? 'cm' : 'm',
+          explain: cm ? `Small things like a ${thing} are measured in centimetres with a ruler.` : `Big things like a ${thing} are measured in metres.`,
+        };
+      }
+      if (mode === 'wide') {
+        const askWide = Math.random() < 0.5;
+        return {
+          say: askWide ? 'Which road is wide?' : 'Which road is narrow?',
+          visual: `<div style="display:flex;gap:40px;align-items:flex-end;justify-content:center"><div style="text-align:center"><div style="width:30px;height:150px;background:#7a7a7a;border-left:4px dashed #fff;margin:auto"></div>A</div><div style="text-align:center"><div style="width:140px;height:150px;background:#7a7a7a;border-left:4px dashed #fff;margin:auto"></div>B</div></div>`,
+          options: [{ html: 'A', value: 'A' }, { html: 'B', value: 'B' }], cols: 'two', answer: askWide ? 'B' : 'A',
+          explain: 'B is wide. A is narrow. Wide and narrow are opposites.',
+        };
+      }
+      const tall = Math.random() < 0.5;
+      const [p1, p2] = sample(['🦒', '🌳', '🏢', '🐭', '🐜', '🌱', '🧒', '🐘'], 2);
+      const big = { '🦒': 4, '🌳': 5, '🏢': 6, '🐭': 1, '🐜': 0, '🌱': 1.5, '🧒': 3, '🐘': 3.5 };
+      const ans = (tall ? big[p1] > big[p2] : big[p1] < big[p2]) ? p1 : p2;
+      return {
+        say: tall ? 'Which one is taller?' : 'Which one is shorter?',
+        options: [p1, p2].map(x => ({ html: `<span class="pic">${x}</span>`, value: x })), cols: 'two', answer: ans,
+        explain: `${ans} is ${tall ? 'taller' : 'shorter'}. Height is how tall something is.`,
+      };
+    },
+  },
+  {
+    id: 'm-digital', name: 'Digital clocks', emoji: '⌚',
+    gen(l) {
+      const hr = rnd(1, 12);
+      const half = l === 3 && Math.random() < 0.5;
+      const dig = h => `${h}:${half ? '30' : '00'}`;
+      const wrong = sample([...Array(12).keys()].map(x => x + 1).filter(x => x !== hr), 2);
+      return {
+        say: 'The clock shows the time. Which digital clock shows the same time?',
+        visual: clockSVG(hr, half ? 30 : 0, 190),
+        options: shuffle([hr, ...wrong]).map(h => ({ html: `<span style="font-family:monospace;background:#2b2250;color:#7CFC9A;padding:4px 14px;border-radius:10px">${dig(h)}</span>`, value: h, say: half ? `half past ${h}` : `${h} o'clock` })), answer: hr,
+        explain: `${hr} ${half ? 'thirty, half past ' + hr : "o'clock"}. A digital clock shows ${dig(hr)}.`,
+      };
+    },
+  },
 ];
 

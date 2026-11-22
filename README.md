@@ -85,3 +85,6 @@ The app checks for a new version when it opens, whenever she comes back to it, a
 3. **Explore**: Today's Adventure, any area and extra exam practice unlock only after steps 1 and 2.
 
 Ollie tells her each step, and after every game the big green button takes her straight to the next one. The Parent Zone shows today's plan and, for each exam, roughly how many more practice questions she still needs and how many a day that is.
+
+## From the Google Classroom log (Sept–Nov 2026)
+Added from Ms Bennett's posts and slides: Opposites (her full list), one more / one less, measuring with body parts (hand span, cubit, foot pace, foot span, arm span), centimetres vs metres, tall/short and wide/narrow, analogue vs digital clocks, Go/Glow/Grow foods and traffic light foods in her words, all six food providers, needs vs wants, iris and hair follicles, exercise, the 16 Bible doctrinal drills, IT step-by-step instructions (ordering steps) and her hardware/software definitions.

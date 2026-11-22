@@ -395,7 +395,28 @@ export const grammarSkills = [
       };
     },
   },
+
+  {
+    id: 'g-opposites', name: 'Opposites', emoji: '🔄',
+    gen(l) {
+      const [a, b] = pick(OPPOSITES);
+      const [w, ans] = Math.random() < 0.5 ? [a, b] : [b, a];
+      const wrong = sample(OPPOSITES.flat().filter(x => x !== ans && x !== w), 2);
+      return {
+        say: `What is the opposite of ${w}?`, readFirst: l === 3,
+        visual: `<div class="word-big">${w}</div>`,
+        options: shuffle([ans, ...wrong]).map(x => ({ html: x, value: x, say: x })), answer: ans,
+        explain: `Opposites are two things that are different. The opposite of ${w} is ${ans}.`,
+      };
+    },
+  },
 ];
+// Ms Bennett's Opposites slides
+const OPPOSITES = [['hard', 'soft'], ['thick', 'thin'], ['high', 'low'], ['correct', 'incorrect'], ['far', 'near'], ['even', 'odd'], ['easy', 'difficult'],
+  ['before', 'after'], ['loud', 'quiet'], ['rough', 'smooth'], ['lady', 'gentleman'], ['wide', 'narrow'], ['deep', 'shallow'], ['curved', 'straight'],
+  ['aunt', 'uncle'], ['brother', 'sister'], ['wet', 'dry'], ['right', 'wrong'], ['night', 'day'], ['love', 'hate'], ['heavy', 'light'], ['entrance', 'exit'],
+  ['hot', 'cold'], ['fast', 'slow'], ['give', 'take'], ['messy', 'neat'], ['top', 'bottom'], ['empty', 'full'], ['more', 'less'], ['open', 'close'],
+  ['early', 'late'], ['rich', 'poor'], ['asleep', 'awake'], ['peace', 'war'], ['tight', 'loose'], ['big', 'small'], ['up', 'down'], ['happy', 'sad']];
 const POSS = [['Zinnia', 'book', '📖'], ['Mummy', 'bag', '👜'], ['Daddy', 'car', '🚗'], ['the dog', 'bone', '🦴'], ['Kai', 'ball', '⚽'], ['Grandma', 'hat', '👒'], ['the cat', 'toy', '🧸'], ['Maya', 'kite', '🪁'], ['the baby', 'cup', '🍼'], ['Leo', 'bike', '🚲']];
 const HELPING = [
   ['Zinnia ___ a red bag.', 'has', ['has', 'have']], ['I ___ two pencils.', 'have', ['have', 'has']], ['They ___ a big dog.', 'have', ['have', 'has']],

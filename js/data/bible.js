@@ -151,5 +151,38 @@ export const bibleSkills = [
       };
     },
   },
+
+  {
+    id: 'b-doctrine', name: 'Doctrinal drills', emoji: '🙏',
+    gen(l) {
+      const [q, a] = pick(DRILLS);
+      const wrong = sample(DRILLS.map(d => d[1]).filter(x => x !== a), 2);
+      return {
+        say: q, readFirst: l === 3,
+        visual: '<div style="font-size:90px">✝️</div>',
+        options: shuffle([a, ...wrong]).map(x => ({ html: `<span class="lbl" style="font-size:22px">${esc(x)}</span>`, value: x, say: x })), answer: a,
+        explain: `${q} ${a}`,
+      };
+    },
+  },
+];
+// Ms Bennett's "Bible Time - First Term" doctrinal drills
+const DRILLS = [
+  ['What is the Bible?', 'The Bible is the holy book of God.'],
+  ['Who wrote the Bible?', 'God inspired godly men to write the Bible.'],
+  ['Where can we find the Word of God?', 'In the Bible.'],
+  ['What is sin?', 'Sin is all the bad things we do.'],
+  ['Who sins?', 'Everyone.'],
+  ['What are some of the sins we do?', 'Lying, stealing, cheating, fighting and being disobedient.'],
+  ['Who forgives our sins?', 'God.'],
+  ['How can we ask for forgiveness?', 'By praying.'],
+  ['Who died for our sins?', 'Jesus.'],
+  ['Does God love sin?', 'No, He hates sin.'],
+  ['Does God hate us when we sin?', 'No, He still loves us.'],
+  ['What is heaven?', 'Heaven is where we will go to live forever.'],
+  ['Who will go to heaven?', 'People who believe and accept Jesus as Lord and Saviour.'],
+  ['What will be in heaven?', 'God, angels, joy, peace and happiness.'],
+  ['What will not be in heaven?', 'Crying and pain.'],
+  ['How can we spread the Good News?', 'By telling people we meet about the love of Jesus.'],
 ];
 
