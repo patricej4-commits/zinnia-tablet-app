@@ -23,6 +23,7 @@ const defaults = () => ({
     sittingMinutes: 20,   // one sitting = 20 minutes of play (0 = no limit)
     sittingsPerDay: 5,    // up to 5 sittings a day
     breakMinutes: 30,     // a break of at least 30 minutes between sittings
+    extendOnStruggle: true, // a lot wrong today → extra sitting(s) on the topics she found hard
     extraNumberLines: true, // she finds number lines hard: practise them in every adventure
   },
 });

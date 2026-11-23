@@ -4,7 +4,7 @@ import { ALL_SKILLS } from './worlds.js';
 
 // From the Grade 1B Christmas term revision guide. skills: id prefixes or exact ids.
 export const EXAMS = [
-  { date: '2026-12-02', name: 'Phonics', emoji: '🦁', skills: ['p-vowels', 'p-sounds', 'p-keyword', 'p-onetwo', 'p-mark', 'p-ck', 'p-floss', 'l-rhyme', 'l-first-sound'] },
+  { date: '2026-12-02', name: 'Phonics', emoji: '🦁', skills: ['p-vowels', 'p-sounds', 'p-keyword', 'p-onetwo', 'p-mark', 'p-ck', 'p-floss', 'l-rhyme', 'l-first-sound', 'p-rhyme'] },
   { date: '2026-12-02', name: 'Spelling', emoji: '🐝', skills: ['s-', 'p-spell', 'p-missing', 'p-blend', 'p-rightspell'] },
   { date: '2026-12-03', name: 'English Grammar', emoji: '🏰', skills: ['g-'] },
   { date: '2026-12-03', name: 'Music', emoji: '🎼', skills: ['w-music'] },

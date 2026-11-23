@@ -68,7 +68,7 @@ function curSitting() {
 }
 function sittingState() {
   if (!sitLimit()) return { ok: true };
-  const a = sittings(), per = (store.settings.sittingsPerDay || 5) + (dayRec().extraSittings || 0);
+  const a = sittings(), per = basePer() + autoExtra();
   const cur = curSitting();
   if (cur) return { ok: true, cur, left: sitLimit() - cur.secs, n: a.length, per };
   if (a.length >= per) return { ok: false, why: 'done', n: a.length, per };
@@ -76,6 +76,35 @@ function sittingState() {
   const until = last ? last.end + (store.settings.breakMinutes || 0) * 60000 : 0;
   if (last && Date.now() < until && !dayRec().skipBreak) return { ok: false, why: 'break', until, n: a.length, per };
   return { ok: true, needNew: true, n: a.length, per };
+}
+// ---------- Longer day when she is struggling ----------
+// When she gets a lot wrong today (first try), she gets 1 or 2 extra sittings,
+// and that extra time is spent on the topics she found hard today.
+const STRUGGLE = { min: 20, one: 0.7, two: 0.5 }; // after 20+ answers: under 70% right → +1 sitting, under 50% → +2
+const basePer = () => (store.settings.sittingsPerDay || 5) + (dayRec().extraSittings || 0);
+function todayFirstTry(d = today()) {
+  const L = store.log?.[d] || [];
+  return { n: L.length, pct: L.length ? L.filter(x => x.r && x.f).length / L.length : 1 };
+}
+function autoExtra() {
+  const dr = dayRec();
+  if (store.settings.extendOnStruggle === false || !sitLimit()) return 0;
+  const { n, pct } = todayFirstTry();
+  const want = n < STRUGGLE.min ? 0 : pct < STRUGGLE.two ? 2 : pct < STRUGGLE.one ? 1 : 0;
+  if (want > (dr.autoExtra || 0)) { dr.autoExtra = want; save(); } // never taken away again the same day
+  return dr.autoExtra || 0;
+}
+const inExtraSitting = () => sitLimit() > 0 && autoExtra() > 0 && sittings().length > basePer();
+// Today's hardest topics: most wrong (first try) today, then her weakest overall
+function hardTopics() {
+  const by = {};
+  for (const x of store.log?.[today()] || []) { const b = (by[x.s] ||= { n: 0, miss: 0 }); b.n++; if (!(x.r && x.f)) b.miss++; }
+  const ids = Object.entries(by).filter(([, b]) => b.miss > 0)
+    .sort((a, b) => b[1].miss / b[1].n - a[1].miss / a[1].n || b[1].miss - a[1].miss).map(([id]) => id);
+  let sks = ids.map(id => ALL_SKILLS.find(sk => sk.id === id)).filter(Boolean).slice(0, 8);
+  if (sks.length < 4) sks = sks.concat(ALL_SKILLS.filter(sk => !sks.includes(sk) && store.skills[sk.id]?.seen)
+    .sort((a, b) => mastery(a.id) - mastery(b.id)).slice(0, 4 - sks.length));
+  return sks.length ? sks : ALL_SKILLS;
 }
 const sittingUp = () => sitLimit() > 0 && !curSitting();
 // Called before any game screen: starts a new sitting if allowed, otherwise shows the break screen
@@ -253,6 +282,7 @@ function planDone() { return !!store.daily[today()]?.planDone || (missionDone() 
 function nextStep() {
   const rw = retryWorld();
   if (rw) return { kind: 'retry', w: rw, label: `🔁 Practise again: ${rw.emo} ${rw.name}`, say: `Let's practise ${rw.name} again before we move on. I will help you!` };
+  if (inExtraSitting()) return { kind: 'hard', label: '💪 Extra practice: the tricky things', say: 'Let\'s practise the things that were tricky today. This extra time will make you stronger. I will help you!' };
   if (!missionDone()) { const w = nextMissionWorld(); return { kind: 'mission', w, label: `▶ ${w.emo} ${w.name}`, say: `Let's do ${w.name}!` }; }
   const it = nextExamItem();
   if (it) {
@@ -282,6 +312,7 @@ function playMock(exam) {
 function playStep() {
   const st = nextStep();
   if (!st) return map(false);
+  if (st.kind === 'hard') return play({ title: 'Extra practice: the tricky things', skills: hardTopics(), mixed: true, length: store.settings.sessionLength, hard: true });
   if (st.kind === 'exam') return play({ title: 'Exam Practice: ' + st.e.name, skills: examSkills(st.e), mixed: true, length: Math.max(2, Math.min(store.settings.sessionLength + 2, examLeftFor(st.it))), examPractice: st.e.name });
   playMission();
 }
@@ -407,6 +438,7 @@ function map(greet) {
     ${g ? `<div style="font-size:18px;margin-bottom:4px"><b>${perWorld() > 0 ? '2.' : '1.'}</b> 📝 Exam practice ${examLeft() === 0 ? '✅' : ''}</div>
     <div class="mchips">${g.items.map(it => { const e = EXAMS.find(x => x.name === it.name); return `<span class="mchip ${examLeftFor(it) === 0 ? 'ok' : ''}">${e.emoji} ${esc(it.name)} ${examLeftFor(it) === 0 ? '✅' : `${Math.min(examDoneFor(it.name), it.n)}/${it.n}`}</span>`; }).join('')}</div>` : ''}
     <div style="font-size:18px;margin-bottom:10px"><b>${(perWorld() > 0 ? 1 : 0) + (g ? 1 : 0) + 1}.</b> 🗺️ Explore anything ${locked ? '🔒' : '🔓'}</div>
+    ${inExtraSitting() ? `<div style="font-size:18px;margin-bottom:10px;background:#fff3d6;border-radius:12px;padding:6px 10px">💪 <b>Extra sitting:</b> today was tricky, so this time is for practising the tricky things.</div>` : ''}
   </div>`);
   if (step) {
     const mb = h(`<button class="big-btn green adventure-btn" style="margin:0">${step.label}</button>`);
@@ -541,7 +573,7 @@ function pickTopics(skills, n) {
   return out;
 }
 
-async function play({ title, skills, mixed, length, mission, world, examPractice, coverAll, mock }) {
+async function play({ title, skills, mixed, length, mission, world, examPractice, coverAll, mock, hard }) {
   onMap = false;
   stopSpeaking();
   if (!gate()) return;
@@ -662,6 +694,7 @@ async function play({ title, skills, mixed, length, mission, world, examPractice
     dr.skills[sk.id] = (dr.skills[sk.id] || 0) + 1; // topics covered today
     dr.worlds[WORLD_OF[sk.id]] = (dr.worlds[WORLD_OF[sk.id]] || 0) + 1;
     logAnswer(q, sk, res);
+    if (hard) dr.hardDone = (dr.hardDone || 0) + 1;
     if (examPractice || mode === 'exam') {
       dr.examDone = (dr.examDone || 0) + 1;
       const en = mode === 'exam' ? weaveExam.exam.name : typeof examPractice === 'string' ? examPractice : EXAMS.find(e => examSkills(e).includes(sk))?.name;
@@ -821,7 +854,8 @@ function breakScreen(st) {
   const lastMins = Math.round((sittings()[sittings().length - 1]?.secs || 0) / 60);
   const msg = allDone
     ? `You did all ${st.n} sittings today, ${name()}! You played for ${minsWord(todayMinutes())} today. Well done. See you tomorrow!`
-    : `You've been playing for ${minsWord(lastMins)}. Time to take a break! Sitting ${st.n} of ${st.per} is done. Come back at ${hhmm(st.until)}.`;
+    : `You've been playing for ${minsWord(lastMins)}. Time to take a break! Sitting ${st.n} of ${st.per} is done. Come back at ${hhmm(st.until)}.`
+      + (st.n >= basePer() && autoExtra() > 0 ? ` Some things were tricky today, so you get ${autoExtra() === 1 ? 'an extra sitting' : 'extra sittings'} to practise them. Practice makes you stronger!` : '');
   const s = h(`<div class="screen center">
     <div class="mascot">${allDone ? '🎉🦉' : '😴🦉'}</div>
     <div class="title">${allDone ? 'All done for today!' : 'Brain break time!'}</div>
@@ -1085,6 +1119,8 @@ function parentZone() {
       <div class="prow">Each sitting <select data-k="sittingMinutes">${[0, 15, 20, 25, 30].map(n => `<option value="${n}" ${n == set.sittingMinutes ? 'selected' : ''}>${n ? n + ' minutes' : 'No limit'}</option>`).join('')}</select>
         Sittings a day <select data-k="sittingsPerDay">${[2, 3, 4, 5, 6, 8].map(n => `<option ${n == set.sittingsPerDay ? 'selected' : ''}>${n}</option>`).join('')}</select>
         Break between <select data-k="breakMinutes">${[0, 15, 30, 45, 60, 90].map(n => `<option value="${n}" ${n == set.breakMinutes ? 'selected' : ''}>${n ? n + ' min' : 'No break'}</option>`).join('')}</select></div>
+      <div class="prow"><label><input type="checkbox" data-k="extendOnStruggle" ${set.extendOnStruggle !== false ? 'checked' : ''}> Longer day when she struggles: after 20+ answers, under 70% right first time adds 1 extra sitting, under 50% adds 2. The extra time is spent on the topics she got wrong today.</label>
+        <br><small>Today so far: ${(() => { const t = todayFirstTry(); return t.n ? `${Math.round(t.pct * 100)}% right first time (${t.n} answers)` : 'no answers yet'; })()}${autoExtra() ? ` · <b>+${autoExtra()} extra sitting${autoExtra() > 1 ? 's' : ''} added</b>${dayRec().hardDone ? ` · ${dayRec().hardDone} tricky-topic questions done` : ''}` : ''}</small></div>
       <div class="prow"><button class="pbtn" data-a="extra">Give one extra sitting now</button> <small>Today: ${sittings().length} sitting${sittings().length === 1 ? '' : 's'} (${sittings().map(x => Math.round(x.secs / 60) + ' min').join(' + ') || 'none yet'})</small></div>
       <div class="prow" style="display:none">Daily time limit <select data-k="dailyMinutes">${[0, 15, 20, 30, 45, 60].map(n => `<option value="${n}" ${n == set.dailyMinutes ? 'selected' : ''}>${n ? n + ' minutes' : 'No limit'}</option>`).join('')}</select></div>
       <div class="prow"><button class="pbtn" data-a="pet">Choose a new pet</button><button class="pbtn danger" data-a="reset">Reset all progress</button></div>
