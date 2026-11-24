@@ -156,7 +156,9 @@ const RHYME_BOX = [
   [['cat', 'hat', 'bat'], 'cut'], [['hen', 'pen', 'ten'], 'pin'], [['sun', 'run', 'bun'], 'sit'], [['pig', 'dig', 'big'], 'bag'],
   [['bed', 'red', 'fed'], 'bad'], [['bug', 'rug', 'hug'], 'bag'], [['lick', 'kick', 'brick'], 'like'], [['night', 'light', 'bright'], 'nice'],
 ];
-const RHYME_PIC = { coat: '🧥', goat: '🐐', boat: '⛵', cake: '🎂', snake: '🐍', bell: '🔔', cow: '🐮', clown: '🤡', boy: '👦', toy: '🧸', book: '📖', moon: '🌙', cat: '🐱', hat: '🎩', bat: '🏏', hen: '🐔', sun: '☀️', pig: '🐷', bed: '🛏️', bug: '🐛', mop: '🧹', top: '🪀', ten: '🔟', pen: '🖊️', box: '📦', fox: '🦊', duck: '🦆', truck: '🚚', train: '🚆', plane: '✈️', tree: '🌳', bee: '🐝', brush: '🪮', rake: '🍂', lake: '🏞️', bus: '🚌' };
+// The rhyming part: the last vowel (or vowel team) and everything after it: book -> ook, lake -> ake, go -> o
+const rimeOf = w => { const m = w.match(/[aeiouy]+[^aeiouy]*e?$/); return m ? m[0] : w; };
+const RHYME_PIC = { coat: '🧥', goat: '🐐', boat: '⛵', cake: '🎂', snake: '🐍', bell: '🔔', cow: '🐮', clown: '🤡', boy: '👦', toy: '🧸', book: '📖', moon: '🌙', cat: '🐱', hat: '🎩', bat: '🏏', hen: '🐔', sun: '☀️', pig: '🐷', bed: '🛏️', bug: '🐛', mop: '🧹', ten: '🔟', pen: '🖊️', box: '📦', fox: '🦊', duck: '🦆', truck: '🚚', train: '🚆', plane: '✈️', tree: '🌳', bee: '🐝', brush: '🪮', rake: '🍂', lake: '🏞️', bus: '🚌' };
 
 // ---- Capital letter and period (Lesson 30 and on: "Write each sentence correctly")
 const CAPS = [
@@ -260,7 +262,7 @@ export const workbookSkills = [
           say: `Which word rhymes with ${w}?`, text: `Which word rhymes with "${w}"?`,
           visual: RHYME_PIC[w] ? big(RHYME_PIC[w]) : `<div class="word-big">${w}</div>`,
           options: shuffle(opts.map(x => ({ html: `${RHYME_PIC[x] ? `<span class="pic">${RHYME_PIC[x]}</span>` : ''}<span class="lbl">${x}</span>`, value: x, say: x }))), cols: 'two', answer: a,
-          explain: `${w} and ${a} rhyme. They end with the same sound: ${a.slice(-2)}.`,
+          explain: `${w} and ${a} rhyme. They both end with "${rimeOf(a)}".`,
         };
       }
       const shown = shuffle([...sample(fam, Math.min(fam.length, l === 2 ? 2 : 3)), odd]);
@@ -268,7 +270,7 @@ export const workbookSkills = [
         say: l === 2 ? `Listen: ${shown.join(', ')}. Which word does NOT rhyme?` : 'Read the words in the box. Which word does NOT rhyme?',
         readFirst: l === 3,
         options: shown.map(x => ({ html: `<span class="lbl" style="font-size:34px">${x}</span>`, value: x, say: x })), cols: 'two', answer: odd,
-        explain: `${fam.join(', ')} rhyme. ${odd} does not rhyme.`,
+        explain: `${shown.filter(x => x !== odd).join(', ')} rhyme: they end with "${rimeOf(shown.find(x => x !== odd))}". ${odd} does not rhyme.`,
       };
     },
   },
@@ -298,7 +300,7 @@ export const workbookSkills = [
         options: lw.map((w, i) => ({ html: `<span class="lbl" style="font-size:30px">${esc(w)}</span>`, value: String(i) })), answer: String(target.i),
         explain: target.i === 0
           ? `The first word of a sentence needs a capital letter: ${target.w}. ${s}`
-          : `${target.w} is a name, so it needs a capital letter. ${s}`,
+          : `${target.w.replace(/'s$/, '')} is a name, so it needs a capital letter. ${s}`,
       };
     },
   },
