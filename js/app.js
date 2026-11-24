@@ -56,7 +56,7 @@ function toast(text) {
   setTimeout(() => t.remove(), 2200);
 }
 
-// ---------- Sittings: 20-minute sessions, a break between, up to 5 a day ----------
+// ---------- Sittings: 30-minute sessions, a break between, up to 5 a day ----------
 let timing = false;   // true while she is in the game (not on the start, break or grown-up screens)
 let breakShown = false;
 function startClock() {}   // time is counted by the sitting ticker below
@@ -65,7 +65,7 @@ const sitLimit = () => (store.settings.sittingMinutes || 0) * 60;
 const sittings = () => (dayRec().sittings ||= []);
 function curSitting() {
   const a = sittings(), s = a[a.length - 1];
-  return s && s.secs < sitLimit() ? s : null;
+  return s && !s.done && s.secs < sitLimit() ? s : null;
 }
 function sittingState() {
   if (!sitLimit()) return { ok: true };
@@ -131,7 +131,7 @@ setInterval(() => {
   if (document.hidden || !timing) return;
   addTime(10);
   const c = curSitting();
-  if (c) { c.secs += 10; c.end = Date.now(); checkBreakCues(c); save(); }
+  if (c) { c.secs += 10; c.end = Date.now(); if (c.secs >= sitLimit()) c.done = true; checkBreakCues(c); save(); }
   document.querySelectorAll('.sitpill').forEach(el => (el.textContent = sitPillText()));
   // Time is up while she is on the map or a menu: straight to the break screen
   if (sitLimit() && !curSitting() && onMap && !breakShown) breakScreen(sittingState());
@@ -963,7 +963,7 @@ function results({ stars, earned, bestCombo, grew, missionComplete, retryArea, p
       setTimeout(() => say(`Well done ${name()}! You finished everything for today. Now you can explore anything you like!`), missionComplete ? 7000 : 2600);
     }
     if (timeUp) {
-      // 20 minutes are up: everything is saved, time for a break
+      // The sitting's time is up: everything is saved, time for a break
       const st = sittingState();
       after.append(h(`<div class="bubble">⏰ You've been playing for ${store.settings.sittingMinutes} minutes. Time to take a break! Your work is saved.</div>`));
       const ok = h('<button class="big-btn green">😴 OK, break time</button>');

@@ -20,7 +20,7 @@ const defaults = () => ({
     dailyPerWorld: 'all',  // daily mission: 'all' = every topic in every area; a number = questions per area; 0 = off
     examPerDay: 'auto',   // exam practice questions per day after the mission ('auto' = based on exam dates and readiness)     // daily mission: questions in EVERY area each day (0 = off)
     dailyMinutes: 0,      // (old setting, replaced by sittings)
-    sittingMinutes: 20,   // one sitting = 20 minutes of play (0 = no limit)
+    sittingMinutes: 30,   // one sitting = 30 minutes of play (0 = no limit)
     sittingsPerDay: 5,    // up to 5 sittings a day
     breakMinutes: 30,     // a break of at least 30 minutes between sittings
     rollover: true,          // unfinished work from yesterday is added to today
@@ -35,7 +35,14 @@ function load() {
     if (!raw) return defaults();
     const d = JSON.parse(raw);
     const base = defaults();
-    return { ...base, ...d, settings: { ...base.settings, ...(d.settings || {}) } };
+    const out = { ...base, ...d, settings: { ...base.settings, ...(d.settings || {}) } };
+    // One-time update: sittings changed from 20 to 30 minutes (a sitting already finished today stays finished)
+    if (!out.settings.sit30) {
+      if (out.settings.sittingMinutes === 20) out.settings.sittingMinutes = 30;
+      for (const day of Object.values(out.daily || {})) for (const s of day.sittings || []) if (s.secs >= 1190) s.done = true;
+      out.settings.sit30 = true;
+    }
+    return out;
   } catch (e) { return defaults(); }
 }
 
