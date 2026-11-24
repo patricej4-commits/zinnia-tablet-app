@@ -3,6 +3,7 @@ import { say, sfx, stopSpeaking, listVoices, refreshVoice, micSupported } from '
 import { runQuestion } from './games.js';
 import { pick, shuffle, esc, rnd } from './util.js';
 import { WORLDS, ALL_SKILLS } from './worlds.js';
+import { reminderFor } from './data/rules.js';
 import { EXAMS, examReadiness, examSkills, daysUntil, nextExam, examNeed, skillReadiness, mocksFor } from './exam.js';
 
 const app = document.getElementById('app');
@@ -634,6 +635,15 @@ async function play({ title, skills, mixed, length, mission, world, examPractice
   let count = 0;
   const maxQ = total * 2 + 3; // room for the woven-in exam questions
   let sinceExam = 0, weaveExam = null;
+  // Quick checks ("What is a noun?", "Where do we start in columns?") woven in every 4th question
+  let sinceCheck = 0;
+  const checkSkills = ALL_SKILLS.filter(sk => sk.id === 'g-whatis' || sk.id === 'm-steps');
+  const wantCheck = () => {
+    const ids = new Set(skills.map(sk => sk.id));
+    const g = [...ids].some(id => id.startsWith('g-')), m = [...ids].some(id => id.startsWith('m-'));
+    return checkSkills.filter(sk => (sk.id === 'g-whatis' ? g : m));
+  };
+  const remindCount = {}; let lastWrongRule = null;
 
   const timesAsked = {};    // topic -> questions asked this game (max 2 each, so it does not repeat)
   const gameMisses = {};    // topic -> misses this game
@@ -665,6 +675,9 @@ async function play({ title, skills, mixed, length, mission, world, examPractice
       // Every third question: a woven-in exam practice question (extra, does not replace a mission topic)
       sk = weaveExam.sk; mode = 'exam'; sinceExam = 0;
     }
+    else if (!mock && !easyMode && sinceCheck >= 4 && wantCheck().length) {
+      sk = pick(wantCheck()); mode = 'check'; sinceCheck = 0;
+    }
     else if (coverQueue && coverQueue.length) { sk = coverQueue.shift(); }
     else if (firstLesson) { sk = firstLesson; firstLesson = null; }
     else if (retry.length && (done >= total - retry.length || Math.random() < 0.35)) sk = retry.shift();
@@ -686,6 +699,16 @@ async function play({ title, skills, mixed, length, mission, world, examPractice
     }
     if (mode === 'boost') q.say = pick(['Here is one you know!', 'You can do this one!', 'Let\'s warm up!']) + ' ' + q.say;
     if (mode === 'warm') q.say = 'Let\'s warm up! ' + q.say;
+    if (mode === 'check') toast('📌 Quick check!');
+    else sinceCheck++;
+    // 📌 Rule / steps reminder: always on screen; said the first time, after a mistake, every 3rd time,
+    // and every time for column sums (the steps)
+    const rem = mock ? null : reminderFor(sk.id, q);
+    if (rem) {
+      q.remind = rem.text;
+      const n = (remindCount[rem.key] = (remindCount[rem.key] || 0) + 1);
+      if (n === 1 || n % 3 === 0 || lastWrongRule === rem.key || /^col/.test(rem.key)) q.remindSay = rem.say;
+    }
     if (mode === 'exam') {
       const d = daysUntil(weaveExam.exam.date);
       toast(`📝 Exam practice: ${weaveExam.exam.emoji} ${weaveExam.exam.name}`);
@@ -699,6 +722,7 @@ async function play({ title, skills, mixed, length, mission, world, examPractice
     else if (count % 3 === 0 && !q.preSay) q.preSay = pick(LISTEN_TIPS);
     const res = await runQuestion(q, stage);
     if (quit) break;
+    lastWrongRule = rem && !(res.correct && res.firstTry) ? rem.key : null;
     // A missed challenge question is never counted against her
     if (!(mode === 'challenge' && !res.correct)) record(sk.id, res.correct && res.firstTry);
     // Count towards today's mission (every answered question counts in its area)
@@ -712,13 +736,13 @@ async function play({ title, skills, mixed, length, mission, world, examPractice
       const en = mode === 'exam' ? weaveExam.exam.name : typeof examPractice === 'string' ? examPractice : EXAMS.find(e => examSkills(e).includes(sk))?.name;
       if (en) { dr.examDoneBy ||= {}; dr.examDoneBy[en] = (dr.examDoneBy[en] || 0) + 1; }
     }
-    if (mode !== 'challenge' && mode !== 'exam' && !mock) {
+    if (mode !== 'challenge' && mode !== 'exam' && mode !== 'check' && !mock) {
       const tl = (tally[WORLD_OF[sk.id]] ||= { n: 0, right: 0, missed: [] });
       tl.n++;
       if (res.correct && res.firstTry) tl.right++;
       else if (!tl.missed.includes(sk.id)) tl.missed.push(sk.id);
     }
-    const extra = mode === 'exam'; // woven exam questions don't use up the game's questions
+    const extra = mode === 'exam' || mode === 'check'; // woven-in questions don't use up the game's questions
     if (res.correct) {
       if (!extra) done++;
       missRun = 0;

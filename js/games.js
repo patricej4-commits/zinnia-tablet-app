@@ -26,6 +26,8 @@ export function runQuestion(q, root) {
     discardRecording(); // recordings from the last question are deleted
     if (q.preSay) root.append(h(`<div class="listen-tip">👂 ${esc(q.preSay)}</div>`));
     root.append(ask);
+    // 📌 The rule or steps for this kind of question, always on screen
+    if (q.remind) root.append(h(`<div class="remind">📌 ${esc(q.remind).replace(/ (\d)\. /g, '<br>$1. ')}</div>`));
 
     const speak = async (text, opts) => { owl.classList.add('talk'); await say(text, opts); owl.classList.remove('talk'); };
 
@@ -62,7 +64,7 @@ export function runQuestion(q, root) {
     };
 
     // Reading questions: Ollie says the instruction, but never reads the words for her.
-    const intro = speak((q.preSay ? q.preSay + ' ' : '') + (q.readFirst ? `${pick(['Reading time!', 'You can read this!', 'Use your reading eyes!'])} ${q.say}` : q.say));
+    const intro = speak((q.preSay ? q.preSay + ' ' : '') + (q.remindSay ? q.remindSay + ' ' : '') + (q.readFirst ? `${pick(['Reading time!', 'You can read this!', 'Use your reading eyes!'])} ${q.say}` : q.say));
 
     const vis = q.visual ? h(`<div class="visual">${q.visual}</div>`) : null;
     if (vis) root.append(vis);

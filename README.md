@@ -124,3 +124,11 @@ picture, Riddles, Rhyming words (Sound Safari, counts for Phonics) and Capital l
 About 4 in 10 spelling questions use a NEW word that follows the same rule as her list (e.g. list 4 ck/ke: neck, joke, hike),
 marked "🆕 New word! Use the list N rule". The sound charts and vowel rules also have many extra words, so she learns
 the rule and can spell words the teacher picks that are not on the list.
+
+## Rules and steps, all the time
+- 📌 Every grammar question shows its rule in the teacher's words (a noun is the name of a person, animal, place or thing;
+  a verb is an action word or doing word; an adjective is a describing word; a pronoun takes the place of a noun ...).
+  Ollie reads it the first time in a game, after a mistake, and every 3rd time.
+- Every adding / take away question shows the numbered steps; for column sums Ollie says the steps every time.
+- New topics: "What is a…?" (Word Castle) and "Steps for adding & take away" (Number Jungle), plus a "📌 Quick check"
+  from them woven into every 4th question of grammar and maths games.

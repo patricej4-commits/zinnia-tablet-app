@@ -250,3 +250,6 @@ button { font-family: inherit; color: inherit; border: none; cursor: pointer; }
 .mchip.ok { background: #d4f8e3; }
 .island .mbadge { position: absolute; top: 8px; right: 10px; background: #fff; color: var(--ink); border-radius: 999px; padding: 2px 10px; font-size: 16px; font-weight: 700; }
 .w-spell { background: linear-gradient(160deg, #ffd23f, #f59e0b); }
+
+.remind { background: #eef7ff; border: 2px dashed #5b8def; border-radius: 16px; padding: 6px 14px; max-width: 760px; text-align: left;
+  font-size: clamp(15px, 2.2vw, 20px); color: #23407a; line-height: 1.35; }
