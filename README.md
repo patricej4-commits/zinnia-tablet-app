@@ -169,3 +169,9 @@ Zinnia and a grown-up each secretly hide 1–3 hot chips in a grid of 12, 16 or 
 Take turns: tap a chip to point at it, tap again to eat it. Safe = crunch; hot chip = lose a life (your own count too; a chip both
 picked is a double hot chip). Out of lives = lose; the board then shows where every hot chip was. Wins are counted.
 Open it from the map or the break screen any time; it does not use sitting time.
+
+## Work it out in columns (borrowing and carrying)
+Number Jungle: "Take away in columns (borrowing)" and "Add in columns (carrying)" — worksheet-style 2-digit sums she works out
+herself: decide if she must borrow/carry, tap the tens to borrow (crossed out, small numbers like on paper), then type the ones
+and the tens on a number pad. Ollie explains each step she gets wrong; after 2 tries he shows that step. Level 1 no borrowing,
+level 2 half, level 3 always (including 50 − 26).

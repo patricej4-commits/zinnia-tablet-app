@@ -241,6 +241,7 @@ function answerOf(q) {
   if (t === 'mark') return q.word + ' (marked)';
   if (t === 'numline') return String(q.mode === 'tap' ? q.target : q.start + q.hops);
   if (t === 'read') return q.sentence;
+  if (t === 'column') return String(q.op === '-' ? q.top - q.bot : q.top + q.bot);
   return '';
 }
 function logAnswer(q, sk, res) {

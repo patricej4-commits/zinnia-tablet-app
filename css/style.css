@@ -314,3 +314,19 @@ button { font-family: inherit; color: inherit; border: none; cursor: pointer; }
 .chipscore > div { background: #fff; border-radius: 18px; padding: 8px 18px; font-size: 22px; text-align: center; opacity: .6; }
 .chipscore > div.on { opacity: 1; outline: 4px solid #ff7f11; }
 .pill.on { background: #ff7f11; color: #fff; }
+
+/* Work it out in columns */
+.colsum { background: #fff; border-radius: 24px; padding: 10px 26px 16px; box-shadow: 0 6px 0 rgba(0,0,0,.08); font-family: var(--fun); }
+.crow { display: grid; grid-template-columns: 60px 80px 80px; align-items: end; }
+.cc { font-size: 64px; font-weight: 800; text-align: center; line-height: 1.1; color: #2d2a4a; min-height: 20px; }
+.cc.head { font-size: 22px; color: #7a70b0; } .cc.op { color: #ff5fa2; }
+.small-row .cc { min-height: 34px; font-size: 30px; }
+.cc .small { font-size: 30px; color: #e63946; vertical-align: super; }
+.cc .crossed { text-decoration: line-through; text-decoration-color: #e63946; text-decoration-thickness: 5px; color: #aaa; }
+.cc.tapme { outline: 5px dashed #ff5fa2; border-radius: 16px; cursor: pointer; animation: pulse .9s infinite; }
+.cline { height: 6px; background: #2d2a4a; border-radius: 3px; margin: 4px 0 6px 60px; }
+.cc.ans { min-height: 76px; color: #2ec27e; }
+.cc.ans.now { outline: 4px dashed #5b3fd1; border-radius: 16px; color: #5b3fd1; }
+.colctl { display: flex; gap: 12px; flex-wrap: wrap; justify-content: center; }
+.numpad { display: grid; grid-template-columns: repeat(5, 70px); gap: 10px; }
+.nk { height: 70px; font-size: 34px; font-weight: 800; border: 0; border-radius: 18px; background: #fff; box-shadow: 0 5px 0 rgba(0,0,0,.1); cursor: pointer; font-family: var(--fun); color: #2d2a4a; }

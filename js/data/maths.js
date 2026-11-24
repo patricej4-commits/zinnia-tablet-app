@@ -791,5 +791,45 @@ export const mathSkills = [
       };
     },
   },
+  // ======== Work it out in columns (like a worksheet): borrowing and carrying ========
+  {
+    id: 'm-colsub', name: 'Take away in columns (borrowing)', emoji: '🧮', type: 'column',
+    gen(l) {
+      let top, bot;
+      const borrow = l === 3 || (l === 2 && Math.random() < 0.5);
+      for (;;) {
+        top = rnd(l === 1 ? 20 : 30, 99);
+        bot = l === 1 && Math.random() < 0.5 ? rnd(1, 9) : rnd(10, top - 1);
+        if (l === 3 && Math.random() < 0.25) { top = rnd(3, 9) * 10; bot = rnd(11, top - 1); } // like 50 - 26
+        const needs = top % 10 < bot % 10;
+        if (needs === borrow && bot < top && top - bot >= 1) break;
+      }
+      return {
+        type: 'column', op: '-', top, bot,
+        say: `Work it out! ${top} take away ${bot}.`, text: `Work it out: ${top} − ${bot}`,
+        explain: top % 10 < bot % 10
+          ? `${top % 10} is smaller than ${bot % 10}, so we borrow 1 ten: the ${Math.floor(top / 10)} becomes ${Math.floor(top / 10) - 1}, and the ${top % 10} becomes ${top % 10 + 10}. ${top % 10 + 10} take away ${bot % 10} is ${(top % 10 + 10) - bot % 10}. ${Math.floor(top / 10) - 1} take away ${Math.floor(bot / 10)} is ${Math.floor(top / 10) - 1 - Math.floor(bot / 10)}. The answer is ${top - bot}.`
+          : `Ones first: ${top % 10} take away ${bot % 10} is ${top % 10 - bot % 10}. Then tens: ${Math.floor(top / 10)} take away ${Math.floor(bot / 10)} is ${Math.floor(top / 10) - Math.floor(bot / 10)}. The answer is ${top - bot}.`,
+      };
+    },
+  },
+  {
+    id: 'm-coladd', name: 'Add in columns (carrying)', emoji: '🧮', type: 'column',
+    gen(l) {
+      let top, bot;
+      const carry = l === 3 || (l === 2 && Math.random() < 0.5);
+      for (;;) {
+        top = rnd(10, 89); bot = l === 1 && Math.random() < 0.5 ? rnd(1, 9) : rnd(10, 89);
+        if (top + bot <= 99 && (top % 10 + bot % 10 >= 10) === carry) break;
+      }
+      const os = top % 10 + bot % 10;
+      return {
+        type: 'column', op: '+', top, bot,
+        say: `Work it out! ${top} plus ${bot}.`, text: `Work it out: ${top} + ${bot}`,
+        explain: os >= 10
+          ? `Ones first: ${top % 10} plus ${bot % 10} is ${os}. Write ${os % 10} and carry the 1 ten. Tens: ${Math.floor(top / 10)} plus ${Math.floor(bot / 10)} plus 1 is ${Math.floor(top / 10) + Math.floor(bot / 10) + 1}. The answer is ${top + bot}.`
+          : `Ones first: ${top % 10} plus ${bot % 10} is ${os}. Then tens: ${Math.floor(top / 10)} plus ${Math.floor(bot / 10)} is ${Math.floor(top / 10) + Math.floor(bot / 10)}. The answer is ${top + bot}.`,
+      };
+    },
+  },
 ];
-

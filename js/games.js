@@ -114,7 +114,7 @@ export function runQuestion(q, root) {
 
     const type = q.type || 'choice';
     const ctx = { onRight, onWrong, speak, noteMiss: () => { attempts++; } };
-    const startPlay = () => ({ choice, order, build, mark, read, follow, numline }[type])(q, area, ctx);
+    const startPlay = () => ({ choice, order, build, mark, read, follow, numline, column }[type])(q, area, ctx);
     if (q.prelude) {
       // Watch-and-learn lesson first, then the question
       ear.style.visibility = 'hidden';
@@ -496,4 +496,108 @@ export function runDemo(q, root) {
       if (!done) await say('Now it is your turn!');
     })();
   });
+}
+
+// ---------- work out a column sum herself: borrow / carry, then type each digit ----------
+// q: { type: 'column', op: '-' | '+', top, bot }
+function column(q, area, { onRight, speak, noteMiss }) {
+  const sub = q.op === '-';
+  const T = Math.floor(q.top / 10), O = q.top % 10, t = Math.floor(q.bot / 10), o = q.bot % 10;
+  const need = sub ? O < o : O + o >= 10;          // borrow (take away) or carry (add)?
+  const ansOnes = sub ? (need ? O + 10 - o : O - o) : (O + o) % 10;
+  const ansTens = sub ? (need ? T - 1 - t : T - t) : T + t + (need ? 1 : 0);
+  let step = 'decide', did = false, misses = 0, gotOnes = null, gotTens = null;
+  const box = h('<div class="colsum"></div>');
+  const say1 = h('<div class="bubble colmsg" style="text-align:center;max-width:640px"></div>');
+  const ctl = h('<div class="colctl"></div>');
+  area.append(box, say1, ctl);
+  const cell = (v, cls = '') => `<div class="cc ${cls}">${v ?? ''}</div>`;
+  function draw() {
+    const topT = sub && did ? `<span class="crossed">${T}</span>` : T || '';
+    const smallT = sub && did ? `<span class="small">${T - 1}</span>` : !sub && did ? '<span class="small">1</span>' : '';
+    const topO = sub && did ? `<span class="small">1</span>${O}` : O;
+    box.innerHTML = `
+      <div class="crow">${cell('')}${cell('T', 'head')}${cell('O', 'head')}</div>
+      <div class="crow small-row">${cell('')}${cell(smallT)}${cell('')}</div>
+      <div class="crow">${cell('')}${cell(topT, `tens ${step === 'borrow' ? 'tapme' : ''}`)}${cell(topO)}</div>
+      <div class="crow">${cell(sub ? '−' : '+', 'op')}${cell(t || '')}${cell(o)}</div>
+      <div class="cline"></div>
+      <div class="crow">${cell('')}${cell(gotTens ?? (step === 'tens' ? '?' : ''), `ans ${step === 'tens' ? 'now' : ''}`)}${cell(gotOnes ?? (step === 'ones' ? '?' : ''), `ans ${step === 'ones' ? 'now' : ''}`)}</div>`;
+    const tens = box.querySelector('.tens');
+    tens.onclick = () => {
+      if (step === 'borrow') { sfx.pop(); did = true; step = 'ones'; draw(); go(); }
+    };
+  }
+  const miss = msg => { misses++; noteMiss(); sfx.wrong(); say1.textContent = msg; speak(msg); };
+  function pad() {
+    ctl.innerHTML = `<div class="numpad">${[1, 2, 3, 4, 5, 6, 7, 8, 9, 0].map(n => `<button class="nk" data-n="${n}">${n}</button>`).join('')}</div>`;
+    ctl.querySelectorAll('.nk').forEach(b => (b.onclick = () => typed(+b.dataset.n)));
+  }
+  function go() {
+    draw();
+    if (step === 'decide') {
+      const msg = sub ? `Start with the ones. Can we take ${o} away from ${O}?` : `Start with the ones. ${O} plus ${o}. Is it 10 or more?`;
+      say1.textContent = msg; speak(msg);
+      ctl.innerHTML = sub
+        ? `<button class="big-btn green yes">✅ Yes, take away</button><button class="big-btn no">🔁 No, borrow a ten</button>`
+        : `<button class="big-btn green yes">🔟 Yes, 10 or more</button><button class="big-btn no">👍 No, less than 10</button>`;
+      const yes = ctl.querySelector('.yes'), no = ctl.querySelector('.no');
+      const pickBorrow = sub ? no : yes, pickPlain = sub ? yes : no;
+      pickBorrow.onclick = () => {
+        if (!need) return miss(sub ? `${O} is bigger than ${o}, so we CAN take away. No need to borrow.` : `${O} plus ${o} is ${O + o}. That is less than 10, so there is nothing to carry.`);
+        sfx.tap();
+        if (sub) { step = 'borrow'; draw(); const m = `Yes! ${O} is smaller than ${o}, so we borrow. Tap the ${T} in the tens to borrow 1 ten.`; say1.textContent = m; speak(m); ctl.innerHTML = ''; }
+        else { did = true; step = 'ones'; go(); }
+      };
+      pickPlain.onclick = () => {
+        if (need) return miss(sub ? `Look again: ${O} is smaller than ${o}. We cannot take ${o} away from ${O}. We must borrow a ten.` : `${O} plus ${o} is ${O + o}. That is 10 or more, so we carry a ten.`);
+        sfx.tap(); step = 'ones'; go();
+      };
+      return;
+    }
+    if (step === 'ones') {
+      const msg = sub
+        ? (did ? `Now the ones: ${O + 10} take away ${o}. Type the answer.` : `Now the ones: ${O} take away ${o}. Type the answer.`)
+        : (did ? `${O} plus ${o} is ${O + o}. Write the ${ansOnes} in the ones, and carry the 1 ten to the tens. Type the ones.` : `Now the ones: ${O} plus ${o}. Type the answer.`);
+      say1.textContent = msg; speak(msg); pad(); return;
+    }
+    if (step === 'tens') {
+      const msg = sub ? (did ? `Now the tens: ${T - 1} take away ${t}. Type the answer.` : `Now the tens: ${T} take away ${t}. Type the answer.`)
+        : (did ? `Now the tens: ${T} plus ${t}, plus the 1 we carried. Type the answer.` : `Now the tens: ${T} plus ${t}. Type the answer.`);
+      say1.textContent = msg; speak(msg); pad(); return;
+    }
+  }
+  let stepMiss = 0;
+  function typed(n) {
+    if (step === 'ones') {
+      if (n !== ansOnes) {
+        stepMiss++;
+        if (stepMiss >= 2) {
+          gotOnes = ansOnes; stepMiss = 0;
+          miss(`The ones answer is ${ansOnes}. ${sub ? `${did ? O + 10 : O} take away ${o} is ${ansOnes}` : `${O} plus ${o} is ${O + o}`}.`);
+          if (ansTens === 0 && !(q.bot >= 10)) { setTimeout(done, 2600); return; }
+          step = 'tens'; setTimeout(go, 2600); return;
+        }
+        return miss(sub ? `Not quite. Count back: ${did ? O + 10 : O} take away ${o}. Try again!` : `Not quite. ${O} plus ${o}... try again!`);
+      }
+      sfx.correct(); gotOnes = n; stepMiss = 0;
+      if (ansTens === 0 && !(q.bot >= 10)) return done();
+      step = 'tens'; go(); return;
+    }
+    if (step === 'tens') {
+      if (n !== ansTens) {
+        stepMiss++;
+        if (stepMiss >= 2) { gotTens = ansTens; draw(); miss(`The tens answer is ${ansTens}.`); return setTimeout(done, 2200); }
+        return miss(sub ? (did ? `Remember, we borrowed, so the ${T} is now ${T - 1}. ${T - 1} take away ${t}. Try again!` : `${T} take away ${t}. Try again!`) : (did ? `Don't forget the 1 we carried! ${T} plus ${t} plus 1. Try again!` : `${T} plus ${t}. Try again!`));
+      }
+      sfx.correct(); gotTens = n; done();
+    }
+  }
+  function done() {
+    step = 'done'; draw(); ctl.innerHTML = '';
+    const ans = sub ? q.top - q.bot : q.top + q.bot;
+    say1.textContent = `${q.top} ${sub ? 'take away' : 'plus'} ${q.bot} is ${ans}! ${sub ? `Check: ${ans} + ${q.bot} = ${q.top} ✔` : ''}`;
+    onRight();
+  }
+  go();
 }

@@ -67,9 +67,9 @@ export const RULES = {
     def: 'How to find rhymes: 1. Say both words. 2. Listen to the end: the vowel and the last sound. 3. Same ending? They rhyme! (cluck, duck)', eg: '' },
   // ---- Maths steps
   add: { word: 'adding', say: 'Remember: start with the bigger number, then count on.', def: 'Adding: 1. Put the bigger number in your head. 2. Count on the smaller number. 3. The last number you say is the answer.', eg: '5 + 3: 5... 6, 7, 8' },
-  colAdd: { word: 'adding in columns', say: 'Remember the steps: start with the ones. Then the tens. Write the answer under the line.', def: 'Adding in columns: 1. Start with the ones. Add the ones. 2. Then add the tens. 3. Write the answer under the line.', eg: '' },
+  colAdd: { word: 'adding in columns', say: 'Remember the steps: start with the ones. If they make 10 or more, carry 1 ten. Then add the tens.', def: 'Adding in columns: 1. Start with the ones. Add the ones. 2. 10 or more? Write the ones and carry 1 ten to the tens. 3. Add the tens (and the 1 you carried). 4. Write the answer under the line.', eg: '' },
   sub: { word: 'take away', say: 'Remember: start with the big number, take away the small number, then count what is left.', def: 'Take away: 1. Start with the big number. 2. Take away (cross out) the small number. 3. Count what is left.', eg: '8 − 3: cross out 3, count 5' },
-  colSub: { word: 'take away in columns', say: 'Remember the steps: big number on top. Start with the ones. Then the tens. Write the answer under the line.', def: 'Take away in columns: 1. The big number goes on top. 2. Start with the ones: take away the ones. 3. Then the tens. 4. Write the answer under the line. 5. Check: add your answer and the bottom number. You get the top number!', eg: '' },
+  colSub: { word: 'take away in columns', say: 'Remember the steps: big number on top. Start with the ones. If the top ones are smaller, borrow 1 ten. Then the tens.', def: 'Take away in columns: 1. The big number goes on top. 2. Start with the ones. Is the top ones digit smaller? Borrow 1 ten: the tens go down by 1, and the ones get 10 more. 3. Take away the ones. 4. Take away the tens. 5. Check: add your answer and the bottom number. You get the top number!', eg: '' },
   nline: { word: 'number line', def: 'On the number line, adding hops to the right (numbers get bigger). Take away hops to the left (numbers get smaller).', eg: '' },
 };
 export const PARTS_MIX = 'Noun = naming word. Verb = action word. Adjective = describing word. Pronoun = takes the place of a noun.';
@@ -80,7 +80,7 @@ export const RULE_FOR = {
   'g-waswere': 'waswere', 'g-verb': 'verb', 'g-adjective': 'adjective', 'g-compound': 'compound', 'g-sentence': 'sentence', 'g-capital': 'sentSteps',
   'g-endmark': 'endmark', 'g-possessive': 'possessive', 'g-helping': 'helping', 'g-abc': 'abc', 'g-opposites': 'opposite', 'p-vowels': 'vowels',
   'g-parts': 'partSteps', 'g-find': 'partSteps', 'g-use': 'mix', 'g-build': 'sentence',
-  'm-add': 'add', 'm-sub': 'sub', 'm-nl-hop': 'nlineSteps', 'm-story': 'mathsStory',
+  'm-add': 'add', 'm-sub': 'sub', 'm-colsub': 'colSub', 'm-coladd': 'colAdd', 'm-nl-hop': 'nlineSteps', 'm-story': 'mathsStory',
   'p-sounds': 'special', 'p-keyword': 'special', 'p-onetwo': 'onetwo', 'p-mark': 'onetwo', 'p-ck': 'ck', 'p-floss': 'floss', 'p-blend': 'blend',
   'p-spell': 'spellSteps', 'p-missing': 'spellSteps', 'p-rightspell': 'spellSteps', 's-unscramble': 'spellSteps', 's-clue': 'spellSteps', 'p-rhyme': 'rhymeSteps', 's-rhyme': 'rhymeSteps', 'l-rhyme': 'rhymeSteps',
   's-sight': 'sight', 'r-sight': 'sight', 'r-story': 'answerSteps', 'l-story': 'answerSteps', 'r-word': 'readSteps', 'r-picword': 'readSteps', 'r-match': 'matchSteps', 'r-tells': 'tellsSteps', 'r-finish': 'makesense', 'r-wordbank': 'makesense', 's-sentence': 'makesense',
