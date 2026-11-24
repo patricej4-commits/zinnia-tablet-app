@@ -86,6 +86,14 @@ const ONE_VOWEL = ['fan', 'hop', 'mud', 'jam', 'lid', 'rug', 'web', 'fox', 'dig'
 const TWO_VOWEL = ['road', 'soap', 'toad', 'seat', 'meat', 'lake', 'name', 'tape', 'hide', 'five', 'line', 'time', 'mule', 'cute', 'pail', 'nail', 'feet', 'jeep', 'bite', 'cane', 'made', 'tube', 'quite', 'slide', 'grime', 'slime', 'meet', 'team', 'heal', 'tree', 'keep', 'beach', 'reach', 'goat', 'ape', 'bake', 'cape', 'date', 'face', 'gate', 'cake', 'rain', 'road', 'mane', 'tweet', 'glaze', 'brake', 'scale', 'dream', 'queen', 'quote', 'quake', 'kite', 'bike', 'boat', 'snake', 'tail', 'seed', 'leaf'];
 
 const ONE_RULE = 'One vowel? It says its short sound. Give it a smile.';
+// Explain with THIS word: which vowels it has and what they do
+const vowelsIn = w => w.split('').filter((c, i) => VOWELS.includes(c) && !(c === 'u' && w[i - 1] === 'q'));
+const wordRule = w => {
+  const v = vowelsIn(w);
+  return v.length === 1
+    ? `${w} has 1 vowel: ${v[0]}. One vowel says its short sound, so ${v[0]} is short. Give it a smile.`
+    : `${w} has 2 vowels: ${v[0]} and ${v[1]}. The first one, ${v[0]}, says its name (long). The ${v[1]} is quiet. Dash on the ${v[0]}, slash on the ${v[1]}.`;
+};
 const TWO_RULE = 'Two vowels? The first one says its name. The second one is quiet. Dash on the first. Slash on the second.';
 
 export const phonicsSkills = [
@@ -191,7 +199,7 @@ export const phonicsSkills = [
         options: [{ html: '<span class="pic">˘</span><span class="lbl">Short (one vowel)</span>', value: 's' },
           { html: '<span class="pic">¯</span><span class="lbl">Long (two vowels)</span>', value: 'l' }],
         cols: 'two', answer: two ? 'l' : 's',
-        explain: (two ? TWO_RULE : ONE_RULE) + ` The word is ${w}.`,
+        explain: wordRule(w),
       };
     },
   },
@@ -206,7 +214,7 @@ export const phonicsSkills = [
         type: 'mark', word: w, marks,
         say: `Mark the vowels in ${w}. Tap a red letter.`,
         hint: two ? 'Dash on the first. Slash on the second.' : 'One vowel gets a smile.',
-        explain: (two ? TWO_RULE : ONE_RULE) + (w.includes('qu') ? ' Do not mark the u after q.' : ''),
+        explain: wordRule(w) + (w.includes('qu') ? ' Do not mark the u after q.' : ''),
       };
     },
   },

@@ -59,6 +59,10 @@ export const RULES = {
     def: 'How to use a number line: 1. Find the start number. 2. Adding: hop to the right. Take away: hop to the left. 3. Count each hop. 4. Where you land is the answer.', eg: '' },
   sentSteps: { word: 'writing a sentence', say: 'Remember: capital letter at the start, capitals for names, spaces between words, and an end mark.',
     def: 'How to write a sentence correctly: 1. Start with a capital letter. 2. Use capital letters for names, God and I. 3. Leave spaces between words. 4. End with a period, a question mark or an exclamation mark.', eg: '' },
+  tellsSteps: { word: 'picture sentences', say: 'Look at the picture, then read each sentence. Which one tells what you see?',
+    def: 'How to find the sentence for a picture: 1. Look carefully at the picture. 2. Read each sentence. 3. Pick the one that tells what you see.', eg: '' },
+  matchSteps: { word: 'read and find', say: 'Read the whole sentence, then find the picture that shows it.',
+    def: 'How to match: 1. Read the whole sentence. 2. Find the main word (who or what it is about). 3. Find the picture that shows it.', eg: '' },
   rhymeSteps: { word: 'rhyming', say: 'Remember: say both words and listen to the ending. Same ending? They rhyme!',
     def: 'How to find rhymes: 1. Say both words. 2. Listen to the end: the vowel and the last sound. 3. Same ending? They rhyme! (cluck, duck)', eg: '' },
   // ---- Maths steps
@@ -79,7 +83,7 @@ export const RULE_FOR = {
   'm-add': 'add', 'm-sub': 'sub', 'm-nl-hop': 'nlineSteps', 'm-story': 'mathsStory',
   'p-sounds': 'special', 'p-keyword': 'special', 'p-onetwo': 'onetwo', 'p-mark': 'onetwo', 'p-ck': 'ck', 'p-floss': 'floss', 'p-blend': 'blend',
   'p-spell': 'spellSteps', 'p-missing': 'spellSteps', 'p-rightspell': 'spellSteps', 's-unscramble': 'spellSteps', 's-clue': 'spellSteps', 'p-rhyme': 'rhymeSteps', 's-rhyme': 'rhymeSteps', 'l-rhyme': 'rhymeSteps',
-  's-sight': 'sight', 'r-sight': 'sight', 'r-story': 'answerSteps', 'l-story': 'answerSteps', 'r-word': 'readSteps', 'r-picword': 'readSteps', 'r-match': 'readSteps', 'r-tells': 'readSteps', 'r-finish': 'makesense', 'r-wordbank': 'makesense', 's-sentence': 'makesense',
+  's-sight': 'sight', 'r-sight': 'sight', 'r-story': 'answerSteps', 'l-story': 'answerSteps', 'r-word': 'readSteps', 'r-picword': 'readSteps', 'r-match': 'matchSteps', 'r-tells': 'tellsSteps', 'r-finish': 'makesense', 'r-wordbank': 'makesense', 's-sentence': 'makesense',
   'm-bond': 'bond', 'm-tens': 'tens', 'm-compare': 'compare', 'm-symbols': 'compare', 'm-nl-compare': 'compare', 'm-time': 'clockSteps', 'm-digital': 'clock',
   'm-count': 'counting', 'm-oneone': 'counting', 'm-ordinal': 'order', 'm-skip': 'pattern', 'm-pattern': 'pattern',
   'm-nl-read': 'nline', 'm-nl-tap': 'nlineSteps', 'm-nl-build': 'nline', 'b-verse': 'verse', 'b-letter': 'verse',
@@ -176,32 +180,49 @@ export const grammarRuleSkills = [
 ];
 
 // ---- Maths steps questions
+// [question, answer, wrong answers, a short explanation for THIS question]
 const STEP_QS = [
-  ['When we take away in columns, which number goes on top?', 'The bigger number', ['The smaller number', 'Any number']],
-  ['When we add or take away in columns, where do we start?', 'With the ones', ['With the tens', 'With the answer']],
-  ['We finished the ones. What do we do next?', 'Do the tens', ['Stop', 'Start again']],
-  ['Where do we write the answer?', 'Under the line', ['On top', 'Next to the sign']],
-  ['How can we check a take away answer?', 'Add the answer and the bottom number', ['Take away again', 'Guess']],
-  ['When we add by counting on, which number do we start with?', 'The bigger number', ['The smaller number', 'Zero']],
-  ['When we take away, do we get more or less?', 'Less', ['More', 'The same']],
-  ['When we add, do we get more or less?', 'More', ['Less', 'The same']],
-  ['What does the + sign mean?', 'Add (plus)', ['Take away (minus)', 'Equals']],
-  ['What does the − sign mean?', 'Take away (minus)', ['Add (plus)', 'Equals']],
-  ['What does the = sign mean?', 'Equals (the same as)', ['Add', 'Take away']],
-  ['On a number line, which way do we hop to add?', 'To the right', ['To the left', 'Up']],
-  ['On a number line, which way do we hop to take away?', 'To the left', ['To the right', 'Down']],
-  ['In 15, which digit is in the ones place?', '5', ['1', '15']],
-  ['In 17, which digit is in the tens place?', '1', ['7', '17']],
-  ['To take away 3 from 8 with counters, what do we do?', 'Cross out 3 and count what is left', ['Add 3 more', 'Count all 8']],
-  ['Why does the bigger number go on top when we take away?', 'We cannot take away more than we have', ['It looks nicer', 'The teacher likes it']],
-  ['Why do we line up the ones under the ones and the tens under the tens?', 'So we add and take away the right places', ['So it looks long', 'So we can skip the ones']],
-  ['Why do we start counting on from the bigger number?', 'It is faster: fewer numbers to count', ['It is slower', 'Because it is the answer']],
-  ['Why does adding give us more?', 'We are putting more things together', ['We are taking things away', 'Nothing changes']],
-  ['Why does take away give us less?', 'Some things are taken away', ['We are adding more', 'Nothing changes']],
-  ['In a number bond, the whole is 9 and one part is 4. Why is the other part 5?', 'Because 4 and 5 make 9', ['Because 9 and 4 make 5', 'Because 5 is bigger']],
-  ['Why is 14 the same as 1 ten and 4 ones?', 'The 1 is in the tens place and the 4 is in the ones place', ['Because 1 and 4 make 5', 'Because 14 is small']],
-  ['Why do we touch each thing when we count?', 'So we count each thing only one time', ['So it gets dirty', 'So we can skip some']],
+  ['When we take away in columns, which number goes on top?', 'The bigger number', ['The smaller number', 'Any number'], 'The bigger number goes on top, because we take away FROM the bigger number.'],
+  ['When we add or take away in columns, where do we start?', 'With the ones', ['With the tens', 'With the answer'], 'We always start with the ones. The ones are on the right side.'],
+  ['We finished the ones. What do we do next?', 'Do the tens', ['Stop', 'Start again'], 'First the ones, then the tens.'],
+  ['Where do we write the answer?', 'Under the line', ['On top', 'Next to the sign'], 'The answer goes under the line.'],
+  ['How can we check a take away answer?', 'Add the answer and the bottom number', ['Take away again', 'Guess'], 'Example: 8 take away 3 is 5. Check: 5 add 3 makes 8. It matches the top number, so we are right!'],
+  ['When we add by counting on, which number do we start with?', 'The bigger number', ['The smaller number', 'Zero'], 'Start with the bigger number, then count on. For 2 + 6: start at 6, then count 7, 8.'],
+  ['When we take away, do we get more or less?', 'Less', ['More', 'The same'], 'Take away means some are gone, so we have less.'],
+  ['When we add, do we get more or less?', 'More', ['Less', 'The same'], 'Adding puts more together, so we have more.'],
+  ['What does the + sign mean?', 'Add (plus)', ['Take away (minus)', 'Equals'], '+ means add. 2 + 1 = 3.'],
+  ['What does the − sign mean?', 'Take away (minus)', ['Add (plus)', 'Equals'], '− means take away. 3 − 1 = 2.'],
+  ['What does the = sign mean?', 'Equals (the same as)', ['Add', 'Take away'], '= means equals: both sides are the same amount. 2 + 2 = 4.'],
+  ['On a number line, which way do we hop to add?', 'To the right', ['To the left', 'Up'], 'Numbers get bigger to the right. Adding makes bigger, so we hop right.'],
+  ['On a number line, which way do we hop to take away?', 'To the left', ['To the right', 'Down'], 'Numbers get smaller to the left. Take away makes smaller, so we hop left.'],
+  ['To take away 3 from 8 with counters, what do we do?', 'Cross out 3 and count what is left', ['Add 3 more', 'Count all 8'], 'Show 8 counters. Cross out 3. Count the ones left: 5.'],
+  ['Why does the bigger number go on top when we take away?', 'We cannot take away more than we have', ['It looks nicer', 'The teacher likes it'], 'If you have 3 sweets, you cannot give away 8. So the bigger number goes on top.'],
+  ['Why do we line up the ones under the ones and the tens under the tens?', 'So we add and take away the right places', ['So it looks long', 'So we can skip the ones']," Ones go with ones and tens go with tens, so we don't mix them up."],
+  ['Why do we start counting on from the bigger number?', 'It is faster: fewer numbers to count', ['It is slower', 'Because it is the answer'], 'For 2 + 7: start at 7 and count 2 more (8, 9). That is faster than counting 7 more.'],
+  ['Why does adding give us more?', 'We are putting more things together', ['We are taking things away', 'Nothing changes'], 'When we add, we put things together, so there are more.'],
+  ['Why does take away give us less?', 'Some things are taken away', ['We are adding more', 'Nothing changes'], 'When we take away, some things are gone, so there are less.'],
+  ['In a number bond, the whole is 9 and one part is 4. What is the other part?', '5', ['13', '4'], '4 and 5 make 9. So the other part is 5.'],
+  ['Why do we touch each thing when we count?', 'So we count each thing only one time', ['So it gets dirty', 'So we can skip some'], 'Touching each one stops us counting the same thing twice.'],
 ];
+// Tens and ones questions, made fresh each time, with a picture of the tens and ones
+const placeChart = n => `<div style="display:flex;gap:6px;justify-content:center;font-size:44px;font-weight:800">
+  <div style="background:#fff;border-radius:14px;padding:4px 18px;text-align:center"><div style="font-size:18px;color:#5b3fd1">tens</div>${Math.floor(n / 10)}</div>
+  <div style="background:#fff;border-radius:14px;padding:4px 18px;text-align:center"><div style="font-size:18px;color:#ff5fa2">ones</div>${n % 10}</div></div>`;
+function placeQ(l) {
+  const n = l === 3 ? 21 + Math.floor(Math.random() * 69) : 11 + Math.floor(Math.random() * 9);
+  const t = Math.floor(n / 10), o = n % 10;
+  if (t === o) return placeQ(l);
+  const askOnes = Math.random() < 0.5;
+  const a = String(askOnes ? o : t), w = String(askOnes ? t : o);
+  return {
+    say: `Look at the number ${n}. Which digit is in the ${askOnes ? 'ones' : 'tens'} place?`,
+    text: `Which digit is in the ${askOnes ? 'ONES' : 'TENS'} place?`,
+    visual: `<div class="word-big">${n}</div>`,
+    options: shuffle([a, w, String(n)]).map(x => ({ html: `<span class="lbl" style="font-size:40px">${x}</span>`, value: x, say: x })), answer: a,
+    explain: `${n} is ${t} ten${t === 1 ? '' : 's'} and ${o} one${o === 1 ? '' : 's'}. The digit on the LEFT (${t}) is the tens. The digit on the RIGHT (${o}) is the ones. So the ${askOnes ? 'ones' : 'tens'} digit is ${a}.`,
+    explainVisual: placeChart(n),
+  };
+}
 const ORDER_STEPS = [
   { name: 'take away in columns', steps: ['Big number on top', 'Take away the ones', 'Take away the tens', 'Write the answer'] },
   { name: 'adding in columns', steps: ['Add the ones', 'Add the tens', 'Write the answer'] },
@@ -222,11 +243,12 @@ export const mathStepSkills = [
           explain: `The steps for ${o.name}: ${o.steps.map((s, i) => `${i + 1}. ${s}`).join('. ')}.`,
         };
       }
-      const [qq, a, wrong] = pick(STEP_QS);
+      if (Math.random() < 0.25) return placeQ(l);
+      const [qq, a, wrong, why] = pick(STEP_QS);
       return {
         say: qq, readFirst: l === 3,
         options: shuffle([a, ...wrong]).map(x => ({ html: `<span class="lbl" style="font-size:24px">${x}</span>`, value: x, say: x })), answer: a,
-        explain: `${a}. ${/column|ones|tens|line|top|check/i.test(qq) ? RULES.colSub.def : /add|\+/i.test(qq) ? RULES.add.def : RULES.sub.def}`,
+        explain: why,
       };
     },
   },
@@ -274,24 +296,24 @@ const HOW_ORDER = {
 };
 const HOW_QS = {
   spell: [
-    ['What is the first step to spell a word?', 'Say the word slowly', ['Write any letters', 'Close the book']],
-    ['How do you know how many letters to write?', 'Listen for each sound', ['Guess', 'Count your fingers']],
-    ['After you spell a word, what should you do?', 'Read it back to check', ['Throw it away', 'Spell it faster']],
-    ['You hear a short vowel and a k sound at the end. What do you write?', 'ck', ['ke', 'kk']],
-    ['You hear a long vowel and a k sound at the end. What do you write?', 'ke', ['ck', 'c']],
-    ['You hear the sound sh. How many letters do you write?', 'two: s and h', ['one: s', 'three']],
-    ['A short word ends in an l sound after a short vowel. What do you write?', 'll', ['l', 'le']],
-    ['The teacher says a word that is not on your list. What do you do?', 'Use the rules and the sounds', ['Give up', 'Write your list word']],
+    ['What is the first step to spell a word?', 'Say the word slowly', ['Write any letters', 'Close the book'], 'First say the word slowly, so you can hear every sound.'],
+    ['How do you know how many letters to write?', 'Listen for each sound', ['Guess', 'Count your fingers'], 'Each sound you hear needs a letter (or a special sound like sh). c-a-t has 3 sounds, so 3 letters.'],
+    ['After you spell a word, what should you do?', 'Read it back to check', ['Throw it away', 'Spell it faster'], 'Read your word back. Does it say the word you wanted? Then it is right!'],
+    ['You hear a short vowel and a k sound at the end. What do you write?', 'ck', ['ke', 'kk'], 'Short vowel + k sound at the end = ck, like back and duck.'],
+    ['You hear a long vowel and a k sound at the end. What do you write?', 'ke', ['ck', 'c'], 'Long vowel + k sound at the end = k and a silent e, like bake and like.'],
+    ['You hear the sound sh. How many letters do you write?', 'two: s and h', ['one: s', 'three'], 'The sh sound is written with two letters: s and h, like in ship.'],
+    ['A short word ends in an l sound after a short vowel. What do you write?', 'll', ['l', 'le'], 'Short-vowel words that end with an l sound get two l letters: bell, doll, hill.'],
+    ['The teacher says a word that is not on your list. What do you do?', 'Use the rules and the sounds', ['Give up', 'Write your list word'], 'You can spell new words too! Say it slowly, listen for the sounds, and use your rules.'],
   ],
   read: [
-    ['You see a new word. What do you look for first?', 'The vowel', ['The pictures', 'The last page']],
-    ['What do you do after you say each sound?', 'Blend the sounds together', ['Stop reading', 'Skip the word']],
-    ['A question asks "Where...?". What are you looking for?', 'A place', ['A person', 'A time']],
-    ['A question asks "Who...?". What are you looking for?', 'A person or animal', ['A place', 'A reason']],
-    ['A question asks "When...?". What are you looking for?', 'A time', ['A place', 'A colour']],
-    ['A question asks "Why...?". What are you looking for?', 'A reason', ['A place', 'A name']],
-    ['You do not know the answer to a story question. What do you do?', 'Look back in the story', ['Guess', 'Close the book']],
-    ['How do you know if you picked the right word for a sentence?', 'Read the sentence again. Does it make sense?', ['Pick the longest word', 'Pick the first word']],
+    ['You see a new word. What do you look for first?', 'The vowel', ['The pictures', 'The last page'], 'Find the vowel first (a, e, i, o, u). It tells you the sound in the middle of the word.'],
+    ['What do you do after you say each sound?', 'Blend the sounds together', ['Stop reading', 'Skip the word'], 'Say the sounds, then push them together: c-a-t... cat!'],
+    ['A question asks "Where...?". What are you looking for?', 'A place', ['A person', 'A time'], 'Where asks for a place, like at school or in the park.'],
+    ['A question asks "Who...?". What are you looking for?', 'A person or animal', ['A place', 'A reason'], 'Who asks for a person or an animal, like Mum or the dog.'],
+    ['A question asks "When...?". What are you looking for?', 'A time', ['A place', 'A colour'], 'When asks for a time, like in the morning or on Sunday.'],
+    ['A question asks "Why...?". What are you looking for?', 'A reason', ['A place', 'A name'], 'Why asks for a reason. The answer often has because in it.'],
+    ['You do not know the answer to a story question. What do you do?', 'Look back in the story', ['Guess', 'Close the book'], 'The answer is in the story. Go back and read it again to find it.'],
+    ['How do you know if you picked the right word for a sentence?', 'Read the sentence again. Does it make sense?', ['Pick the longest word', 'Pick the first word'], 'Put the word in and read the whole sentence. If it makes sense, it is right.'],
   ],
 };
 const howSkill = (id, name, emoji, kind) => ({
@@ -302,9 +324,9 @@ const howSkill = (id, name, emoji, kind) => ({
       return { type: 'order', say: `Put the steps for ${o.name} in the right order.`, items: shuffle(o.steps), answer: o.steps,
         explain: `The steps for ${o.name}: ${o.steps.map((x, i) => `${i + 1}. ${x}`).join('. ')}.` };
     }
-    const [qq, a, wrong] = pick(HOW_QS[kind]);
+    const [qq, a, wrong, why] = pick(HOW_QS[kind]);
     return { say: qq, readFirst: l === 3, options: shuffle([a, ...wrong]).map(x => ({ html: `<span class="lbl" style="font-size:24px">${x}</span>`, value: x, say: x })), answer: a,
-      explain: `${a}. ${kind === 'spell' ? RULES.spellSteps.def : /story|Who|Where|When|Why/.test(qq) ? RULES.answerSteps.def : RULES.readSteps.def}` };
+      explain: why };
   },
 });
 export const spellHowSkills = [howSkill('s-how', 'How do I spell it?', '🪜', 'spell')];
