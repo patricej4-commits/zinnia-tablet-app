@@ -35,6 +35,10 @@ const MORE = {
   11: ['coin', 'soil', 'foil', 'coil', 'voice', 'joint', 'broil', 'enjoy', 'annoy', 'cowboy'],
   12: ['cook', 'hook', 'took', 'hood', 'stood', 'wool', 'spoon', 'pool', 'cool', 'tool', 'zoo', 'soon', 'broom', 'goose', 'shoot'],
 };
+// 🌟 Stretch words: bigger words she has not practised, built from the same rules (for challenge questions)
+const STRETCH = ['sunset', 'picnic', 'napkin', 'rabbit', 'kitten', 'mitten', 'basket', 'cobweb', 'sandbox', 'backpack', 'bedtime', 'cupcake',
+  'pancake', 'sunshine', 'rainbow', 'mailbox', 'seashell', 'football', 'cowboy', 'playtime', 'sailboat', 'snowman', 'toothbrush', 'bookshelf',
+  'goldfish', 'popcorn', 'hilltop', 'sunlight', 'bathtub', 'raincoat', 'sandcastle', 'shipshape', 'thunder', 'birthday', 'outside'];
 const EXAM_LISTS = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11]; // Christmas exam: lists 1-11
 // Level 1: lists 1-4, level 2: lists 1-8, level 3: all exam lists (+ list 12)
 const listsFor = l => (l === 1 ? [1, 2, 3, 4] : l === 2 ? [1, 2, 3, 4, 5, 6, 7, 8] : [...EXAM_LISTS, 12]);
@@ -108,8 +112,19 @@ const pic = w => (picOf(w) ? `<div style="font-size:96px">${picOf(w)}</div>` : '
 
 export const spellingSkills = [
   {
-    id: 's-spell', name: 'Spell my list words', emoji: '🐝', type: 'build',
+    id: 's-spell', name: 'Spell my list words', emoji: '🐝', type: 'build', stretch: true,
     gen(l) {
+      if (l >= 4) {
+        // 🌟 Challenge: a stretch word — split it into its small parts and use the rules
+        const w = pick(STRETCH), parts = chunk(w);
+        return {
+          type: 'build', word: w, parts, extra: sample(['sh', 'ck', 'ee', 'oo', 'a', 'e', 'i', 'o', 'u', 't', 'n'].filter(c => !parts.includes(c)), 2),
+          rule: 'Big words are made of small parts. Spell one part at a time.',
+          say: `Stretch word! Spell ${w}. ${w}. Spell it one small part at a time.`, text: '🌟 Stretch word! Spell it one part at a time 👂',
+          visual: picOf(w) ? pic(w) : '<div style="font-size:80px">👂</div>',
+          explain: `${w} is spelled ${w.split('').join(' ')}. Big words are made of small parts you already know.`,
+        };
+      }
       const { n, list, w, isNew } = pickWord(l);
       const parts = chunk(w);
       const pool = ['sh', 'th', 'ck', 'ke', 'ay', 'ou', 'ow', 'er', 'ir', 'ur', 'oi', 'oy', 'oo', 'a', 'e', 'i', 'o', 'u', 's', 't', 'n', 'l'];

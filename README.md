@@ -141,3 +141,10 @@ the rule and can spell words the teacher picks that are not on the list.
 - Health, Safety & Manners 1 (Abeka, pages 2–37): 3 My World topics with every habit's reason — growing, habits, the 5 food
   groups, breakfast, snacks, exercise, sunshine, rest, sleep, posture, skin, germs, nails, hair, eyes, ears, nose, teeth,
   clothes, home and chores, with the book's Bible verses. Counted for Integrated Studies.
+
+## How-to steps, memory and stretch
+- HOW TO steps on screen for spelling a word, reading a new word, answering a story question, finding word types, word problems,
+  telling time, the number line, writing a sentence and rhyming. New topics "How do I spell it?" and "How do I read it?" ask the steps.
+- Memory: a missed question comes back 3–4 questions later in the same game, then on later days (after 1, 3, 7, 14 days) until she
+  gets it right first time each time. Parent Zone shows the memory list.
+- Challenge: at the top spelling level, challenge questions use 🌟 stretch words (sunset, picnic, rainbow, toothbrush...) built from her rules.

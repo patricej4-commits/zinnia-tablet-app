@@ -543,6 +543,36 @@ const qSig = q => [q.skill, q.text, q.say, q.word, q.sentence, q.target, q.start
 // in a topic even when the question is worded a different way.
 const qKey = q => q.skill + ':' + (q.word || q.sentence || plainText(q.visual).replace(/\s+/g, ' ').slice(0, 60) || JSON.stringify(q.answer));
 
+// ---------- Memory: what she gets wrong comes back until she knows it ----------
+// Same game: the exact question again 3–4 questions later. Later days: again after 1, 3, 7 and 14 days.
+// Each time she gets it right first time it waits longer; a miss starts it again.
+const REVIEW_GAPS = [0.1, 1, 3, 7, 14]; // days
+const plainQ = q => { try { if (Object.values(q).some(v => typeof v === 'function') || q.type === 'read') return null; return JSON.parse(JSON.stringify(q)); } catch (e) { return null; } };
+function reviewMiss(sk, q) {
+  const p = plainQ(q); if (!p) return;
+  store.review ||= {};
+  const k = qKey(q), r = store.review[k];
+  store.review[k] = { s: sk.id, q: p, box: 0, due: Date.now() + REVIEW_GAPS[0] * 864e5, misses: (r?.misses || 0) + 1 };
+  const keys = Object.keys(store.review);
+  if (keys.length > 250) keys.sort((a, b) => store.review[a].due - store.review[b].due).slice(0, keys.length - 250).forEach(x => delete store.review[x]);
+}
+function reviewRight(q) {
+  const k = qKey(q), r = store.review?.[k];
+  if (!r) return;
+  r.box++;
+  if (r.box >= REVIEW_GAPS.length) delete store.review[k]; // learned!
+  else r.due = Date.now() + REVIEW_GAPS[r.box] * 864e5;
+}
+const dueReviews = ids => Object.values(store.review || {}).filter(r => r.due <= Date.now() && ids.has(r.s));
+function fromReview(r) {
+  const q = JSON.parse(JSON.stringify(r.q));
+  if (q.options) q.options = shuffle(q.options);
+  if (q.items) q.items = shuffle(q.items);
+  delete q.preSay; delete q.remind; delete q.remindSay; delete q.why; delete q.whySay;
+  if (q.say) q.say = q.say.replace(/^(Here is one you know!|You can do this one!|Let's warm up!|Challenge time!) /, '');
+  return q;
+}
+
 function makeQuestion(sk, levelOverride) {
   const lvl = levelOverride || skill(sk.id).level;
   const recent = new Set(store.recentQs || []);
@@ -644,6 +674,9 @@ async function play({ title, skills, mixed, length, mission, world, examPractice
     return checkSkills.filter(sk => (sk.id === 'g-whatis' ? g : m));
   };
   const remindCount = {}; let lastWrongRule = null; let whyCount = 0;
+  const againQ = [];          // missed this game: the same question comes back 3–4 questions later
+  let sinceReview = 0;
+  const poolIds = new Set(skills.map(sk => sk.id));
 
   const timesAsked = {};    // topic -> questions asked this game (max 2 each, so it does not repeat)
   const gameMisses = {};    // topic -> misses this game
@@ -664,7 +697,7 @@ async function play({ title, skills, mixed, length, mission, world, examPractice
   let challengeNext = false; // she is on a streak: offer a harder bonus question
 
   while (done < total && count < maxQ && !quit && !sittingUp()) {
-    let sk, mode = 'normal';
+    let sk, mode = 'normal', againItem = null;
     if (missRun >= 2 && !mock) {
       // Two misses in a row: give her an easy win from something she knows well
       sk = [...pool].sort((a, b) => mastery(b.id) - mastery(a.id))[0];
@@ -674,6 +707,12 @@ async function play({ title, skills, mixed, length, mission, world, examPractice
     else if (!examPractice && !mock && !easyMode && sinceExam >= 2 && (weaveExam = weaveExamSkill(last))) {
       // Every third question: a woven-in exam practice question (extra, does not replace a mission topic)
       sk = weaveExam.sk; mode = 'exam'; sinceExam = 0;
+    }
+    else if (!mock && againQ.length && count >= againQ[0].at) {
+      const a = againQ.shift(); sk = a.sk; mode = 'again'; againItem = a.q;
+    }
+    else if (!mock && !easyMode && sinceReview >= 3 && dueReviews(poolIds).length) {
+      const r = pick(dueReviews(poolIds)); sk = ALL_SKILLS.find(x => x.id === r.s); mode = 'review'; againItem = fromReview(r); sinceReview = 0;
     }
     else if (!mock && !easyMode && sinceCheck >= 4 && wantCheck().length) {
       sk = pick(wantCheck()); mode = 'check'; sinceCheck = 0;
@@ -691,7 +730,14 @@ async function play({ title, skills, mixed, length, mission, world, examPractice
     last = sk.id;
     count++;
     const lvl = skill(sk.id).level;
-    const q = makeQuestion(sk, mode === 'boost' || easyMode ? 1 : mode === 'challenge' || mock ? Math.max(2, Math.min(3, mode === 'challenge' ? lvl + 1 : lvl)) : lvl);
+    // 🌟 Challenge: one level up; at the top level, topics with stretch questions go beyond (unfamiliar words)
+    const chLvl = sk.stretch && lvl >= 3 ? 4 : Math.max(2, Math.min(3, lvl + 1));
+    const q = againItem ? (mode === 'again' ? fromReview({ q: againItem }) : againItem)
+      : makeQuestion(sk, mode === 'boost' || easyMode ? 1 : mode === 'challenge' ? chLvl : mock ? Math.max(2, Math.min(3, lvl)) : lvl);
+    if (againItem) { q.skill = sk.id; if (sk.type && !q.type) q.type = sk.type; }
+    if (mode === 'again') q.preSay = pick(['Let\'s try that one again!', 'This one came back. You can do it now!', 'Here is that tricky one again. Remember what we learned!']);
+    if (mode === 'review') { q.preSay = pick(['Do you remember this one?', 'Memory time! You had this one before.', 'This one came back. Let\'s see if you remember!']); toast('🔁 Memory check!'); }
+    else sinceReview++;
     if (mock) { q.tries = 1; q.preSay = count === 1 ? `Practice test time! Listen carefully and do your best. You get one try for each question.` : q.preSay; }
     if (mode === 'challenge') {
       toast('⭐ Challenge question! Bonus coins! ⭐');
@@ -730,6 +776,15 @@ async function play({ title, skills, mixed, length, mission, world, examPractice
     const res = await runQuestion(q, stage);
     if (quit) break;
     lastWrongRule = rem && !(res.correct && res.firstTry) ? rem.key : null;
+    // Memory: a miss comes back later this game and on later days; a first-try right pushes it further away
+    if (!mock && mode !== 'challenge') {
+      if (res.correct && res.firstTry) reviewRight(q);
+      else {
+        reviewMiss(sk, q);
+        if (mode !== 'again' && againQ.length < 4) againQ.push({ sk, q: plainQ(q), at: count + 3 + (Math.random() < 0.5 ? 1 : 0) });
+      }
+    }
+    if (againQ.length && !againQ[0].q) againQ.shift();
     // A missed challenge question is never counted against her
     if (!(mode === 'challenge' && !res.correct)) record(sk.id, res.correct && res.firstTry);
     // Count towards today's mission (every answered question counts in its area)
@@ -743,13 +798,13 @@ async function play({ title, skills, mixed, length, mission, world, examPractice
       const en = mode === 'exam' ? weaveExam.exam.name : typeof examPractice === 'string' ? examPractice : EXAMS.find(e => examSkills(e).includes(sk))?.name;
       if (en) { dr.examDoneBy ||= {}; dr.examDoneBy[en] = (dr.examDoneBy[en] || 0) + 1; }
     }
-    if (mode !== 'challenge' && mode !== 'exam' && mode !== 'check' && !mock) {
+    if (!['challenge', 'exam', 'check', 'again', 'review'].includes(mode) && !mock) {
       const tl = (tally[WORLD_OF[sk.id]] ||= { n: 0, right: 0, missed: [] });
       tl.n++;
       if (res.correct && res.firstTry) tl.right++;
       else if (!tl.missed.includes(sk.id)) tl.missed.push(sk.id);
     }
-    const extra = mode === 'exam' || mode === 'check'; // woven-in questions don't use up the game's questions
+    const extra = ['exam', 'check', 'again', 'review'].includes(mode); // woven-in questions don't use up the game's questions
     if (res.correct) {
       if (!extra) done++;
       missRun = 0;
@@ -1164,6 +1219,9 @@ function parentZone() {
         Break between <select data-k="breakMinutes">${[0, 15, 30, 45, 60, 90].map(n => `<option value="${n}" ${n == set.breakMinutes ? 'selected' : ''}>${n ? n + ' min' : 'No break'}</option>`).join('')}</select></div>
       <div class="prow"><label><input type="checkbox" data-k="extendOnStruggle" ${set.extendOnStruggle !== false ? 'checked' : ''}> Longer day when she struggles: after 20+ answers, under 70% right first time adds 1 extra sitting, under 50% adds 2. The extra time is spent on the topics she got wrong today.</label>
         <br><small>Today so far: ${(() => { const t = todayFirstTry(); return t.n ? `${Math.round(t.pct * 100)}% right first time (${t.n} answers)` : 'no answers yet'; })()}${autoExtra() ? ` · <b>+${autoExtra()} extra sitting${autoExtra() > 1 ? 's' : ''} added</b>${dayRec().hardDone ? ` · ${dayRec().hardDone} tricky-topic questions done` : ''}` : ''}</small></div>
+      <div class="prow">🔁 <b>Memory list</b> (things she got wrong; they come back until she gets them right several times over 2 weeks):
+        ${(() => { const r = Object.values(store.review || {}); if (!r.length) return 'empty'; const due = r.filter(x => x.due <= Date.now()).length;
+          return `${r.length} items, ${due} due now<br><small>${esc(r.sort((a, b) => b.misses - a.misses).slice(0, 12).map(x => (x.q.word || plainText(x.q.visual).slice(0, 25) || plainText(x.q.say).slice(0, 30)) + (x.misses > 1 ? ` ×${x.misses}` : '')).join(' · '))}</small>`; })()}</div>
       <div class="prow"><button class="pbtn" data-a="extra">Give one extra sitting now</button> <small>Today: ${sittings().length} sitting${sittings().length === 1 ? '' : 's'} (${sittings().map(x => Math.round(x.secs / 60) + ' min').join(' + ') || 'none yet'})</small></div>
       <div class="prow" style="display:none">Daily time limit <select data-k="dailyMinutes">${[0, 15, 20, 30, 45, 60].map(n => `<option value="${n}" ${n == set.dailyMinutes ? 'selected' : ''}>${n ? n + ' minutes' : 'No limit'}</option>`).join('')}</select></div>
       <div class="prow"><button class="pbtn" data-a="pet">Choose a new pet</button><button class="pbtn danger" data-a="reset">Reset all progress</button></div>
