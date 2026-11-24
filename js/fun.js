@@ -60,9 +60,83 @@ export const ITEMS = [
   { id: 'g-beach', cat: 'place', name: 'beach', icon: '🏖️', col: '#ffe9b3', price: 20 },
   { id: 'g-party', cat: 'place', name: 'party', icon: '🎉', col: '#ffd6ec', price: 25 },
   { id: 'g-church', cat: 'place', name: 'church', icon: '⛪', col: '#ede4ff', price: 25 },
+  // ---- more dresses (patterns!)
+  { id: 'd-dots', cat: 'dress', name: 'pink polka-dot dress', icon: '👗', col: '#ff8fc0', pat: 'dots', pat2: '#ffffff', price: 35 },
+  { id: 'd-stripe', cat: 'dress', name: 'blue striped dress', icon: '👗', col: '#4895ef', pat: 'stripes', pat2: '#ffffff', price: 35 },
+  { id: 'd-flower', cat: 'dress', name: 'yellow flower dress', icon: '👗', col: '#ffe066', pat: 'flowers', pat2: '#ff6fae', price: 40 },
+  { id: 'd-mint', cat: 'dress', name: 'mint green dress', icon: '👗', col: '#98f5e1', price: 30 },
+  { id: 'd-orange', cat: 'dress', name: 'orange sun dress', icon: '👗', col: '#ff9f1c', price: 30 },
+  { id: 'd-lilac', cat: 'dress', name: 'lilac dress', icon: '👗', col: '#cdb4db', price: 30 },
+  { id: 'd-reddots', cat: 'dress', name: 'red polka-dot dress', icon: '👗', col: '#e63946', pat: 'dots', pat2: '#ffffff', price: 40 },
+  { id: 'd-navy', cat: 'dress', name: 'navy and white dress', icon: '👗', col: '#1d3557', pat: 'stripes', pat2: '#ffffff', price: 45 },
+  { id: 'd-rainbow', cat: 'dress', name: 'rainbow dress', icon: '👗', col: '#ff6fae', pat: 'rainbow', price: 55 },
+  { id: 'd-gold', cat: 'dress', name: 'gold sparkle dress', icon: '👗', col: '#ffe8a3', pat: 'sparkle', pat2: '#d4a017', trim: '#d4a017', price: 70 },
+  { id: 'd-teal', cat: 'dress', name: 'teal dress', icon: '👗', col: '#2ec4b6', price: 30 },
+  { id: 'd-peach', cat: 'dress', name: 'peach flower dress', icon: '👗', col: '#ffcdb2', pat: 'flowers', pat2: '#e5989b', price: 40 },
+  // ---- more tops
+  { id: 't-purple', cat: 'top', name: 'purple T-shirt', icon: '👕', col: '#9b5de5', price: 10 },
+  { id: 't-green', cat: 'top', name: 'green T-shirt', icon: '👕', col: '#2ec27e', price: 10 },
+  { id: 't-black', cat: 'top', name: 'black T-shirt', icon: '👕', col: '#2b2d42', price: 10 },
+  { id: 't-stripe', cat: 'top', name: 'red striped top', icon: '👕', col: '#e63946', pat: 'stripes', pat2: '#ffffff', price: 18 },
+  { id: 't-dots', cat: 'top', name: 'yellow dotty top', icon: '👚', col: '#ffd23f', pat: 'dots', pat2: '#ffffff', price: 18 },
+  { id: 't-flower', cat: 'top', name: 'white flower blouse', icon: '👚', col: '#ffffff', pat: 'flowers', pat2: '#ff6fae', price: 20 },
+  { id: 't-hoodie', cat: 'top', name: 'pink hoodie', icon: '🧥', col: '#ff8fc0', price: 25 },
+  { id: 't-rainbow', cat: 'top', name: 'rainbow top', icon: '👕', col: '#ff6fae', pat: 'rainbow', price: 30 },
+  { id: 't-jesus', cat: 'top', name: 'Jesus loves me top', icon: '👕', col: '#ffffff', motif: '✝', price: 20 },
+  // ---- more skirts & pants
+  { id: 'b-green', cat: 'bottom', name: 'green skirt', icon: '👗', col: '#2ec27e', kind: 'skirt', price: 15 },
+  { id: 'b-red', cat: 'bottom', name: 'red skirt', icon: '👗', col: '#e63946', kind: 'skirt', price: 15 },
+  { id: 'b-dots', cat: 'bottom', name: 'polka-dot skirt', icon: '👗', col: '#ff8fc0', pat: 'dots', pat2: '#ffffff', kind: 'skirt', price: 20 },
+  { id: 'b-stripe', cat: 'bottom', name: 'striped skirt', icon: '👗', col: '#9b5de5', pat: 'stripes', pat2: '#ffffff', kind: 'skirt', price: 20 },
+  { id: 'b-white', cat: 'bottom', name: 'white pants', icon: '👖', col: '#f8f9fa', kind: 'pants', price: 20 },
+  { id: 'b-pinkjeans', cat: 'bottom', name: 'pink jeans', icon: '👖', col: '#ff8fc0', kind: 'pants', price: 22 },
+  { id: 'b-orange', cat: 'bottom', name: 'orange shorts', icon: '🩳', col: '#ff9f1c', kind: 'shorts', price: 12 },
+  { id: 'b-blueshorts', cat: 'bottom', name: 'blue shorts', icon: '🩳', col: '#4895ef', kind: 'shorts', price: 12 },
+  { id: 'b-school', cat: 'bottom', name: 'school tunic skirt', icon: '👗', col: '#1d3557', kind: 'skirt', price: 18 },
+  // ---- more shoes
+  { id: 's-purple', cat: 'shoes', name: 'purple sneakers', icon: '👟', col: '#9b5de5', price: 18 },
+  { id: 's-black', cat: 'shoes', name: 'black school shoes', icon: '👞', col: '#2b2d42', price: 20 },
+  { id: 's-whitesand', cat: 'shoes', name: 'white sandals', icon: '👡', col: '#f8f9fa', price: 15 },
+  { id: 's-rainbow', cat: 'shoes', name: 'rainbow sneakers', icon: '👟', col: '#ff6fae', pat: 'rainbow', price: 30 },
+  { id: 's-pinkboots', cat: 'shoes', name: 'pink boots', icon: '👢', col: '#ff6fae', kind: 'boots', price: 30 },
+  { id: 's-rain', cat: 'shoes', name: 'yellow rain boots', icon: '👢', col: '#ffd23f', kind: 'boots', price: 25 },
+  // ---- more extras
+  { id: 'x-bowblue', cat: 'extra', slot: 'bow', name: 'blue bow', icon: '🎀', col: '#4895ef', price: 8 },
+  { id: 'x-bowpurple', cat: 'extra', slot: 'bow', name: 'purple bow', icon: '🎀', col: '#9b5de5', price: 8 },
+  { id: 'x-bowwhite', cat: 'extra', slot: 'bow', name: 'white bow', icon: '🎀', col: '#ffffff', price: 8 },
+  { id: 'x-bowgreen', cat: 'extra', slot: 'bow', name: 'green bow', icon: '🎀', col: '#2ec27e', price: 8 },
+  { id: 'x-bandpink', cat: 'extra', slot: 'head', name: 'pink headband', icon: '〰️', col: '#ff6fae', price: 10 },
+  { id: 'x-bandred', cat: 'extra', slot: 'head', name: 'red headband', icon: '〰️', col: '#e63946', price: 10 },
+  { id: 'x-flowers', cat: 'extra', slot: 'head', kind: 'flowers', name: 'flower crown', icon: '🌸', col: '#ff8fc0', price: 25 },
+  { id: 'x-crown', cat: 'extra', slot: 'head', kind: 'crown', name: 'gold crown', icon: '👑', col: '#ffd23f', price: 45 },
+  { id: 'x-earrings', cat: 'extra', slot: 'ears', name: 'gold earrings', icon: '✨', col: '#d4a017', price: 20 },
+  { id: 'x-pearlear', cat: 'extra', slot: 'ears', name: 'pearl earrings', icon: '⚪', col: '#fffaf0', price: 25 },
+  { id: 'x-bracelet', cat: 'extra', slot: 'wrist', name: 'pink bracelet', icon: '⭕', col: '#ff6fae', price: 15 },
+  { id: 'x-watch', cat: 'extra', slot: 'wrist', name: 'blue watch', icon: '⌚', col: '#4895ef', price: 25 },
+  { id: 'x-sunglasses', cat: 'extra', slot: 'eyes', kind: 'sun', name: 'pink sunglasses', icon: '🕶️', col: '#ff6fae', price: 15 },
+  { id: 'x-scarf', cat: 'extra', slot: 'neck', kind: 'scarf', name: 'pink scarf', icon: '🧣', col: '#ff6fae', price: 18 },
+  { id: 'x-backpack', cat: 'extra', slot: 'bag', kind: 'backpack', name: 'blue backpack', icon: '🎒', col: '#4895ef', price: 25 },
+  // things to hold
+  { id: 'h-teddy', cat: 'hold', slot: 'hold', name: 'teddy bear', icon: '🧸', col: '#f4d58d', price: 20 },
+  { id: 'h-bible', cat: 'hold', slot: 'hold', name: 'Bible', icon: '📖', col: '#ede4ff', price: 15 },
+  { id: 'h-flowers', cat: 'hold', slot: 'hold', name: 'bunch of flowers', icon: '💐', col: '#ffd6ec', price: 15 },
+  { id: 'h-balloon', cat: 'hold', slot: 'hold', name: 'red balloon', icon: '🎈', col: '#ffd6d9', price: 10 },
+  { id: 'h-umbrella', cat: 'hold', slot: 'hold', name: 'umbrella', icon: '☂️', col: '#e0d4ff', price: 20 },
+  { id: 'h-icecream', cat: 'hold', slot: 'hold', name: 'ice cream', icon: '🍦', col: '#fff3d6', price: 8 },
+  { id: 'h-book', cat: 'hold', slot: 'hold', name: 'story book', icon: '📚', col: '#d6f5ff', price: 12 },
+  { id: 'h-puppy', cat: 'hold', slot: 'hold', name: 'puppy', icon: '🐶', col: '#ffe9b3', price: 40 },
+  { id: 'h-kitten', cat: 'hold', slot: 'hold', name: 'kitten', icon: '🐱', col: '#ffe0cc', price: 40 },
+  { id: 'h-mango', cat: 'hold', slot: 'hold', name: 'mango', icon: '🥭', col: '#fff0c2', price: 5 },
+  // more places
+  { id: 'g-school', cat: 'place', name: 'school', icon: '🏫', col: '#ffe8cc', price: 20 },
+  { id: 'g-park', cat: 'place', name: 'park', icon: '🌳', col: '#b7e4c7', price: 20 },
+  { id: 'g-home', cat: 'place', name: 'home', icon: '🏠', col: '#ffe5d9', price: 15 },
+  { id: 'g-xmas', cat: 'place', name: 'Christmas', icon: '🎄', col: '#d8f3dc', price: 30 },
+  { id: 'g-zoo', cat: 'place', name: 'zoo', icon: '🦒', col: '#fef3c7', price: 25 },
+  { id: 'g-night', cat: 'place', name: 'starry night', icon: '🌙', col: '#3d348b', price: 30 },
 ];
 const ITEM = Object.fromEntries(ITEMS.map(i => [i.id, i]));
-const CATS = [['dress', '👗 Dresses'], ['top', '👕 Tops'], ['bottom', '👖 Skirts & pants'], ['shoes', '👟 Shoes'], ['extra', '🎀 Extras'], ['place', '🏞️ Places']];
+const CATS = [['dress', '👗 Dresses'], ['top', '👕 Tops'], ['bottom', '👖 Skirts & pants'], ['shoes', '👟 Shoes'], ['extra', '🎀 Extras'], ['hold', '🧸 Things to hold'], ['place', '🏞️ Places']];
 
 function funState(store) {
   store.fun ||= {};
@@ -75,6 +149,20 @@ function funState(store) {
   return f;
 }
 
+// ---------------- patterns ----------------
+let patN = 0;
+function paint(item, defs) {
+  if (!item.pat) return item.col;
+  const id = 'pt' + (++patN);
+  const c = item.col, c2 = item.pat2 || '#fff';
+  if (item.pat === 'rainbow') defs.push(`<linearGradient id="${id}" x1="0" y1="0" x2="0" y2="1">${['#ff595e', '#ff9f1c', '#ffd23f', '#2ec27e', '#4895ef', '#9b5de5'].map((k, i) => `<stop offset="${i / 5}" stop-color="${k}"/>`).join('')}</linearGradient>`);
+  else defs.push(`<pattern id="${id}" width="16" height="16" patternUnits="userSpaceOnUse"><rect width="16" height="16" fill="${c}"/>${
+    item.pat === 'dots' ? `<circle cx="8" cy="8" r="3.2" fill="${c2}"/>`
+    : item.pat === 'stripes' ? `<rect width="16" height="6" fill="${c2}"/>`
+    : item.pat === 'flowers' ? `<circle cx="8" cy="8" r="2" fill="#ffd23f"/><circle cx="8" cy="4" r="2.4" fill="${c2}"/><circle cx="8" cy="12" r="2.4" fill="${c2}"/><circle cx="4" cy="8" r="2.4" fill="${c2}"/><circle cx="12" cy="8" r="2.4" fill="${c2}"/>`
+    : `<path d="M8 3 L9 7 L13 8 L9 9 L8 13 L7 9 L3 8 L7 7 Z" fill="${c2}"/>`}</pattern>`);
+  return `url(#${id})`;
+}
 // ---------------- the doll (SVG) ----------------
 const clipsOf = look => look.clips || (look.clip ? [{ x: look.style === 'puffs' ? 112 : 196, y: 80, c: look.clip }] : []);
 const nailsOf = look => look.nailCols || (look.nails ? Array(5).fill(look.nails) : Array(5).fill(null));
@@ -103,42 +191,51 @@ export function dollSVG(look, outfit = {}, size = 300, cls = '') {
   const nails = [[64, 314, 0], [72, 319, 1], [228, 319, 2], [236, 314, 3]].map(([x, y, i]) => (nc[i] ? `<ellipse cx="${x}" cy="${y}" rx="4" ry="5" fill="${NAIL_COL[nc[i]]}"/>` : '')).join('');
   const hands = `<circle cx="70" cy="310" r="14" fill="${skin}"/><circle cx="230" cy="310" r="14" fill="${skin}"/>${nails}`;
   let clothes = '';
-  if (dress) clothes = `<path d="M108 206 L192 206 L232 340 L68 340 Z" fill="${dress.col}" stroke="${dress.trim || 'rgba(0,0,0,.15)'}" stroke-width="${dress.trim ? 5 : 2}"/><rect x="98" y="204" width="104" height="40" rx="16" fill="${dress.col}"/>`;
+  const defs = [];
+  if (dress) clothes = `<path d="M108 206 L192 206 L232 340 L68 340 Z" fill="${paint(dress, defs)}" stroke="${dress.trim || 'rgba(0,0,0,.15)'}" stroke-width="${dress.trim ? 5 : 2}"/><rect x="98" y="204" width="104" height="40" rx="16" fill="${paint(dress, defs)}"/>`;
   else {
-    const b = bottom || ITEM['b-blue'];
-    if (b.kind === 'pants') clothes += `<rect x="112" y="268" width="36" height="128" rx="8" fill="${b.col}"/><rect x="152" y="268" width="36" height="128" rx="8" fill="${b.col}"/>`;
-    else if (b.kind === 'shorts') clothes += `<rect x="110" y="268" width="40" height="62" rx="8" fill="${b.col}"/><rect x="150" y="268" width="40" height="62" rx="8" fill="${b.col}"/>`;
-    else clothes += `<path d="M104 266 L196 266 L220 336 L80 336 Z" fill="${b.col}" stroke="rgba(0,0,0,.15)" stroke-width="2"/>`;
+    const b = bottom || ITEM['b-blue'], bc = paint(b, defs);
+    if (b.kind === 'pants') clothes += `<rect x="112" y="268" width="36" height="128" rx="8" fill="${bc}"/><rect x="152" y="268" width="36" height="128" rx="8" fill="${bc}"/>`;
+    else if (b.kind === 'shorts') clothes += `<rect x="110" y="268" width="40" height="62" rx="8" fill="${bc}"/><rect x="150" y="268" width="40" height="62" rx="8" fill="${bc}"/>`;
+    else clothes += `<path d="M104 266 L196 266 L220 336 L80 336 Z" fill="${bc}" stroke="rgba(0,0,0,.15)" stroke-width="2"/>`;
     const t = top || ITEM['t-white'];
-    clothes += `<rect x="100" y="204" width="100" height="72" rx="20" fill="${t.col}" stroke="rgba(0,0,0,.15)" stroke-width="2"/>` + (t.motif ? `<text x="150" y="252" font-size="30" text-anchor="middle" fill="${t.motif === '❤' ? '#e63946' : '#ffd23f'}">${t.motif}</text>` : '');
+    clothes += `<rect x="100" y="204" width="100" height="72" rx="20" fill="${paint(t, defs)}" stroke="rgba(0,0,0,.15)" stroke-width="2"/>` + (t.motif ? `<text x="150" y="252" font-size="30" text-anchor="middle" fill="${t.motif === '❤' ? '#e63946' : t.motif === '✝' ? '#9b5de5' : '#ffd23f'}">${t.motif}</text>` : '');
   }
-  const sh = shoes || ITEM['s-white'];
+  const sh = shoes || ITEM['s-white'], shc = paint(sh, defs);
   const shoe = sh.kind === 'boots'
-    ? `<rect x="112" y="372" width="34" height="40" rx="8" fill="${sh.col}"/><rect x="154" y="372" width="34" height="40" rx="8" fill="${sh.col}"/>`
-    : `<ellipse cx="129" cy="408" rx="22" ry="11" fill="${sh.col}" stroke="rgba(0,0,0,.25)" stroke-width="2"/><ellipse cx="171" cy="408" rx="22" ry="11" fill="${sh.col}" stroke="rgba(0,0,0,.25)" stroke-width="2"/>`;
+    ? `<rect x="112" y="372" width="34" height="40" rx="8" fill="${shc}"/><rect x="154" y="372" width="34" height="40" rx="8" fill="${shc}"/>`
+    : `<ellipse cx="129" cy="408" rx="22" ry="11" fill="${shc}" stroke="rgba(0,0,0,.25)" stroke-width="2"/><ellipse cx="171" cy="408" rx="22" ry="11" fill="${shc}" stroke="rgba(0,0,0,.25)" stroke-width="2"/>`;
   const head = `<rect x="138" y="170" width="24" height="40" fill="${skin}"/><circle cx="88" cy="124" r="11" fill="${skin}"/><circle cx="212" cy="124" r="11" fill="${skin}"/>
     <circle cx="150" cy="122" r="62" fill="${skin}"/>
     <circle cx="128" cy="124" r="8" fill="#1c1410"/><circle cx="172" cy="124" r="8" fill="#1c1410"/><circle cx="131" cy="121" r="2.5" fill="#fff"/><circle cx="175" cy="121" r="2.5" fill="#fff"/>
     <circle cx="116" cy="146" r="9" fill="#ff7aa8" opacity=".35"/><circle cx="184" cy="146" r="9" fill="#ff7aa8" opacity=".35"/>
     <path d="M132 152 Q150 168 168 152" stroke="#7a2e2e" stroke-width="4" fill="none" stroke-linecap="round"/>`;
-  const bow = ex('bow'), hat = ex('head'), neck = ex('neck'), bag = ex('bag'), eyes = ex('eyes');
+  const bow = ex('bow'), hat = ex('head'), neck = ex('neck'), bag = ex('bag'), eyes = ex('eyes'), ears = ex('ears'), wrist = ex('wrist'), hold = ex('hold');
   let acc = '';
+  if (ears) acc += `<circle cx="86" cy="140" r="5" fill="${ears.col}" stroke="rgba(0,0,0,.25)"/><circle cx="214" cy="140" r="5" fill="${ears.col}" stroke="rgba(0,0,0,.25)"/>`;
+  if (wrist) acc += `<rect x="58" y="288" width="26" height="9" rx="4" fill="${wrist.col}" transform="rotate(12 70 292)"/>` + (wrist.id === 'x-watch' ? '<circle cx="71" cy="292" r="5" fill="#fff" stroke="#333"/>' : '');
+  if (hold) acc += `<text x="214" y="350" font-size="54">${hold.icon}</text>`;
   if (look.style !== 'braids' || clips.length > 1) acc += clips.map(c => bowShape(c.x, c.y, CLIP_COL[c.c])).join('');
   if (bow) acc += bowShape(look.style === 'bun' ? 150 : 192, look.style === 'bun' ? 22 : 66, bow.col, 1.5);
-  if (hat && hat.id === 'x-hat') acc += `<ellipse cx="150" cy="74" rx="96" ry="18" fill="${hat.col}"/><path d="M102 74 Q150 0 198 74 Z" fill="${hat.col}"/><rect x="104" y="62" width="92" height="10" fill="#ff6fae"/>`;
+  if (hat && hat.kind === 'flowers') acc += [96, 116, 136, 156, 176, 196].map((x, i) => `<circle cx="${x + 4}" cy="${78 - Math.sin((i / 5) * Math.PI) * 20}" r="9" fill="${['#ff8fc0', '#ffd23f', '#cdb4db', '#ff8fc0', '#98f5e1', '#ffd23f'][i]}"/>`).join('');
+  else if (hat && hat.kind === 'crown') acc += `<path d="M112 70 L112 36 L132 54 L150 30 L168 54 L188 36 L188 70 Z" fill="${hat.col}" stroke="#b58900" stroke-width="3"/><circle cx="150" cy="58" r="5" fill="#e63946"/>`;
+  else if (hat && hat.id === 'x-hat') acc += `<ellipse cx="150" cy="74" rx="96" ry="18" fill="${hat.col}"/><path d="M102 74 Q150 0 198 74 Z" fill="${hat.col}"/><rect x="104" y="62" width="92" height="10" fill="#ff6fae"/>`;
   else if (hat) acc += `<path d="M90 96 Q150 40 210 96" stroke="${hat.col}" stroke-width="10" fill="none" stroke-linecap="round"/>`;
-  if (eyes) acc += `<g fill="none" stroke="${eyes.col}" stroke-width="4"><circle cx="128" cy="124" r="15"/><circle cx="172" cy="124" r="15"/><path d="M143 124 L157 124"/></g>`;
-  if (neck) acc += `<path d="M126 206 Q150 232 174 206" stroke="${neck.col}" stroke-width="7" fill="none" stroke-dasharray="${neck.id === 'x-pearls' ? '1 9' : '0'}" stroke-linecap="round"/>`;
-  if (bag) acc += `<rect x="214" y="290" width="40" height="34" rx="8" fill="${bag.col}"/><path d="M220 292 Q234 268 248 292" stroke="${bag.col}" stroke-width="4" fill="none"/>`;
+  if (eyes && eyes.kind === 'sun') acc += `<g fill="#2b2d42" stroke="${eyes.col}" stroke-width="4"><rect x="112" y="112" width="32" height="24" rx="10"/><rect x="156" y="112" width="32" height="24" rx="10"/><path d="M144 122 L156 122" fill="none"/></g>`;
+  else if (eyes) acc += `<g fill="none" stroke="${eyes.col}" stroke-width="4"><circle cx="128" cy="124" r="15"/><circle cx="172" cy="124" r="15"/><path d="M143 124 L157 124"/></g>`;
+  if (neck && neck.kind === 'scarf') acc += `<path d="M118 200 Q150 222 182 200 L182 214 Q150 236 118 214 Z" fill="${neck.col}"/><rect x="164" y="212" width="16" height="44" rx="5" fill="${neck.col}"/>`;
+  else if (neck) acc += `<path d="M126 206 Q150 232 174 206" stroke="${neck.col}" stroke-width="7" fill="none" stroke-dasharray="${neck.id === 'x-pearls' ? '1 9' : '0'}" stroke-linecap="round"/>`;
+  if (bag && bag.kind === 'backpack') acc += `<path d="M112 206 L112 262 M188 206 L188 262" stroke="${bag.col}" stroke-width="8"/>`;
+  else if (bag) acc += `<rect x="214" y="290" width="40" height="34" rx="8" fill="${bag.col}"/><path d="M220 292 Q234 268 248 292" stroke="${bag.col}" stroke-width="4" fill="none"/>`;
   const bg = (place || ITEM['g-sky']).col;
   return `<svg class="doll ${cls}" viewBox="0 0 300 440" width="${size}" style="max-width:100%;border-radius:24px;background:${bg};box-shadow:0 6px 0 rgba(0,0,0,.08);touch-action:none">
     ${place && place.id !== 'g-sky' ? `<text x="18" y="420" font-size="44">${place.icon}</text>` : ''}
-    ${back}${legs}${shoe}${arms}${clothes}${hands}${head}${front}${shine}${acc}</svg>`;
+    <defs>${defs.join('')}</defs>${back}${legs}${shoe}${arms}${clothes}${hands}${head}${front}${shine}${acc}</svg>`;
 }
 
 // Small pictures of each thing (no words to read)
 function itemSVG(i, size = 70) {
-  const c = i.col, st = 'stroke="rgba(0,0,0,.25)" stroke-width="2"';
+  const defs = [], c = paint(i, defs), st = 'stroke="rgba(0,0,0,.25)" stroke-width="2"';
   let g = '';
   if (i.cat === 'dress') g = `<path d="M38 18 L62 18 L80 88 L20 88 Z" fill="${c}" ${st}/><rect x="32" y="14" width="36" height="20" rx="8" fill="${c}" ${st}/>`;
   else if (i.cat === 'top') g = `<path d="M30 20 L70 20 L88 36 L78 46 L70 40 L70 82 L30 82 L30 40 L22 46 L12 36 Z" fill="${c}" ${st}/>` + (i.motif ? `<text x="50" y="66" font-size="26" text-anchor="middle" fill="${i.motif === '❤' ? '#e63946' : '#ffd23f'}">${i.motif}</text>` : '');
@@ -146,13 +243,14 @@ function itemSVG(i, size = 70) {
     : i.kind === 'shorts' ? `<path d="M26 26 L74 26 L78 66 L54 66 L50 46 L46 66 L22 66 Z" fill="${c}" ${st}/>` : `<path d="M30 20 L70 20 L84 80 L16 80 Z" fill="${c}" ${st}/>`;
   else if (i.cat === 'shoes') g = i.kind === 'boots' ? `<path d="M30 20 L50 20 L50 66 L78 66 L78 82 L30 82 Z" fill="${c}" ${st}/>` : `<ellipse cx="50" cy="62" rx="34" ry="16" fill="${c}" ${st}/><rect x="24" y="44" width="28" height="18" rx="8" fill="${c}" ${st}/>`;
   else if (i.slot === 'bow') g = bowShape(50, 50, c, 2.2);
+  else if (i.cat === 'hold' || ['ears', 'wrist'].includes(i.slot) || ['flowers', 'crown', 'scarf', 'backpack', 'sun'].includes(i.kind)) g = `<circle cx="50" cy="50" r="44" fill="${i.col}"/><text x="50" y="66" font-size="46" text-anchor="middle">${i.icon}</text>`;
   else if (i.id === 'x-hat') g = `<ellipse cx="50" cy="62" rx="44" ry="12" fill="${c}" ${st}/><path d="M24 62 Q50 10 76 62 Z" fill="${c}" ${st}/><rect x="26" y="52" width="48" height="8" fill="#ff6fae"/>`;
   else if (i.slot === 'head') g = `<path d="M16 66 Q50 10 84 66" stroke="${c}" stroke-width="10" fill="none" stroke-linecap="round"/>`;
   else if (i.slot === 'neck') g = `<path d="M18 30 Q50 90 82 30" stroke="${c}" stroke-width="9" fill="none" stroke-dasharray="${i.id === 'x-pearls' ? '1 13' : '0'}" stroke-linecap="round"/>`;
   else if (i.slot === 'bag') g = `<rect x="22" y="40" width="56" height="44" rx="10" fill="${c}" ${st}/><path d="M32 42 Q50 6 68 42" stroke="${c}" stroke-width="6" fill="none"/>`;
   else if (i.slot === 'eyes') g = `<g fill="none" stroke="${c}" stroke-width="6"><circle cx="30" cy="52" r="16"/><circle cx="70" cy="52" r="16"/><path d="M46 52 L54 52"/></g>`;
   else g = `<rect x="6" y="6" width="88" height="88" rx="18" fill="${c}"/><text x="50" y="66" font-size="44" text-anchor="middle">${i.icon}</text>`;
-  return `<svg viewBox="0 0 100 100" width="${size}" height="${size}">${g}</svg>`;
+  return `<svg viewBox="0 0 100 100" width="${size}" height="${size}"><defs>${defs.join('')}</defs>${g}</svg>`;
 }
 
 // Drag something with a finger (or tap it). onDrop(elementUnderFinger, event); onTap() for a simple tap.
@@ -299,7 +397,7 @@ export function funZone(ctx) {
     const o = f.outfit;
     if (it.cat === 'dress') { o.dress = id; }
     else if (it.cat === 'top' || it.cat === 'bottom') { o.dress = null; o[it.cat] = id; }
-    else if (it.cat === 'extra') {
+    else if (it.cat === 'extra' || it.cat === 'hold') {
       o.extras ||= [];
       const on = o.extras.includes(id);
       o.extras = o.extras.filter(x => ITEM[x].slot !== it.slot);
