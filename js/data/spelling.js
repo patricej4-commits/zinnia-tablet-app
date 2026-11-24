@@ -19,10 +19,33 @@ export const LISTS = {
   11: { rule: 'oi in coin, oy in boy, and review words.', words: ['oil', 'boil', 'spoil', 'join', 'moist', 'noise', 'point', 'boy', 'joy', 'toy', 'proud', 'blow', 'skirt'], sight: ['said', 'what'], sounds: ['oi', 'oy'] },
   12: { rule: 'oo in book, oo in tooth.', words: ['book', 'look', 'good', 'foot', 'wood', 'shook', 'boot', 'food', 'loose', 'moon', 'room', 'roof', 'tooth'], sight: ['have', 'give'], sounds: ['oo'] },
 };
+// NEW words that follow the same rule as each list, so she learns the rule, not just the list.
+// (If the teacher uses a different word in a test, she can still spell it.)
+const MORE = {
+  1: ['cat', 'bed', 'pig', 'hop', 'cup', 'fan', 'jet', 'lid', 'dog', 'rug', 'map', 'hen', 'pin', 'pot', 'tub', 'bag', 'web', 'fix', 'log', 'mud', 'jam', 'leg', 'dip', 'fox', 'gum', 'pen', 'rib', 'mop', 'nut', 'six'],
+  2: ['road', 'soap', 'toad', 'loaf', 'seat', 'meat', 'team', 'leaf', 'beak', 'gate', 'lake', 'name', 'tape', 'bike', 'kite', 'time', 'line', 'five', 'hide', 'cake'],
+  3: ['cot', 'cub', 'cap', 'cave', 'coat', 'cut', 'cod', 'camp', 'cup', 'cold', 'kid', 'kit', 'key', 'kin', 'king', 'kiss', 'kept', 'kelp', 'keg', 'kind'],
+  4: ['duck', 'sock', 'pack', 'neck', 'rock', 'truck', 'stick', 'trick', 'black', 'lake', 'make', 'rake', 'poke', 'woke', 'joke', 'hike', 'bike', 'smoke', 'cake', 'luck'],
+  5: ['say', 'may', 'pay', 'tray', 'ray', 'bay', 'rain', 'pain', 'tail', 'mail', 'paint', 'wait', 'train', 'snail', 'nail', 'sail'],
+  6: ['hill', 'fill', 'tell', 'sell', 'yell', 'fell', 'call', 'tall', 'hiss', 'kiss', 'miss', 'mess', 'boss', 'toss', 'off', 'cliff', 'huff', 'fluff', 'spill', 'grass'],
+  7: ['we', 'she', 'fly', 'dry', 'sky', 'fry', 'spy', 'why', 'shy'],
+  8: ['shop', 'shell', 'shut', 'dish', 'fish', 'wish', 'cash', 'ship', 'shed', 'thin', 'thick', 'bath', 'math', 'moth', 'them', 'than', 'path', 'thud'],
+  9: ['out', 'loud', 'house', 'mouse', 'mouth', 'found', 'sound', 'count', 'owl', 'how', 'gown', 'frown', 'grow', 'show', 'blow', 'bowl', 'glow', 'crowd'],
+  10: ['fern', 'herd', 'perch', 'hurt', 'fur', 'surf', 'church', 'burst', 'bird', 'skirt', 'firm', 'swirl', 'twirl', 'chirp'],
+  11: ['coin', 'soil', 'foil', 'coil', 'voice', 'joint', 'broil', 'enjoy', 'annoy', 'cowboy'],
+  12: ['cook', 'hook', 'took', 'hood', 'stood', 'wool', 'spoon', 'pool', 'cool', 'tool', 'zoo', 'soon', 'broom', 'goose', 'shoot'],
+};
 const EXAM_LISTS = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11]; // Christmas exam: lists 1-11
 // Level 1: lists 1-4, level 2: lists 1-8, level 3: all exam lists (+ list 12)
 const listsFor = l => (l === 1 ? [1, 2, 3, 4] : l === 2 ? [1, 2, 3, 4, 5, 6, 7, 8] : [...EXAM_LISTS, 12]);
-const pickWord = l => { const n = pick(listsFor(l)); return { n, list: LISTS[n], w: pick(LISTS[n].words) }; };
+// About 4 in 10 questions use a NEW word that follows the list's rule (more as she gets better)
+const pickWord = (l, newShare = [0.3, 0.4, 0.45][l - 1]) => {
+  const n = pick(listsFor(l));
+  const fresh = (MORE[n] || []).filter(w => !LISTS[n].words.includes(w));
+  const isNew = fresh.length > 0 && Math.random() < newShare;
+  return { n, list: LISTS[n], w: pick(isNew ? fresh : LISTS[n].words), isNew };
+};
+const newNote = (isNew, n) => (isNew ? ` This is a new word, not on your list. Use the rule from list ${n}!` : '');
 
 // Where is the list's special sound in this word?
 function soundIn(w, list) {
@@ -87,32 +110,33 @@ export const spellingSkills = [
   {
     id: 's-spell', name: 'Spell my list words', emoji: '🐝', type: 'build',
     gen(l) {
-      const { n, list, w } = pickWord(l);
+      const { n, list, w, isNew } = pickWord(l);
       const parts = chunk(w);
       const pool = ['sh', 'th', 'ck', 'ke', 'ay', 'ou', 'ow', 'er', 'ir', 'ur', 'oi', 'oy', 'oo', 'a', 'e', 'i', 'o', 'u', 's', 't', 'n', 'l'];
       const extra = sample(pool.filter(c => !parts.includes(c) && c !== w), l === 1 ? 1 : 2);
       const test = l === 3; // spelling-test style: no picture
       return {
         type: 'build', word: w, parts, extra,
-        say: `Spelling list ${n}. Spell ${w}. ${w}.`, text: `Spelling list ${n}: spell the word you hear 👂`,
+        say: isNew ? `A new word! Use your list ${n} rule. Spell ${w}. ${w}.` : `Spelling list ${n}. Spell ${w}. ${w}.`,
+        text: isNew ? `🆕 New word! Use the list ${n} rule: spell the word you hear 👂` : `Spelling list ${n}: spell the word you hear 👂`,
         visual: test || !picOf(w) ? '<div style="font-size:80px">👂</div>' : pic(w),
-        explain: `${w} is spelled ${w.split('').join(' ')}. ${list.rule}`,
+        explain: `${w} is spelled ${w.split('').join(' ')}. ${list.rule}${newNote(isNew, n)}`,
       };
     },
   },
   {
     id: 's-sound', name: 'Missing special sound', emoji: '🧩',
     gen(l) {
-      let n, list, w, found;
-      for (let t = 0; t < 30; t++) { ({ n, list, w } = pickWord(l)); found = soundIn(w, list); if (found) break; }
+      let n, list, w, found, isNew;
+      for (let t = 0; t < 30; t++) { ({ n, list, w, isNew } = pickWord(l)); found = soundIn(w, list); if (found) break; }
       const shown = w.slice(0, found.i) + '_'.repeat(found.s.length).split('').join(' ') + w.slice(found.i + found.s.length);
       const opts = [...new Set([found.s, ...list.sounds.filter(s => s !== found.s), ...sample(['sh', 'th', 'ou', 'ow', 'er', 'ir', 'ur', 'oi', 'oy', 'ay', 'ck', 'oo'], 3)])]
         .filter(s => s === found.s || s.length === found.s.length || list.sounds.includes(s)).slice(0, 3);
       return {
-        say: `Fill in the missing letters. ${w}.`, text: 'Fill in the missing letters 👂',
+        say: `${isNew ? 'A new word! ' : ''}Fill in the missing letters. ${w}.`, text: `${isNew ? '🆕 New word! ' : ''}Fill in the missing letters 👂`,
         visual: `<div style="display:flex;align-items:center;gap:12px;justify-content:center">${pic(w)}<div class="word-big">${esc(shown)}</div></div>`,
         options: shuffle(opts).map(s => ({ html: s, value: s, say: s.split('').join(' ') })), answer: found.s,
-        explain: `${w} is spelled ${w.split('').join(' ')}. List ${n}: ${list.rule}`,
+        explain: `${w} is spelled ${w.split('').join(' ')}. List ${n}: ${list.rule}${newNote(isNew, n)}`,
       };
     },
   },

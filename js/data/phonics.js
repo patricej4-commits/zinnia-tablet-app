@@ -58,6 +58,13 @@ export const CHARTS = {
     alk: ['walk', 'talk', 'chalk'],
   },
 };
+// More words for each sound (so she learns the sound, not just a few words)
+const MORE_CHART = {
+  6: { ck: ['pack', 'neck', 'pick', 'lock', 'black'], ay: ['may', 'way', 'stay', 'clay'], st: ['stamp', 'stem', 'stuck', 'vest', 'fast'], pl: ['plum', 'plate', 'plan'], fr: ['frame', 'free', 'from', 'frown'], tr: ['trap', 'trim', 'track', 'trunk'], sh: ['shop', 'shut', 'dish', 'wish', 'shed'], th: ['thud', 'with', 'moth', 'them'], bl: ['black', 'blob', 'blink', 'blow'], cl: ['clam', 'class', 'cliff', 'club'], fl: ['flat', 'fly', 'flute', 'flop'], gl: ['glow', 'globe', 'glum'] },
+  7: { br: ['brick', 'bring', 'brown'], dr: ['drip', 'drop', 'drive'], pr: ['print', 'prop', 'proud'], gr: ['grab', 'grow', 'green'], sm: ['smog', 'smack', 'smash'], sc: ['scab', 'scan', 'scoot'], sk: ['skin', 'skid', 'skill', 'skim'], sp: ['spot', 'spell', 'spun'], cr: ['crop', 'crack', 'cross'], tw: ['twin', 'twist', 'twirl'], spl: ['splat', 'splint'], spr: ['sprout', 'sprint'], scr: ['scrap', 'scrape'], squ: ['squid', 'square'], sn: ['snap', 'sniff', 'snug'], sl: ['slap', 'slim', 'slow'], str: ['strap', 'strip', 'street'], sw: ['swam', 'sweet', 'swift'] },
+  8: { thr: ['throw', 'thrill'], ar: ['arm', 'barn', 'park', 'jar', 'card'], ch: ['chop', 'chick', 'much', 'such', 'chest'], or: ['for', 'torn', 'short', 'sport'], ou: ['loud', 'round', 'count', 'found'], ow: ['town', 'gown', 'down', 'how'], er: ['her', 'fern', 'after', 'sister'], ur: ['fur', 'hurt', 'purse', 'church'], ir: ['dirt', 'skirt', 'third', 'stir'], oi: ['join', 'point', 'foil', 'spoil'], oy: ['enjoy', 'annoy', 'cowboy'], oo: ['zoo', 'pool', 'cool', 'hood', 'wood'], wor: ['worm', 'worth', 'worse'], igh: ['sight', 'might', 'bright', 'tight'], all: ['fall', 'hall', 'stall'], alk: ['stalk'] },
+};
+for (const [c, d] of Object.entries(MORE_CHART)) for (const [snd, ws] of Object.entries(d)) for (const w of ws) if (!CHARTS[c][snd].includes(w)) CHARTS[c][snd].push(w);
 // Sounds that are spelled alike — not used as distractors for each other (too unfair)
 const SAME = [['er', 'ur', 'ir'], ['ou', 'ow'], ['oi', 'oy'], ['ck', 'k'], ['sc', 'sk'], ['all', 'alk'], ['th', 'thr'], ['pr', 'pl']];
 const clash = (a, b) => SAME.some(g => g.includes(a) && g.includes(b)) || a.includes(b) || b.includes(a);
@@ -75,8 +82,8 @@ function autoMarks(word) {
   if (idx.length === 2) return { [idx[0]]: 'long', [idx[1]]: 'silent' };
   return null;
 }
-const ONE_VOWEL = ['cat', 'bat', 'pen', 'sip', 'job', 'cub', 'pot', 'shut', 'bit', 'can', 'mad', 'tub', 'quit', 'slid', 'grim', 'slim', 'quick', 'duck', 'back', 'deck', 'sack', 'rock', 'kick', 'plant', 'math', 'hush', 'blend', 'grasp', 'smell', 'frost', 'quack', 'quiz', 'quilt', 'quest', 'glad', 'fish', 'frog', 'crab', 'drum', 'ship', 'hen', 'six', 'bus'];
-const TWO_VOWEL = ['bite', 'cane', 'made', 'tube', 'quite', 'slide', 'grime', 'slime', 'meet', 'team', 'heal', 'tree', 'keep', 'beach', 'reach', 'goat', 'ape', 'bake', 'cape', 'date', 'face', 'gate', 'cake', 'rain', 'road', 'mane', 'tweet', 'glaze', 'brake', 'scale', 'dream', 'queen', 'quote', 'quake', 'kite', 'bike', 'boat', 'snake', 'tail', 'seed', 'leaf'];
+const ONE_VOWEL = ['fan', 'hop', 'mud', 'jam', 'lid', 'rug', 'web', 'fox', 'dig', 'tag', 'pond', 'list', 'hunt', 'jump', 'lamp', 'best', 'milk', 'sand', 'cat', 'bat', 'pen', 'sip', 'job', 'cub', 'pot', 'shut', 'bit', 'can', 'mad', 'tub', 'quit', 'slid', 'grim', 'slim', 'quick', 'duck', 'back', 'deck', 'sack', 'rock', 'kick', 'plant', 'math', 'hush', 'blend', 'grasp', 'smell', 'frost', 'quack', 'quiz', 'quilt', 'quest', 'glad', 'fish', 'frog', 'crab', 'drum', 'ship', 'hen', 'six', 'bus'];
+const TWO_VOWEL = ['road', 'soap', 'toad', 'seat', 'meat', 'lake', 'name', 'tape', 'hide', 'five', 'line', 'time', 'mule', 'cute', 'pail', 'nail', 'feet', 'jeep', 'bite', 'cane', 'made', 'tube', 'quite', 'slide', 'grime', 'slime', 'meet', 'team', 'heal', 'tree', 'keep', 'beach', 'reach', 'goat', 'ape', 'bake', 'cape', 'date', 'face', 'gate', 'cake', 'rain', 'road', 'mane', 'tweet', 'glaze', 'brake', 'scale', 'dream', 'queen', 'quote', 'quake', 'kite', 'bike', 'boat', 'snake', 'tail', 'seed', 'leaf'];
 
 const ONE_RULE = 'One vowel? It says its short sound. Give it a smile.';
 const TWO_RULE = 'Two vowels? The first one says its name. The second one is quiet. Dash on the first. Slash on the second.';
@@ -253,7 +260,7 @@ export const phonicsSkills = [
   {
     id: 'p-spell', name: 'Spell it!', emoji: '🔤', type: 'build',
     gen(l) {
-      const L1 = ['cat', 'dog', 'pig', 'hen', 'sun', 'bus', 'cup', 'bed', 'fox', 'hat', 'net', 'egg', 'bat', 'van', 'web', 'six', 'ten', 'map', 'mug', 'pot', 'bug', 'jet'];
+      const L1 = ['fan', 'hop', 'mud', 'jam', 'lid', 'rug', 'dig', 'tag', 'fix', 'gum', 'leg', 'dip', 'cat', 'dog', 'pig', 'hen', 'sun', 'bus', 'cup', 'bed', 'fox', 'hat', 'net', 'egg', 'bat', 'van', 'web', 'six', 'ten', 'map', 'mug', 'pot', 'bug', 'jet'];
       const L2 = ['duck', 'fish', 'ship', 'frog', 'crab', 'drum', 'bell', 'doll', 'sock', 'cake', 'kite', 'bike', 'goat', 'tree', 'boat', 'moon', 'book', 'star', 'king', 'ring', 'chick', 'shell', 'clock', 'plant', 'flag', 'coat', 'bean', 'game', 'ride', 'back', 'lick', 'snack', 'play', 'pray', 'day', 'cuff', 'well', 'cry', 'she', 'brush', 'cow', 'snow', 'food', 'foot', 'boy', 'oil', 'cub', 'net', 'sit', 'hot'];
       const L3 = ['snake', 'train', 'sheep', 'clock', 'house', 'mouse', 'shark', 'cloud', 'night', 'snail', 'horse', 'chair', 'three', 'light', 'spoon', 'stars', 'church', 'bird', 'girl', 'coin', 'toy', 'ball', 'walk', 'corn', 'queen', 'smile', 'swing'];
       const w = pick(l === 1 ? L1 : l === 2 ? L2 : L3);

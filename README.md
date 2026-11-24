@@ -119,3 +119,8 @@ An area she must redo still comes first. Parents can switch this off in the Pare
 Topics built from her workbook pages (Lessons 13–30+): Picture words (fig/fit, pen/pet, duck/ducks...), Finish the sentence
 (The rat had a bat, The cat had a nap...), Word bank stories (The Goat, The Hike, Ted and Tip, Greg's Boat), Sentence for the
 picture, Riddles, Rhyming words (Sound Safari, counts for Phonics) and Capital letter & period (Word Castle, counts for Grammar).
+
+## New words, not just list words
+About 4 in 10 spelling questions use a NEW word that follows the same rule as her list (e.g. list 4 ck/ke: neck, joke, hike),
+marked "🆕 New word! Use the list N rule". The sound charts and vowel rules also have many extra words, so she learns
+the rule and can spell words the teacher picks that are not on the list.
