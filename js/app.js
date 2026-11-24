@@ -498,7 +498,8 @@ function map(greet) {
 
   // ----- 🎀 Fun Zone (reward): uses a ticket won by doing well
   const tk = store.fun?.tickets ?? 1;
-  const fz = h(`<button class="big-btn adventure-btn" style="background:linear-gradient(#ff9ccf,#ff6fae);color:#fff"><span style="font-size:40px">🎀</span> Fun Zone: shop, dress up & salon <small style="font-size:.6em">(🎟️ ${tk} ticket${tk === 1 ? '' : 's'})</small></button>`);
+  const fzOpen = planDone();
+  const fz = h(`<button class="big-btn adventure-btn" style="background:linear-gradient(#ff9ccf,#ff6fae);color:#fff${fzOpen ? '' : ';opacity:.6'}"><span style="font-size:40px">${fzOpen ? '🎀' : '🔒'}</span> Fun Zone: shop, dress up & salon <small style="font-size:.6em">(🎟️ ${tk} ticket${tk === 1 ? '' : 's'}${fzOpen ? '' : ' · opens when today\'s work is all done'})</small></button>`);
   fz.onclick = () => { sfx.tap(); openFunZone(); };
   s.append(fz);
   const cg = h(`<button class="big-btn adventure-btn" style="background:linear-gradient(#ffb347,#ff7f11);color:#fff"><span style="font-size:40px">🌶️</span> Chip Challenge <small style="font-size:.6em">(play with a grown-up)</small></button>`);
@@ -963,7 +964,7 @@ function results({ stars, earned, bestCombo, grew, missionComplete, retryArea, p
     say(msg + (tickets ? ` And you won ${tickets === 1 ? 'a Fun Zone ticket' : tickets + ' Fun Zone tickets'}!` : ''));
     const after = s.querySelector('.after');
     after.classList.remove('hidden');
-    if (tickets) after.append(h(`<div class="bubble">🎟️ You won ${tickets === 1 ? 'a Fun Zone ticket' : tickets + ' Fun Zone tickets'}! Use ${tickets === 1 ? 'it' : 'them'} on the map. 🎀</div>`));
+    if (tickets) after.append(h(`<div class="bubble">🎟️ You won ${tickets === 1 ? 'a Fun Zone ticket' : tickets + ' Fun Zone tickets'}! ${planDone() ? `Use ${tickets === 1 ? 'it' : 'them'} on the map. 🎀` : `${tickets === 1 ? 'It is' : 'They are'} saved for when all of today's work is done. 🎀`}</div>`));
     if (grew) {
       after.append(h(`<div class="bubble">✨ Your ${esc(store.pet.name)} ${petStage() === 1 ? 'came out of the gift' : 'grew'}! ${petEmoji()}</div>`));
       setTimeout(() => say(`Look! Your ${store.pet.name} ${petStage() === 1 ? 'came out of the gift' : 'grew bigger'}!`), 2200);
@@ -1183,10 +1184,11 @@ function openChips() {
 
 function openFunZone() {
   store.fun ||= {}; store.fun.tickets ??= 1;
+  // Rule from Mummy: no Fun Zone until ALL of today's work is finished (tickets can still be won and saved)
+  if (!planDone()) { sfx.wrong(); say(`The Fun Zone is locked until you finish all of today's work. Keep going, ${name()}! Your ${store.fun.tickets === 1 ? 'ticket is' : 'tickets are'} saved for later.`); return; }
   if (store.fun.tickets < 1) { sfx.wrong(); say('You need a Fun Zone ticket. Get three stars in a game, or finish today\'s plan, to win one!'); return; }
-  if (!gate()) return;
   store.fun.tickets--; save();
-  onMap = false;
+  timing = false; onMap = false; // play time is not study time (the Fun Zone has its own 5-minute timer)
   funZone({ app, h, say, sfx, store, save, back: () => map(false), confetti, name });
 }
 
@@ -1254,7 +1256,7 @@ function parentZone() {
     <div class="card"><b>📋 Today's plan</b><br>
       ${perWorld() ? `1. Mission in every area: ${WORLDS.filter(w => missionLeft(w) === 0).length} of ${WORLDS.length} done${retryWorld() ? ` (🔁 must redo ${retryWorld().name})` : ''}<br>` : ''}
       ${examGoal() ? `2. Exam practice: ${examGoal().items.map(it => `${esc(it.name)} ${Math.min(examDoneFor(it.name), it.n)}/${it.n}`).join(', ')}<br>` : 'No exam practice needed today<br>'}
-      ${planDone() ? '✅ <b>Plan complete</b> — free play is unlocked' : '⏳ <b>Not finished yet</b> — free play stays locked until it is'}<br>
+      ${planDone() ? '✅ <b>Plan complete</b> — free play and the 🎀 Fun Zone are unlocked' : '⏳ <b>Not finished yet</b> — free play and the 🎀 Fun Zone stay locked until it is (she can still win tickets; they are saved)'}<br>
       <small>Exam practice is worked out each morning from the exam dates and her readiness so she is ready in time (about 8–25 questions a day, shared across the upcoming exams by how much each still needs; exams in the next 3 days get extra). Done in exam-date order.</small></div>
     <div class="card"><b>📝 Exam readiness</b> <small>(Christmas term exams, measured from how she plays)</small>
       <table class="ptable" style="margin-top:8px"><tr><th>Exam</th><th>Ready?</th><th>Practice test</th><th>Still needed</th><th>Practise next</th></tr>
