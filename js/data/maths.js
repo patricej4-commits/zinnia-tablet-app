@@ -4,43 +4,70 @@
 import { rnd, pick, shuffle, numOptions, textOptions, NUM_WORDS, cap, sample } from '../util.js';
 import { tenFrames, numberBond, tensOnes, group, equation, lineSVG, vertical, numberLine, clockSVG, tally, miniFrame, bar } from '../visuals.js';
 
+// [emoji, plural word, singular word, what happens when some go (null = given away)]
 const THINGS = [
-  ['🥭', 'mangoes'], ['🍌', 'bananas'], ['🐟', 'fish'], ['🌺', 'flowers'], ['🐢', 'turtles'],
-  ['🦜', 'parrots'], ['🥥', 'coconuts'], ['⚽', 'balls'], ['🐞', 'ladybugs'], ['⭐', 'stars'],
-  ['🍎', 'apples'], ['🐥', 'chicks'], ['🦋', 'butterflies'], ['🍪', 'cookies'], ['🎈', 'balloons'],
+  ['🥭', 'mangoes', 'mango', 'got eaten'], ['🍌', 'bananas', 'banana', 'got eaten'], ['🐟', 'fish', 'fish', 'swam away'],
+  ['🌺', 'flowers', 'flower', null], ['🐢', 'turtles', 'turtle', 'crawled away'],
+  ['🦜', 'parrots', 'parrot', 'flew away'], ['🥥', 'coconuts', 'coconut', 'got eaten'], ['⚽', 'balls', 'ball', null],
+  ['🐞', 'ladybugs', 'ladybug', 'flew away'], ['⭐', 'stars', 'star', null],
+  ['🍎', 'apples', 'apple', 'got eaten'], ['🐥', 'chicks', 'chick', 'ran away'], ['🦋', 'butterflies', 'butterfly', 'flew away'],
+  ['🍪', 'cookies', 'cookie', 'got eaten'], ['🎈', 'balloons', 'balloon', 'floated away'],
 ];
 const NAMES = ['Zinnia', 'Mummy', 'Daddy', 'Grandma', 'Kai', 'Maya', 'Leo', 'Ava'];
 const maxFor = l => [10, 10, 15, 19][l];
+// "1 hat", "3 hats" (pass the plural when it is not just word + s)
+const plural = (n, word, many) => `${n} ${n === 1 ? word : (many || word + 's')}`;
+// "1 mango", "3 mangoes" for an entry of THINGS
+const things = (n, t) => `${n} ${n === 1 ? t[2] : t[1]}`;
+// "a circle", "an oval"
+const aOrAn = w => (/^[aeiou]/i.test(w) ? 'an ' : 'a ') + w;
+// Count-on explanation that always starts from the bigger number
+function countOn(a, b) {
+  const big = Math.max(a, b), small = Math.min(a, b), sum = a + b;
+  if (small === 0) return `${big} plus 0 is still ${big}. The answer is ${sum}.`;
+  const steps = Array.from({ length: small }, (_, i) => big + i + 1);
+  return small <= 5
+    ? `Start at ${big} and count on ${small}: ${steps.join(', ')}. The answer is ${sum}.`
+    : `Start at ${big} and count on ${small} more. The answer is ${sum}.`;
+}
+// Count-back explanation: "Start at 10 and count back 4: 9, 8, 7, 6. The answer is 6."
+function countBack(top, bot) {
+  if (bot === 0) return `Nothing is taken away, so ${top} stays ${top}. The answer is ${top}.`;
+  const steps = Array.from({ length: bot }, (_, i) => top - i - 1);
+  return `Start at ${top} and count back ${bot}: ${steps.join(', ')}. The answer is ${top - bot}.`;
+}
 
 export const mathSkills = [
   {
     id: 'm-count', name: 'Count them!', emoji: '🔢',
     gen(l) {
-      const n = rnd(l === 1 ? 1 : 4, maxFor(l));
-      const [e, w] = pick(THINGS);
+      // L1: 1-10, L2: 5-15, L3: 11-20
+      const n = l === 1 ? rnd(1, 10) : l === 2 ? rnd(5, 15) : rnd(11, 20);
+      const t = pick(THINGS), [e, w] = t;
       return {
         say: `How many ${w} can you count?`,
         visual: group(e, n, 'style="max-width:560px"'),
         options: numOptions(n, 0, 20), answer: n,
-        explain: `Touch each one and count: there are ${n} ${w}.`,
+        explain: `Touch each one and count. There ${n === 1 ? 'is' : 'are'} ${things(n, t)}.`,
       };
     },
   },
   {
     id: 'm-names', name: 'Number names', emoji: '🔤',
     gen(l) {
-      const n = rnd(0, l === 1 ? 10 : 19);
+      // L1: 0-10, L2: 0-19, L3: the tricky teen words 11-20
+      const n = l === 1 ? rnd(0, 10) : l === 2 ? rnd(0, 19) : rnd(11, 20);
       if (Math.random() < 0.5) {
         // read the word, pick the number (forces reading)
         return {
           say: 'Read the number word. Which number is it?', readFirst: true,
           visual: `<div class="word-big">${NUM_WORDS[n]}</div>`,
-          options: numOptions(n, 0, 19), answer: n,
-          explain: `This word says ${NUM_WORDS[n]}. ${NUM_WORDS[n]} is ${n}.`,
+          options: numOptions(n, 0, 20), answer: n,
+          explain: `This word says ${NUM_WORDS[n]}. ${cap(NUM_WORDS[n])} is ${n}.`,
         };
       }
       const opts = new Set([n]);
-      while (opts.size < 4) opts.add(Math.max(0, Math.min(19, n + rnd(-4, 4))));
+      while (opts.size < 4) opts.add(Math.max(0, Math.min(20, n + rnd(-4, 4))));
       return {
         say: `Find the word for this number.`,
         visual: `<div class="eq">${n}</div>`,
@@ -82,7 +109,7 @@ export const mathSkills = [
   {
     id: 'm-compare', name: 'More or fewer?', emoji: '⚖️',
     gen(l) {
-      const [e, w] = pick(THINGS);
+      const t = pick(THINGS), [e, w] = t;
       let a = rnd(1, l === 1 ? 8 : 12), b = rnd(1, l === 1 ? 8 : 12);
       if (a === b && (l === 1 || Math.random() < 0.7)) b = a + (a > 2 ? -1 : 1) * rnd(1, 2);
       const askMore = Math.random() < 0.5;
@@ -96,7 +123,11 @@ export const mathSkills = [
         say: askMore ? `Which group has more ${w}?` : `Which group has fewer ${w}?`,
         visual: `<div class="groups">${group(e, a)}${group(e, b)}</div>`,
         options: opts, answer: ans, cols: 'two',
-        explain: `This side has ${a} and that side has ${b}. ${a === b ? 'They are the same!' : (a > b ? a + ' is more than ' + b : b + ' is more than ' + a) + '.'} Match them up one to one to check!`,
+        explain: `This side has ${things(a, t)} and that side has ${things(b, t)}. ` + (a === b
+          ? 'They are the same.'
+          : askMore
+            ? (a > b ? `${a} is more than ${b}, so this side has more.` : `${b} is more than ${a}, so that side has more.`)
+            : (a < b ? `${a} is fewer than ${b}, so this side has fewer.` : `${b} is fewer than ${a}, so that side has fewer.`)),
       };
     },
   },
@@ -123,17 +154,17 @@ export const mathSkills = [
       if (mode === 0) return {
         say: 'One bundle is ten. How many altogether?',
         visual: tensOnes(n), options: numOptions(n, 10, 20), answer: n,
-        explain: `1 ten and ${n - 10} ones make ${n}.`,
+        explain: `1 ten and ${plural(n - 10, 'one')} make ${n}.`,
       };
       if (mode === 1) return {
         say: `How many ones are in ${n}?`,
         visual: `<div class="eq">${n} = 1 ten and <span class="gap">?</span> ones</div>`,
         options: numOptions(n - 10, 0, 9), answer: n - 10,
-        explain: `${n} is 1 ten and ${n - 10} ones.`,
+        explain: `${n} is 1 ten and ${plural(n - 10, 'one')}.`,
       };
       return {
-        say: `What number is 1 ten and ${n - 10} ones?`,
-        visual: `<div class="eq">1 ten + ${n - 10} ones = <span class="gap">?</span></div>`,
+        say: `What number is 1 ten and ${plural(n - 10, 'one')}?`,
+        visual: `<div class="eq">1 ten + ${plural(n - 10, 'one')} = <span class="gap">?</span></div>`,
         options: numOptions(n, 10, 19), answer: n,
         explain: `10 and ${n - 10} more make ${n}.`,
       };
@@ -162,7 +193,7 @@ export const mathSkills = [
     gen(l) {
       const max = l === 1 ? 6 : l === 2 ? 10 : 18;
       const a = rnd(1, Math.min(9, max - 1)), b = rnd(1, Math.min(9, max - a));
-      const [e, w] = pick(THINGS);
+      const t = pick(THINGS), [e] = t;
       const name = pick(NAMES);
       if (l > 1 && Math.random() < 0.35) {
         // Column addition (no carrying): ones add to 9 or less
@@ -172,20 +203,20 @@ export const mathSkills = [
           say: `${top} plus ${bot}. How many altogether?`,
           visual: vertical(top, '+', bot),
           options: numOptions(top + bot, 0, 19), answer: top + bot,
-          explain: top >= 10 ? `Add the ones: ${top % 10} plus ${bot} is ${top % 10 + bot}. Keep the 1 ten. The answer is ${top + bot}.` : `${top} plus ${bot} is ${top + bot}.`,
+          explain: top >= 10 ? `Add the ones: ${top % 10} plus ${bot} is ${top % 10 + bot}. Keep the 1 ten. The answer is ${top + bot}.` : countOn(top, bot),
         };
       }
       if (l === 1 || Math.random() < 0.4) return {
-        say: `${name} has ${a} ${w}, and gets ${b} more. How many now?`,
+        say: `${name} has ${things(a, t)}, and gets ${b} more. How many now?`,
         visual: `<div class="groups">${group(e, a)}<div class="eq">+</div>${group(e, b)}</div>`,
         options: numOptions(a + b, 0, 20), answer: a + b,
-        explain: `Count them all: ${a} and ${b} more makes ${a + b}.`,
+        explain: countOn(a, b),
       };
       return {
         say: `What is ${a} plus ${b}?`,
         visual: (a + b <= 20 ? tenFrames(a + b, 0, b) : '') + equation([a, '+', b, '=', '?']),
         options: numOptions(a + b, 0, 20), answer: a + b,
-        explain: `Start at ${a} and count on ${b}: ${a + b}.`,
+        explain: countOn(a, b),
       };
     },
   },
@@ -195,7 +226,7 @@ export const mathSkills = [
       // Class works within 10
       const a = rnd(l === 1 ? 2 : 3, 10);
       const b = rnd(0, a);
-      const [e, w] = pick(THINGS);
+      const t = pick(THINGS), [e, , , gone] = t;
       const mode = l === 1 ? pick([0, 3]) : pick([0, 1, 2, 3, 3]);
       if (mode === 3) {
         // Column subtraction: big number on top, take-away number below, line, answer.
@@ -206,7 +237,11 @@ export const mathSkills = [
           say: `${top} take away ${bot}. How many are left?`,
           visual: vertical(top, '−', bot) + (top <= 10 ? tenFrames(top, bot) : ''),
           options: numOptions(top - bot, 0, 19), answer: top - bot,
-          explain: top >= 10 ? `Start with the ones: ${top % 10} take away ${bot} is ${top % 10 - bot}. The 1 ten stays. So the answer is ${top - bot}.` : `${top} take away ${bot} is ${top - bot}.`,
+          // Tens & ones only when the ones on top are big enough (never a negative number);
+          // otherwise (like 10 − 4) count back.
+          explain: top > 10 && top % 10 >= bot % 10
+            ? `Start with the ones: ${top % 10} take away ${bot} is ${top % 10 - bot}. The 1 ten stays. So the answer is ${top - bot}.`
+            : top >= 10 ? countBack(top, bot) : `${top} take away ${bot} is ${top - bot}.`,
         };
       }
       if (mode === 0) return {
@@ -218,7 +253,9 @@ export const mathSkills = [
       if (mode === 1) {
         const name = pick(NAMES);
         return {
-          say: `${name} had ${a} ${w}. ${b === 0 ? 'Nobody ate any!' : `${b} got eaten!`} How many are left?`,
+          say: `${name} had ${things(a, t)}. ${gone
+            ? (b === 0 ? `None ${gone}!` : `${b} ${gone}!`)
+            : (b === 0 ? `${name} did not give any away.` : `${name} gave ${b} away.`)} How many are left?`,
           visual: group(e, a - b) + `<div class="group" style="opacity:.3">${Array(b).fill(e).join(' ')}</div>`,
           options: numOptions(a - b, 0, 10), answer: a - b,
           explain: `${a} take away ${b} equals ${a - b}.`,
@@ -270,7 +307,7 @@ export const mathSkills = [
       const a = rnd(1, n - 1);
       const [e, w] = pick(THINGS);
       return {
-        say: `${n} ${w} go in two baskets. ${a} are in the first basket. How many are in the other basket?`,
+        say: `${n} ${w} go in two baskets. ${a} ${a === 1 ? 'is' : 'are'} in the first basket. How many are in the other basket?`,
         visual: `<div class="groups">${group(e, a)}<div class="group">🧺 ?</div></div>` + numberBond(n, a, null),
         options: numOptions(n - a, 0, 15), answer: n - a,
         explain: `${n} is ${a} and ${n - a}.`,
@@ -290,7 +327,7 @@ export const mathSkills = [
         return {
           say: 'What is the name of this shape?', visual: shapes[name],
           options: textOptions(sample(Object.keys(shapes).filter(s => s !== name), 2).concat(name)), answer: name,
-          explain: `This is a ${name}.`,
+          explain: `This is ${aOrAn(name)}.`,
         };
       }
       const natural = [['🌳', 'tree'], ['🌸', 'flower'], ['🪨', 'rock'], ['🐚', 'shell'], ['🌙', 'moon'], ['☀️', 'sun'], ['🍃', 'leaf'], ['🏔️', 'mountain'], ['🥚', 'egg']];
@@ -326,16 +363,20 @@ export const mathSkills = [
     id: 'm-oneone', name: 'Match one to one', emoji: '🤝',
     gen(l) {
       const kids = rnd(2, l === 1 ? 5 : 8);
-      const hats = kids + rnd(-2, 2) || 1;
+      const hats = Math.max(1, kids + rnd(-2, 2)); // always at least 1 hat, and the same number is shown and checked
       const ans = hats === kids ? 'same' : hats > kids ? 'extra' : 'short';
+      const start = `${plural(kids, 'child', 'children')} and ${plural(hats, 'hat')}.`;
+      const noHat = kids - hats;
       return {
-        say: 'Each child needs one hat. Are there enough hats?',
-        visual: `<div class="groups">${group('🧒', kids)}${group('🧢', Math.max(1, hats))}</div>`,
-        options: [{ html: '<span class="pic">✅</span><span class="lbl">Just right</span>', value: 'same', say: 'just right' },
+        say: 'Each child needs one hat. Are there too many hats, not enough hats, or just right?',
+        visual: `<div class="groups">${group('🧒', kids)}${group('🧢', hats)}</div>`,
+        options: [{ html: '<span class="pic">👍</span><span class="lbl">Just right</span>', value: 'same', say: 'just right' },
           { html: '<span class="pic">➕</span><span class="lbl">Too many hats</span>', value: 'extra', say: 'too many hats' },
-          { html: '<span class="pic">😢</span><span class="lbl">Not enough</span>', value: 'short', say: 'not enough hats' }],
-        answer: hats < 1 ? 'short' : ans,
-        explain: `${kids} children. ${Math.max(1, hats)} hats. Give one hat to each child to check.`,
+          { html: '<span class="pic">😢</span><span class="lbl">Not enough hats</span>', value: 'short', say: 'not enough hats' }],
+        answer: ans,
+        explain: ans === 'same' ? `${start} Every child has one hat. Just right!`
+          : ans === 'extra' ? `${start} Each child gets a hat, and ${hats - kids === 1 ? '1 hat is' : `${hats - kids} hats are`} left over. Too many hats!`
+          : `${start} ${noHat === 1 ? '1 child has' : `${noHat} children have`} no hat. Not enough hats!`,
       };
     },
   },
@@ -365,12 +406,12 @@ export const mathSkills = [
         say: 'This is a number line! It is like a road for numbers. It starts at 0.',
         visual: nl({ frogAt: 0, marks: { 0: '#ffd23f' } }),
         prelude: async (vis, speak) => {
-          await speak('Each hop this way is one more. Count with Froggy!');
+          await speak('Each hop to the right is one more. Count with Froggy!');
           await hopAlong(vis, speak, 0, 10, true);
           await speak('The numbers get bigger as Froggy hops to the right.');
         },
         ask: 'Which way do numbers get bigger?',
-        options: [{ html: '<span class="pic">➡️</span><span class="lbl">This way</span>', value: 'r', say: 'to the right' }, { html: '<span class="pic">⬅️</span><span class="lbl">That way</span>', value: 'l', say: 'to the left' }],
+        options: [{ html: '<span class="pic">➡️</span><span class="lbl">Right</span>', value: 'r', say: 'to the right' }, { html: '<span class="pic">⬅️</span><span class="lbl">Left</span>', value: 'l', say: 'to the left' }],
         cols: 'two', answer: 'r',
         explain: 'Numbers get bigger as we go to the right. 1, 2, 3, 4...',
       };
@@ -383,7 +424,7 @@ export const mathSkills = [
           await speak('The numbers get smaller as Froggy hops to the left.');
         },
         ask: 'Which way do numbers get smaller?',
-        options: [{ html: '<span class="pic">➡️</span><span class="lbl">This way</span>', value: 'r', say: 'to the right' }, { html: '<span class="pic">⬅️</span><span class="lbl">That way</span>', value: 'l', say: 'to the left' }],
+        options: [{ html: '<span class="pic">➡️</span><span class="lbl">Right</span>', value: 'r', say: 'to the right' }, { html: '<span class="pic">⬅️</span><span class="lbl">Left</span>', value: 'l', say: 'to the left' }],
         cols: 'two', answer: 'l',
         explain: 'Numbers get smaller as we go to the left. 10, 9, 8, 7...',
       };
@@ -441,7 +482,9 @@ export const mathSkills = [
         say: 'What number is the pink arrow pointing to?',
         visual: `<div class="nl-wrap">${numberLine({ min: 0, max, show, arrowAt: n })}</div>`,
         options: numOptions(n, 0, max), answer: n,
-        explain: l === 1 ? `Look at the numbers next to it: ${n - 1} and ${n + 1}. The arrow is on ${n}.` : `Count the lines from ${Math.floor(n / 5) * 5}. The arrow is on ${n}.`,
+        explain: l === 1 ? `Look at the numbers next to it: ${n - 1} and ${n + 1}. The arrow is on ${n}.`
+          : n % 5 === 0 ? `The arrow is right on the ${n}.`
+          : `Start at ${Math.floor(n / 5) * 5} and count the lines: ${Array.from({ length: n % 5 }, (_, i) => Math.floor(n / 5) * 5 + i + 1).join(', ')}. The arrow is on ${n}.`,
         explainVisual: `<div class="nl-wrap">${numberLine({ min: 0, max, arrowAt: n, marks: { [n]: '#2ec27e' } })}</div>`,
       };
     },
@@ -469,11 +512,11 @@ export const mathSkills = [
       const a = sub ? rnd(b, max) : rnd(0, max - b);
       return {
         type: 'numline', mode: 'hop', start: a, hops: sub ? -b : b, line: { min: 0, max },
-        say: sub ? `${a} take away ${b}. Froggy is on ${a}. Tap to hop ${b} to the left!` : `${a} plus ${b}. Froggy is on ${a}. Tap to hop ${b} to the right!`,
+        say: sub ? `${a} take away ${b}. Froggy is on ${a}. Tap to hop ${plural(b, 'time')} to the left!` : `${a} plus ${b}. Froggy is on ${a}. Tap to hop ${plural(b, 'time')} to the right!`,
         text: sub ? `${a} − ${b}: hop ${b} to the left ⬅️` : `${a} + ${b}: hop ${b} to the right ➡️`,
         hint: 'Tap the very next number. One hop at a time!',
         after: sub ? `${a} take away ${b} is ${a - b}!` : `${a} plus ${b} is ${a + b}!`,
-        explain: sub ? `Take away means hop left. Start on ${a}, hop ${b} times, and land on ${a - b}.` : `Plus means hop right. Start on ${a}, hop ${b} times, and land on ${a + b}.`,
+        explain: sub ? `Take away means hop left. Start on ${a}, hop ${plural(b, 'time')}, and land on ${a - b}.` : `Plus means hop right. Start on ${a}, hop ${plural(b, 'time')}, and land on ${a + b}.`,
       };
     },
   },
@@ -528,14 +571,24 @@ export const mathSkills = [
       const kind = pick(l === 1 ? ['add', 'sub'] : l === 2 ? ['add', 'sub', 'more'] : ['add', 'sub', 'more', 'missing']);
       const a = rnd(2, 9), b = rnd(1, Math.min(9, kind === 'sub' ? a : 10 - a));
       const story = {
-        add: [`${n1} has ${a} ${w}. ${n2} gives ${n1} ${b} more. How many ${w} does ${n1} have now?`, a + b, `${a} + ${b} = ${a + b}`],
-        sub: [`${n1} has ${a} ${w}. ${n1} gives ${b} to ${n2}. How many ${w} are left?`, a - b, `${a} − ${b} = ${a - b}`],
-        more: [`${n1} has ${a + b} ${w}. ${n2} has ${a}. How many more does ${n1} have?`, b, `${a + b} − ${a} = ${b}`],
-        missing: [`${n1} had ${a} ${w}. Then ${n1} got some more. Now ${n1} has ${a + b}. How many more did ${n1} get?`, b, `${a} + ${b} = ${a + b}`],
+        add: [`${n1} has ${a} ${w}. ${n2} gives ${n1} ${b} more. How many ${w} does ${n1} have now?`, a + b, `${a} plus ${b} is ${a + b}`],
+        sub: [`${n1} has ${a} ${w}. ${n1} gives ${b} to ${n2}. How many ${w} are left?`, a - b, `${a} take away ${b} is ${a - b}`],
+        more: [`${n1} has ${a + b} ${w}. ${n2} has ${a}. How many more does ${n1} have?`, b, `${a + b} take away ${a} is ${b}`],
+        missing: [`${n1} had ${a} ${w}. Then ${n1} got some more. Now ${n1} has ${a + b}. How many more did ${n1} get?`, b, `${a} and ${b} more make ${a + b}`],
+      }[kind];
+      // Show the numbers on screen: groups of pictures, plus the number sentence at levels 1-2
+      const pics = {
+        add: () => `<div class="groups">${group(e, a)}<div class="eq">+</div>${group(e, b)}</div>`,
+        sub: () => `<div class="groups">${group(e, a - b)}<div class="group" style="opacity:.3">${Array(b).fill(e).join(' ')}</div></div>`,
+        more: () => `<div class="groups">${group(e, a + b)}${group(e, a)}</div>`,
+        missing: () => `<div class="groups">${group(e, a)}<div class="eq">+</div><div class="group">?</div></div>`,
+      }[kind]();
+      const sentence = {
+        add: [a, '+', b, '=', '?'], sub: [a, '−', b, '=', '?'], more: [a + b, '−', a, '=', '?'], missing: [a, '+', '?', '=', a + b],
       }[kind];
       return {
         say: story[0], readFirst: l === 3,
-        visual: kind === 'more' ? `<div class="groups">${group(e, a + b)}${group(e, a)}</div>` : `<div style="font-size:80px">${e}</div>`,
+        visual: pics + (l < 3 ? equation(sentence) : ''),
         options: numOptions(story[1], 0, 20), answer: story[1],
         explain: `${story[2]}. The answer is ${story[1]}.`,
       };
@@ -561,21 +614,22 @@ export const mathSkills = [
     gen(l) {
       const ORD = ['1st', '2nd', '3rd', '4th', '5th', '6th', '7th', '8th', '9th', '10th'];
       const ORDW = ['first', 'second', 'third', 'fourth', 'fifth', 'sixth', 'seventh', 'eighth', 'ninth', 'tenth'];
-      const racers = sample(['🐢', '🐰', '🐶', '🐱', '🐸', '🐥', '🐷', '🐮', '🦊', '🐼'], l === 1 ? 5 : l === 2 ? 7 : 10);
+      const ANIMAL = { '🐢': 'turtle', '🐰': 'rabbit', '🐶': 'dog', '🐱': 'cat', '🐸': 'frog', '🐥': 'chick', '🐷': 'pig', '🐮': 'cow', '🦊': 'fox', '🐼': 'panda' };
+      const racers = sample(Object.keys(ANIMAL), l === 1 ? 5 : l === 2 ? 7 : 10);
       const i = rnd(0, racers.length - 1);
       const row = `<div style="display:flex;align-items:center;gap:6px;font-size:clamp(34px,6vw,56px)"><span style="font-size:.5em">🏁 Start</span>${racers.join('')}</div>`;
       if (Math.random() < 0.5) return {
         say: `The animals are in a line. The start is on the left. Who is ${ORDW[i]}?`, text: `Who is ${l === 3 ? ORDW[i] : ORD[i]}?`,
         visual: row,
-        options: shuffle([racers[i], ...sample(racers.filter((_, j) => j !== i), 2)]).map(r => ({ html: `<span class="pic">${r}</span>`, value: r })), answer: racers[i],
-        explain: `Count from the start: ${ORDW.slice(0, i + 1).join(', ')}. ${racers[i]} is ${ORDW[i]}.`,
+        options: shuffle([racers[i], ...sample(racers.filter((_, j) => j !== i), 2)]).map(r => ({ html: `<span class="pic">${r}</span>`, value: r, say: `the ${ANIMAL[r]}` })), answer: racers[i],
+        explain: `Count from the start: ${ORDW.slice(0, i + 1).join(', ')}. The ${ANIMAL[racers[i]]} is ${ORDW[i]}.`,
       };
       const opts = [i, ...sample([...Array(racers.length).keys()].filter(j => j !== i), 2)];
       return {
-        say: `What place is the ${racers[i]} in the line? Count from the start.`,
+        say: `What place is the ${ANIMAL[racers[i]]} in the line? Count from the start.`,
         visual: row,
         options: shuffle(opts).map(j => ({ html: l === 3 ? ORDW[j] : ORD[j], value: j, say: ORDW[j] })), answer: i,
-        explain: `Count from the start: ${ORDW.slice(0, i + 1).join(', ')}.`,
+        explain: `Count from the start: ${ORDW.slice(0, i + 1).join(', ')}. The ${ANIMAL[racers[i]]} is ${ORDW[i]}.`,
       };
     },
   },
@@ -601,13 +655,22 @@ export const mathSkills = [
       const n = rnd(2, l === 1 ? 10 : 19);
       const others = new Set();
       while (others.size < 3) { const v = Math.max(1, Math.min(19, n + rnd(-3, 3))); if (v !== n) others.add(v); }
-      const ways = [v => miniFrame(v), v => tally(v), v => `<span class="lbl">${NUM_WORDS[v]}</span>`, v => (v >= 10 ? `<span class="lbl">1 ten ${v - 10} ones</span>` : `<span style="font-size:28px">${'●'.repeat(v)}</span>`)];
-      const opts = shuffle([n, ...others]).map(v => ({ html: pick(ways)(v), value: v }));
+      // Each way to show a number (never the plain numeral, which is the question)
+      const ways = [v => miniFrame(v), v => tally(v), v => `<span class="lbl">${NUM_WORDS[v]}</span>`, v => (v >= 10 ? `<span class="lbl">1 ten ${plural(v - 10, 'one')}</span>` : `<span style="font-size:28px">${'●'.repeat(v)}</span>`)];
+      const tallyCount = v => [...Array.from({ length: Math.floor(v / 5) }, (_, i) => (i + 1) * 5), ...Array.from({ length: v % 5 }, (_, i) => Math.floor(v / 5) * 5 + i + 1)];
+      const why = [
+        v => `The ten ${v > 10 ? 'frames have' : 'frame has'} ${plural(v, 'dot')}. That is ${v}.`,
+        v => (v < 5 ? `There ${v === 1 ? 'is 1 tally mark' : `are ${v} tally marks`}. That is ${v}.` : `Count the tally marks. Each bundle is 5: ${tallyCount(v).join(', ')}. That is ${v}.`),
+        v => `The word ${NUM_WORDS[v]} means ${v}.`,
+        v => (v >= 10 ? `1 ten and ${plural(v - 10, 'one')} is ${v}.` : `There are ${v} dots. That is ${v}.`),
+      ];
+      const right = rnd(0, ways.length - 1);
+      const opts = shuffle([n, ...others]).map(v => ({ html: (v === n ? ways[right] : pick(ways))(v), value: v }));
       return {
         say: `Which one shows ${n}? Numbers can be shown in different ways!`,
         visual: `<div class="eq">${n}</div>`,
         options: opts, answer: n,
-        explain: `${n} can be shown with dots, a ten frame, tally marks, or the word ${NUM_WORDS[n]}.`,
+        explain: why[right](n),
       };
     },
   },
@@ -615,7 +678,7 @@ export const mathSkills = [
     id: 'm-symbols', name: 'Maths signs', emoji: '⚖️',
     gen(l) {
       const mode = pick(l === 1 ? ['cmp'] : l === 2 ? ['cmp', 'cmp', 'op'] : ['cmp', 'op', 'eq']);
-      const SIGN = { '>': 'greater than', '<': 'less than', '=': 'equal to', '≠': 'not equal to', '+': 'add', '−': 'minus' };
+      const SIGN = { '>': 'greater than', '<': 'less than', '=': 'equal to', '≠': 'not equal to', '+': 'plus', '−': 'take away' };
       const opt = list => list.map(x => ({ html: x, value: x, say: SIGN[x] }));
       if (mode === 'cmp') {
         const a = rnd(0, 19); let b = rnd(0, 19);
@@ -625,7 +688,7 @@ export const mathSkills = [
           say: `Which sign goes in the box? ${a} and ${b}.`,
           visual: equation([a, '?', b]),
           options: opt(l === 1 ? ['>', '<'] : ['>', '<', '=']), cols: l === 1 ? 'two' : '', answer: ans,
-          explain: ans === '=' ? `${a} is equal to ${b}.` : `${a} is ${SIGN[ans]} ${b}. The open mouth eats the bigger number! 🐊`,
+          explain: ans === '=' ? `${a} is equal to ${b}.` : `${a} is ${SIGN[ans]} ${b}. The open mouth always faces the bigger number.`,
         };
       }
       if (mode === 'op') {
@@ -633,10 +696,10 @@ export const mathSkills = [
         const plus = Math.random() < 0.5;
         const c = plus ? a + b : a - b;
         return {
-          say: `Which sign makes it right? ${a}, ${b}, equals ${c}.`,
+          say: `${a}, box, ${b}, equals ${c}. Which sign goes in the box: plus or take away?`,
           visual: equation([a, '?', b, '=', c]),
           options: opt(['+', '−']), cols: 'two', answer: plus ? '+' : '−',
-          explain: `${a} ${plus ? '+' : '−'} ${b} = ${c}.`,
+          explain: `${a} ${plus ? 'plus' : 'take away'} ${b} equals ${c}.`,
         };
       }
       const a = rnd(1, 9), b = rnd(1, 9 - a + 1);
@@ -711,7 +774,7 @@ export const mathSkills = [
         say: 'What time is it? Look at the short red hand.',
         visual: clockSVG(hr, half ? 30 : 0, 210),
         options: shuffle([label(hr, half), ...wrong]).map(x => ({ html: x, value: x, say: x })), answer: label(hr, half),
-        explain: half ? `The long hand points to 6, so it is half past. The short hand is just past ${hr}. It is half past ${hr}.` : `The long hand points to 12, so it is o'clock. The short hand points to ${hr}. It is ${hr} o'clock.`,
+        explain: half ? `The long hand points to 6, so it is half past. The short hand is halfway between ${hr} and ${hr % 12 + 1}. It is half past ${hr}.` : `The long hand points to 12, so it is o'clock. The short hand points to ${hr}. It is ${hr} o'clock.`,
       };
     },
   },
@@ -742,12 +805,12 @@ export const mathSkills = [
         return {
           say: `We can measure with parts of our body. Which one is ${what}?`, visual: '<div style="font-size:80px">📏</div>',
           options: shuffle([name, ...sample(BODY.map(b => b[0]).filter(x => x !== name), 2)]).map(x => ({ html: `<span class="lbl">${x}</span>`, value: x, say: x })), answer: name,
-          explain: `A ${name} is ${what}. These are non-standard units: everyone's body is a different size.`,
+          explain: `${cap(aOrAn(name))} is ${what}. These are non-standard units: everyone's body is a different size.`,
         };
       }
       if (mode === 'unit') {
         const SMALL = [['pencil', '✏️'], ['book', '📖'], ['crayon', '🖍️'], ['spoon', '🥄'], ['shoe', '👟']];
-        const BIG = [['door', '🚪'], ['classroom', '🏫'], ['road', '🛣️'], ['fence', '🚧'], ['swimming pool', '🏊']];
+        const BIG = [['classroom', '🏫'], ['road', '🛣️'], ['fence', '🚧'], ['swimming pool', '🏊']];
         const cm = Math.random() < 0.5;
         const [thing, pic] = pick(cm ? SMALL : BIG);
         return {
@@ -766,13 +829,16 @@ export const mathSkills = [
         };
       }
       const tall = Math.random() < 0.5;
-      const [p1, p2] = sample(['🦒', '🌳', '🏢', '🐭', '🐜', '🌱', '🧒', '🐘'], 2);
-      const big = { '🦒': 4, '🌳': 5, '🏢': 6, '🐭': 1, '🐜': 0, '🌱': 1.5, '🧒': 3, '🐘': 3.5 };
-      const ans = (tall ? big[p1] > big[p2] : big[p1] < big[p2]) ? p1 : p2;
+      // [emoji, name, rough height]; only pairs that are clearly different (2 or more apart) are asked
+      const HEIGHTS = [['🦒', 'giraffe', 6], ['🌳', 'tree', 6], ['🏢', 'tall building', 9], ['🐭', 'mouse', 1], ['🐜', 'ant', 0],
+        ['🌱', 'little plant', 1], ['🧒', 'child', 3], ['🐘', 'elephant', 5]];
+      let p1, p2;
+      do { [p1, p2] = sample(HEIGHTS, 2); } while (Math.abs(p1[2] - p2[2]) < 2);
+      const [win, lose] = (tall ? p1[2] > p2[2] : p1[2] < p2[2]) ? [p1, p2] : [p2, p1];
       return {
-        say: tall ? 'Which one is taller?' : 'Which one is shorter?',
-        options: [p1, p2].map(x => ({ html: `<span class="pic">${x}</span>`, value: x })), cols: 'two', answer: ans,
-        explain: `${ans} is ${tall ? 'taller' : 'shorter'}. Height is how tall something is.`,
+        say: tall ? 'Which is taller in real life?' : 'Which is shorter in real life?',
+        options: [p1, p2].map(x => ({ html: `<span class="pic">${x[0]}</span>`, value: x[0], say: `the ${x[1]}` })), cols: 'two', answer: win[0],
+        explain: `In real life, ${aOrAn(win[1])} is ${tall ? 'taller' : 'shorter'} than ${aOrAn(lose[1])}. Height is how tall something is.`,
       };
     },
   },

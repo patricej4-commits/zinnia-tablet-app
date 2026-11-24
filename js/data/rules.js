@@ -24,7 +24,7 @@ export const RULES = {
   // ---- Phonics & spelling principles
   special: { word: 'special sounds', def: 'Special sounds are letters that work together to make one sound, like s h in ship and c k in duck.', eg: '' },
   onetwo: { word: 'one and two vowels', def: 'One vowel in a word? It says its short sound (cat). Two vowels? The first vowel says its name and the second is silent (cake).', eg: '' },
-  ck: { word: 'c, k, ck, ke', def: 'K comes before i and e; c comes before a, o and u. At the end: a short vowel gets c k (back); a long vowel gets k and a silent e (bake).', eg: '' },
+  ck: { word: 'c, k, ck, ke', def: 'K comes before i and e; c comes before a, o and u. At the end: a short vowel gets c k (back); a vowel that says its name gets k and a silent e (bake). After a consonant or two vowels, just write k (milk, book).', eg: '' },
   floss: { word: 'double endings', def: 'L, f, s (and z) often walk together at the end of a short-vowel word: bell, cuff, kiss, buzz.', eg: '' },
   blend: { word: 'blends', def: 'Blend the consonant and the vowel together first (b-a, ba), then add the ending (bat).', eg: '' },
   soundout: { word: 'spelling', def: 'To spell, say the word slowly. Listen for every sound, and write a letter or special sound for each one.', eg: '' },
@@ -32,25 +32,25 @@ export const RULES = {
   sight: { word: 'sight words', def: 'Sight words are words we learn by heart, because we cannot always sound them out.', eg: 'the, said, come' },
   // ---- Reading
   findans: { word: 'answering questions', def: 'To answer a question, look back in the story. Who asks for a person. Where asks for a place. When asks for a time. Why asks for a reason.', eg: '' },
-  makesense: { word: 'finishing a sentence', def: 'Read the whole sentence with each word. Pick the word that makes sense and matches the picture.', eg: '' },
+  makesense: { word: 'finishing a sentence', def: 'Read the whole sentence with each word. Pick the word that makes sense.', eg: '' },
   // ---- More maths principles
   bond: { word: 'number bonds', def: 'A number bond shows two parts that make a whole. Part plus part equals the whole. The whole take away one part leaves the other part.', eg: '3 + 4 = 7' },
-  tens: { word: 'tens and ones', def: 'A teen number is 1 ten and some ones: 14 is 1 ten and 4 ones. The digit on the left shows the tens; the digit on the right shows the ones.', eg: '' },
+  tens: { word: 'tens and ones', def: 'A number from 10 to 19 is 1 ten and some ones: 14 is 1 ten and 4 ones. The digit on the left shows the tens; the digit on the right shows the ones.', eg: '' },
   compare: { word: 'more and less', def: 'Greater than means bigger. Less than means smaller. The open mouth of > or < always faces the bigger number. = means the same as.', eg: '7 > 3' },
   clock: { word: 'telling time', def: 'The short hand tells the hour. The long hand tells the minutes. When the long hand points to 12, it is o\'clock.', eg: '' },
   counting: { word: 'counting', def: 'Touch and count each thing one time only. The last number you say tells how many there are.', eg: '' },
-  order: { word: 'ordinal numbers', def: 'Ordinal numbers tell the order or position: first, second, third, fourth, fifth.', eg: '1st, 2nd, 3rd' },
-  pattern: { word: 'patterns', def: 'A pattern repeats, or grows by the same amount each time. Find the part that repeats, then continue it.', eg: '2, 4, 6, 8' },
+  order: { word: 'ordinal numbers', def: 'Ordinal numbers tell the order or position: first, second, third, fourth, fifth, sixth, seventh, eighth, ninth, tenth.', eg: '1st, 2nd, 3rd' },
+  pattern: { word: 'patterns', def: 'A pattern repeats, or grows by the same amount each time. Find the part that repeats, then continue it.', eg: 'red, blue, red, blue' },
   verse: { word: 'Bible verses', def: 'The Bible is God\'s Word, and it is true. We learn verses by heart so we can remember what God says.', eg: '' },
   // ---- HOW TO: steps for every kind of question
-  spellSteps: { word: 'spelling', say: 'Remember the spelling steps: say it slowly, listen for each sound, write a letter for each sound, think of the rule, then read it back.',
-    def: 'How to spell a word: 1. Say the word. 2. Say it slowly and listen for each sound. 3. Write a letter or special sound for each sound. 4. Think of the rule (short vowel? two vowels? ck or ke?). 5. Read it back to check.', eg: '' },
+  spellSteps: { word: 'spelling', say: 'Remember the spelling steps: say it slowly, listen for each sound, think of the rule, write the letters, then read it back.',
+    def: 'How to spell a word: 1. Say the word slowly. 2. Listen for each sound. 3. Think of the rule (short vowel? two vowels? ck or ke?). 4. Write a letter or special sound for each sound. 5. Read it back to check.', eg: '' },
   readSteps: { word: 'reading a new word', say: 'Remember the reading steps: find the vowel, look for special sounds, say each sound, then blend them together.',
     def: 'How to read a new word: 1. Find the vowel. 2. Look for special sounds (sh, ck, oo...). 3. Say each sound. 4. Blend the sounds together. 5. Read the whole word. Does it make sense?', eg: '' },
   answerSteps: { word: 'answering a story question', say: 'Remember the steps: read the question, is it who, what, where, when or why? Then look back in the story.',
-    def: 'How to answer a story question: 1. Read the story. 2. Read the question. 3. Is it who (a person), where (a place), when (a time) or why (a reason)? 4. Look back in the story to find it. 5. Choose the answer.', eg: '' },
+    def: 'How to answer a story question: 1. Read the story. 2. Read the question. Who asks for a person, what for a thing, where for a place, when for a time, why for a reason, how many for a number. 3. Look back in the story to find the answer. 4. Choose the answer.', eg: '' },
   partSteps: { word: 'finding the word type', say: 'Ask about each word: does it name something? Is it an action? Does it describe? Does it take the place of a noun?',
-    def: 'How to find the word type: 1. Read the sentence. 2. For each word ask: Does it name a person, animal, place or thing? (noun) Is it an action? (verb) Does it describe? (adjective) Does it take the place of a noun? (pronoun)', eg: '' },
+    def: 'How to find the word type: 1. Read the word or sentence. 2. Ask: Does it name a person, animal, place or thing? (noun) Is it an action? (verb) Does it describe? (adjective) Does it take the place of a noun? (pronoun)', eg: '' },
   storySteps: { word: 'word problems', say: 'Remember the steps for a word problem: find the numbers, then decide: add or take away?',
     def: 'How to solve a word problem: 1. Listen or read carefully. 2. Find the numbers. 3. More, altogether, in all → add. Left, ate, gave away, how many fewer → take away. 4. Work it out. 5. Check: does the answer make sense?', eg: '' },
   clockSteps: { word: 'telling the time', say: 'Remember: the short hand shows the hour, the long hand shows the minutes.',
@@ -62,7 +62,7 @@ export const RULES = {
   tellsSteps: { word: 'picture sentences', say: 'Look at the picture, then read each sentence. Which one tells what you see?',
     def: 'How to find the sentence for a picture: 1. Look carefully at the picture. 2. Read each sentence. 3. Pick the one that tells what you see.', eg: '' },
   matchSteps: { word: 'read and find', say: 'Read the whole sentence, then find the picture that shows it.',
-    def: 'How to match: 1. Read the whole sentence. 2. Find the main word (who or what it is about). 3. Find the picture that shows it.', eg: '' },
+    def: 'How to match: 1. Read the whole sentence. 2. Look at each picture. 3. Pick the picture of a thing the sentence talks about.', eg: '' },
   rhymeSteps: { word: 'rhyming', say: 'Remember: say both words and listen to the ending. Same ending? They rhyme!',
     def: 'How to find rhymes: 1. Say both words. 2. Listen to the end: the vowel and the last sound. 3. Same ending? They rhyme! (cluck, duck)', eg: '' },
   // ---- Maths steps
@@ -70,8 +70,19 @@ export const RULES = {
   colAdd: { word: 'adding in columns', say: 'Remember the steps: start with the ones. If they make 10 or more, carry 1 ten. Then add the tens.', def: 'Adding in columns: 1. Start with the ones. Add the ones. 2. 10 or more? Write the ones and carry 1 ten to the tens. 3. Add the tens (and the 1 you carried). 4. Write the answer under the line.', eg: '' },
   sub: { word: 'take away', say: 'Remember: start with the big number, take away the small number, then count what is left.', def: 'Take away: 1. Start with the big number. 2. Take away (cross out) the small number. 3. Count what is left.', eg: '8 − 3: cross out 3, count 5' },
   colSub: { word: 'take away in columns', say: 'Remember the steps: big number on top. Start with the ones. If the top ones are smaller, borrow 1 ten. Then the tens.', def: 'Take away in columns: 1. The big number goes on top. 2. Start with the ones. Is the top ones digit smaller? Borrow 1 ten: the tens go down by 1, and the ones get 10 more. 3. Take away the ones. 4. Take away the tens. 5. Check: add your answer and the bottom number. You get the top number!', eg: '' },
+  nlineRead: { word: 'number line', say: 'Remember: on a number line the numbers go in order. They get bigger to the right.',
+    def: 'On a number line the numbers go in order, one step at a time. They get bigger to the right and smaller to the left. Start at a number you know and count the lines.', eg: '' },
+  moreLess: { word: 'more and fewer', say: 'Remember: count each group. The bigger number has more. The smaller number has fewer.',
+    def: 'Count each group. The bigger number has more. The smaller number has fewer. Match them up one to one to check.', eg: '' },
+  signs: { word: 'maths signs', def: '+ means add. − means take away. = means equals: both sides are the same.', eg: '3 + 2 = 5' },
+  shortv: { word: 'short vowels', def: 'Short vowel sounds: a as in apple, e as in egg, i as in insect, o as in octopus, u as in umbrella.', eg: '' },
+  blendRule: { word: 'blends', def: 'A blend is two or three letters you can still hear, sliding together: t-r says tr in tree, s-t says st in stop.', eg: '' },
+  listenAnswer: { word: 'listening to a story', say: 'Listen to the whole story. Is the question who, what, where, when or why? Tap the ear to hear it again.',
+    def: 'How to answer a listening question: 1. Listen to the whole story. 2. Listen to the question. 3. Is it who, what, where, when or why? 4. Tap the ear to hear the story again if you need to.', eg: '' },
+  abcLetters: { word: 'ABC order', def: 'Put the letters in alphabet order: a, b, c, d, e, f, g... Sing the ABC song to help you!', eg: '' },
   nline: { word: 'number line', def: 'On the number line, adding hops to the right (numbers get bigger). Take away hops to the left (numbers get smaller).', eg: '' },
 };
+const BLEND_SET = new Set(['st', 'pl', 'fr', 'tr', 'bl', 'cl', 'fl', 'gl', 'br', 'dr', 'pr', 'gr', 'sm', 'sc', 'sk', 'sp', 'cr', 'tw', 'spl', 'spr', 'scr', 'squ', 'sn', 'sl', 'str', 'sw', 'thr']);
 export const PARTS_MIX = 'Noun = naming word. Verb = action word. Adjective = describing word. Pronoun = takes the place of a noun.';
 
 // Which reminder goes with which topic
@@ -83,17 +94,22 @@ export const RULE_FOR = {
   'm-add': 'add', 'm-sub': 'sub', 'm-colsub': 'colSub', 'm-coladd': 'colAdd', 'm-nl-hop': 'nlineSteps', 'm-story': 'mathsStory',
   'p-sounds': 'special', 'p-keyword': 'special', 'p-onetwo': 'onetwo', 'p-mark': 'onetwo', 'p-ck': 'ck', 'p-floss': 'floss', 'p-blend': 'blend',
   'p-spell': 'spellSteps', 'p-missing': 'spellSteps', 'p-rightspell': 'spellSteps', 's-unscramble': 'spellSteps', 's-clue': 'spellSteps', 'p-rhyme': 'rhymeSteps', 's-rhyme': 'rhymeSteps', 'l-rhyme': 'rhymeSteps',
-  's-sight': 'sight', 'r-sight': 'sight', 'r-story': 'answerSteps', 'l-story': 'answerSteps', 'r-word': 'readSteps', 'r-picword': 'readSteps', 'r-match': 'matchSteps', 'r-tells': 'tellsSteps', 'r-finish': 'makesense', 'r-wordbank': 'makesense', 's-sentence': 'makesense',
-  'm-bond': 'bond', 'm-tens': 'tens', 'm-compare': 'compare', 'm-symbols': 'compare', 'm-nl-compare': 'compare', 'm-time': 'clockSteps', 'm-digital': 'clock',
+  's-sight': 'sight', 'r-sight': 'sight', 'r-story': 'answerSteps', 'l-story': 'listenAnswer', 'r-word': 'readSteps', 'r-picword': 'readSteps', 'r-match': 'matchSteps', 'r-tells': 'tellsSteps', 'r-finish': 'makesense', 'r-wordbank': 'makesense', 's-sentence': 'makesense',
+  'm-bond': 'bond', 'm-tens': 'tens', 'm-compare': 'moreLess', 'm-symbols': 'compare', 'm-nl-compare': 'moreLess', 'm-time': 'clockSteps', 'm-digital': 'clock',
   'm-count': 'counting', 'm-oneone': 'counting', 'm-ordinal': 'order', 'm-skip': 'pattern', 'm-pattern': 'pattern',
-  'm-nl-read': 'nline', 'm-nl-tap': 'nlineSteps', 'm-nl-build': 'nline', 'b-verse': 'verse', 'b-letter': 'verse',
+  'm-nl-read': 'nlineRead', 'm-nl-tap': 'nlineRead', 'm-nl-build': 'nlineRead', 'b-verse': 'verse', 'b-letter': 'verse',
 };
 export function reminderFor(skillId, q) {
   // Spelling list words: the rule of that list
   if (q.rule) return { key: 'list:' + q.rule.slice(0, 20), text: RULES.spellSteps.def + ' Rule for this list: ' + q.rule, say: 'Remember the rule: ' + q.rule };
   let k = RULE_FOR[skillId];
   if (!k) return null;
-  const col = /class="vert"/.test(q.visual || '');
+  // column rules only for two-digit column sums (the T and O headings); one-digit sums get the simple rule
+  const col = /class="vert"/.test(q.visual || '') && /vhead/.test(q.visual || '');
+  if (k === 'compare' && /plus|take away|\+|−/.test((q.say || '') + (q.text || ''))) k = 'signs';
+  if (k === 'vowels' && /short/i.test((q.say || '') + (q.text || ''))) k = 'shortv';
+  if (k === 'abc' && q.type === 'order' && (q.items || []).every(x => String(x).length === 1)) k = 'abcLetters';
+  if (k === 'special' && BLEND_SET.has(String(skillId === 'p-sounds' ? q.answer : ((q.say || '').match(/sound ([a-z ]+)\?/) || [, ''])[1].replace(/ /g, '')))) k = 'blendRule';
   if (k === 'add' && col) k = 'colAdd';
   if (k === 'sub' && col) k = 'colSub';
   if (k === 'mathsStory') k = 'storySteps';
@@ -135,6 +151,8 @@ const GRAMMAR_WHY = [
   ['Why does a question end with a question mark?', 'It is an asking sentence', ['It is a telling sentence', 'It is a name']],
   ['Why do we say "they are" and not "they is"?', 'Are is for more than one', ['Is is for more than one', 'They is a name']],
 ];
+const aan = w => (/^[aeiou]/i.test(w) ? 'an' : 'a');
+const egText = r => r.eg.replace(/[.\s]+$/, '');
 const clashKeys = (a, b) => (a === 'noun' && ['common', 'proper'].includes(b)) || (b === 'noun' && ['common', 'proper'].includes(a));
 export const grammarRuleSkills = [
   {
@@ -155,25 +173,25 @@ export const grammarRuleSkills = [
       }
       if (mode === 0) return {
         // What is a noun? -> pick what it means
-        say: `What is a ${r.word}?`, text: `What is a ${r.word}?`, readFirst: l > 1,
+        say: `What is ${aan(r.word)} ${r.word}?`, text: `What is ${aan(r.word)} ${r.word}?`, readFirst: l > 1,
         options: shuffle([k, ...others]).map(x => ({ html: `<span class="lbl" style="font-size:22px">${DESC[x]}</span>`, value: x, say: DESC[x] })),
         cols: 'two', answer: k,
-        explain: `${r.def} For example: ${r.eg}.`,
+        explain: `${r.def} For example: ${egText(r)}.`,
       };
       if (mode === 1) return {
         // "An action word or doing word" -> what is it called?
         say: `${DESC[k]}. What is it called?`, text: `"${DESC[k]}." What is it called?`,
         options: shuffle([k, ...others]).map(x => ({ html: `<span class="lbl">${RULES[x].word}</span>`, value: x, say: RULES[x].word })), answer: k,
-        explain: `${r.def} For example: ${r.eg}.`,
+        explain: `${r.def} For example: ${egText(r)}.`,
       };
       // Know it AND find it: "A verb is an action word. Which word is a verb?"
       const kk = pick(CORE), rr = RULES[kk];
       const right = pick(EXAMPLES[kk]);
       const wrong = sample(CORE.filter(x => x !== kk), l === 1 ? 2 : 3).map(x => pick(EXAMPLES[x]));
       return {
-        say: `Remember: ${rr.def.split('. ')[0].replace(/\.$/, '')}. Which word is a ${rr.word}?`, text: `Which word is a ${rr.word}? (${rr.short})`,
+        say: `Remember: ${rr.def.split('. ')[0].replace(/\.$/, '')}. Which word is ${aan(rr.word)} ${rr.word}?`, text: `Which word is ${aan(rr.word)} ${rr.word}? (${rr.short})`,
         options: shuffle([right, ...wrong]).map(x => ({ html: `<span class="lbl" style="font-size:34px">${x}</span>`, value: x, say: x })), answer: right,
-        explain: `${right} is a ${rr.word}. ${rr.def}`,
+        explain: `The word "${right}" is ${aan(rr.word)} ${rr.word}. ${rr.def}`,
       };
     },
   },
@@ -185,11 +203,11 @@ const STEP_QS = [
   ['When we take away in columns, which number goes on top?', 'The bigger number', ['The smaller number', 'Any number'], 'The bigger number goes on top, because we take away FROM the bigger number.'],
   ['When we add or take away in columns, where do we start?', 'With the ones', ['With the tens', 'With the answer'], 'We always start with the ones. The ones are on the right side.'],
   ['We finished the ones. What do we do next?', 'Do the tens', ['Stop', 'Start again'], 'First the ones, then the tens.'],
-  ['Where do we write the answer?', 'Under the line', ['On top', 'Next to the sign'], 'The answer goes under the line.'],
+  ['In a column sum, where do we write the answer?', 'Under the line', ['On top', 'Next to the sign'], 'The answer goes under the line.'],
   ['How can we check a take away answer?', 'Add the answer and the bottom number', ['Take away again', 'Guess'], 'Example: 8 take away 3 is 5. Check: 5 add 3 makes 8. It matches the top number, so we are right!'],
   ['When we add by counting on, which number do we start with?', 'The bigger number', ['The smaller number', 'Zero'], 'Start with the bigger number, then count on. For 2 + 6: start at 6, then count 7, 8.'],
-  ['When we take away, do we get more or less?', 'Less', ['More', 'The same'], 'Take away means some are gone, so we have less.'],
-  ['When we add, do we get more or less?', 'More', ['Less', 'The same'], 'Adding puts more together, so we have more.'],
+  ['We have 5 sweets and take away 2. Do we have more or fewer than 5 now?', 'Fewer', ['More', 'The same'], 'Take away means some are gone. 5 take away 2 is 3, and 3 is fewer than 5.'],
+  ['We have 3 apples and add 2 more. Do we have more or fewer than 3 now?', 'More', ['Fewer', 'The same'], 'Adding puts more together. 3 and 2 more is 5, and 5 is more than 3.'],
   ['What does the + sign mean?', 'Add (plus)', ['Take away (minus)', 'Equals'], '+ means add. 2 + 1 = 3.'],
   ['What does the − sign mean?', 'Take away (minus)', ['Add (plus)', 'Equals'], '− means take away. 3 − 1 = 2.'],
   ['What does the = sign mean?', 'Equals (the same as)', ['Add', 'Take away'], '= means equals: both sides are the same amount. 2 + 2 = 4.'],
@@ -197,10 +215,10 @@ const STEP_QS = [
   ['On a number line, which way do we hop to take away?', 'To the left', ['To the right', 'Down'], 'Numbers get smaller to the left. Take away makes smaller, so we hop left.'],
   ['To take away 3 from 8 with counters, what do we do?', 'Cross out 3 and count what is left', ['Add 3 more', 'Count all 8'], 'Show 8 counters. Cross out 3. Count the ones left: 5.'],
   ['Why does the bigger number go on top when we take away?', 'We cannot take away more than we have', ['It looks nicer', 'The teacher likes it'], 'If you have 3 sweets, you cannot give away 8. So the bigger number goes on top.'],
-  ['Why do we line up the ones under the ones and the tens under the tens?', 'So we add and take away the right places', ['So it looks long', 'So we can skip the ones']," Ones go with ones and tens go with tens, so we don't mix them up."],
+  ['Why do we line up the ones under the ones and the tens under the tens?', 'So we add and take away the right places', ['So it looks long', 'So we can skip the ones'],"Ones go with ones and tens go with tens, so we don't mix them up."],
   ['Why do we start counting on from the bigger number?', 'It is faster: fewer numbers to count', ['It is slower', 'Because it is the answer'], 'For 2 + 7: start at 7 and count 2 more (8, 9). That is faster than counting 7 more.'],
-  ['Why does adding give us more?', 'We are putting more things together', ['We are taking things away', 'Nothing changes'], 'When we add, we put things together, so there are more.'],
-  ['Why does take away give us less?', 'Some things are taken away', ['We are adding more', 'Nothing changes'], 'When we take away, some things are gone, so there are less.'],
+  ['Why does adding 2 more give us more?', 'We are putting more things together', ['We are taking things away', 'Nothing changes'], 'When we add more things, we put them together, so there are more.'],
+  ['Why does taking away 2 leave us with fewer?', 'Some things are taken away', ['We are adding more', 'Nothing changes'], 'When we take away, some things are gone, so there are fewer.'],
   ['In a number bond, the whole is 9 and one part is 4. What is the other part?', '5', ['13', '4'], '4 and 5 make 9. So the other part is 5.'],
   ['Why do we touch each thing when we count?', 'So we count each thing only one time', ['So it gets dirty', 'So we can skip some'], 'Touching each one stops us counting the same thing twice.'],
 ];
@@ -240,7 +258,7 @@ export const mathStepSkills = [
         const o = pick(ORDER_STEPS.filter(x => l === 3 || x.steps.length <= 3));
         return {
           type: 'order', say: `Put the steps for ${o.name} in the right order.`, items: shuffle(o.steps), answer: o.steps,
-          explain: `The steps for ${o.name}: ${o.steps.map((s, i) => `${i + 1}. ${s}`).join('. ')}.`,
+          explain: `The steps for ${o.name}: ${o.steps.map((s, i) => `${i + 1}. ${s}`).join('. ').replace(/\?\./g, '?')}.`,
         };
       }
       if (Math.random() < 0.25) return placeQ(l);
@@ -263,7 +281,8 @@ const WHY_SPELL = [
   [['bell', 'doll', 'hill', 'cuff', 'puff', 'kiss', 'mess', 'buzz', 'well', 'stuff'], w => `Why does "${w}" end with two of the same letter?`, 'It is a short-vowel word ending in l, f, s or z', ['It is a long-vowel word', 'It has two vowels']],
   [['cake', 'goat', 'kite', 'boat', 'bean', 'game', 'ride', 'rain', 'feet'], w => `Why does the first vowel in "${w}" say its name?`, 'There are two vowels; the second one is silent', ['There is only one vowel', 'It ends with ck']],
   [['cat', 'pig', 'sun', 'bed', 'hop', 'net', 'cub', 'fish'], w => `Why does "${w}" have a short vowel sound?`, 'It has only one vowel', ['It has two vowels', 'It ends with e']],
-  [['go', 'no', 'so', 'me', 'he', 'be', 'my', 'cry', 'fly'], w => `Why does the last letter in "${w}" say its long sound?`, 'It is the only vowel, at the end of the word', ['There are two vowels', 'It ends with ck']],
+  [['go', 'no', 'so', 'me', 'he', 'be', 'we'], w => `Why does the last letter in "${w}" say its long sound?`, 'It is the only vowel, at the end of the word', ['There are two vowels', 'It ends with ck']],
+  [['my', 'cry', 'fly', 'by', 'try'], w => `In "${w}", what sound does the y at the end make?`, 'Long i, like in kite', ['Short i, like in pig', 'Y, like in yes']],
   [['ship', 'shell', 'fish', 'this', 'thin', 'chair', 'night', 'moon'], w => `In "${w}", why do we write two (or three) letters for one sound?`, 'They are a special sound: letters that work together', ['We spelled it wrong', 'Every sound needs two letters']],
 ];
 export const phonicsWhySkills = [
@@ -285,35 +304,58 @@ export const phonicsWhySkills = [
 // ---- "How do I...?" — the steps themselves, for spelling and reading
 const HOW_ORDER = {
   spell: [
-    { name: 'spelling a word', steps: ['Say the word', 'Listen for each sound', 'Write a letter for each sound', 'Read it back'] },
-    { name: 'spelling a new word', steps: ['Say it slowly', 'Think of the rule', 'Write the letters', 'Check it'] },
+    { name: 'spelling a word', steps: ['Say it slowly', 'Listen for each sound', 'Write the letters', 'Read it back'] },
+    { name: 'spelling a new word', steps: ['Say it slowly', 'Think of the rule', 'Write the letters', 'Read it back'] },
   ],
   read: [
     { name: 'reading a new word', steps: ['Find the vowel', 'Look for special sounds', 'Say each sound', 'Blend them together'] },
     { name: 'answering a story question', steps: ['Read the story', 'Read the question', 'Look back in the story', 'Choose the answer'] },
-    { name: 'writing a sentence', steps: ['Capital letter first', 'Spaces between words', 'End mark last'] },
+    { name: 'writing a sentence', steps: ['Capital letter first', 'Write the words', 'End mark last'] },
   ],
 };
+// Every "how do I…" question uses a REAL example, so it is clear what to do.
+// Each maker returns { say, visual, answer, wrong, why }.
+const ex = t => `<div class="sentence" style="font-size:clamp(26px,4vw,40px)">${t}</div>`;
+const QTYPES = [
+  ['When', ['When do you go to bed?', 'When is your birthday?', 'When does the sun come up?'], 'A time (like at night)'],
+  ['Where', ['Where is your school?', 'Where does a fish live?', 'Where do you sleep?'], 'A place (like at home)'],
+  ['Who', ['Who reads you a story?', 'Who made the world?', 'Who cooks dinner?'], 'A person (like Mum)'],
+  ['Why', ['Why do we wear a raincoat?', 'Why do we brush our teeth?'], 'A reason (because...)'],
+];
 const HOW_QS = {
   spell: [
-    ['What is the first step to spell a word?', 'Say the word slowly', ['Write any letters', 'Close the book'], 'First say the word slowly, so you can hear every sound.'],
-    ['How do you know how many letters to write?', 'Listen for each sound', ['Guess', 'Count your fingers'], 'Each sound you hear needs a letter (or a special sound like sh). c-a-t has 3 sounds, so 3 letters.'],
-    ['After you spell a word, what should you do?', 'Read it back to check', ['Throw it away', 'Spell it faster'], 'Read your word back. Does it say the word you wanted? Then it is right!'],
-    ['You hear a short vowel and a k sound at the end. What do you write?', 'ck', ['ke', 'kk'], 'Short vowel + k sound at the end = ck, like back and duck.'],
-    ['You hear a long vowel and a k sound at the end. What do you write?', 'ke', ['ck', 'c'], 'Long vowel + k sound at the end = k and a silent e, like bake and like.'],
-    ['You hear the sound sh. How many letters do you write?', 'two: s and h', ['one: s', 'three'], 'The sh sound is written with two letters: s and h, like in ship.'],
-    ['A short word ends in an l sound after a short vowel. What do you write?', 'll', ['l', 'le'], 'Short-vowel words that end with an l sound get two l letters: bell, doll, hill.'],
-    ['The teacher says a word that is not on your list. What do you do?', 'Use the rules and the sounds', ['Give up', 'Write your list word'], 'You can spell new words too! Say it slowly, listen for the sounds, and use your rules.'],
+    () => { const [w, s] = pick([['hen', 'h-e-n'], ['sun', 's-u-n'], ['pig', 'p-i-g'], ['cup', 'c-u-p']]);
+      return { say: `You want to spell ${w}. What do you do first?`, visual: ex(w), answer: `Say it slowly: ${s}`, wrong: ['Write any letters', 'Close the book'], why: `First say the word slowly: ${s}. Then you can hear every sound.` }; },
+    () => { const [w, s, n] = pick([['cat', 'c-a-t', 3], ['dog', 'd-o-g', 3], ['frog', 'f-r-o-g', 4], ['ship', 'sh-i-p', 3], ['up', 'u-p', 2]]);
+      return { say: `Say ${w} slowly: ${s}. How many sounds do you hear?`, visual: ex(s), answer: String(n), wrong: [String(n + 1), String(n - 1 || 5)], why: `${s}: that is ${n} sounds. Each sound gets a letter, or a special sound like sh.` }; },
+    () => { const [w, x, y] = pick([['bed', 'bad', 'bud'], ['pin', 'pan', 'pen'], ['hop', 'hip', 'hut']]);
+      return { say: `You wrote ${w.split('').join(' ')}. Read it back. What word did you write?`, visual: ex(w.split('').join(' - ')), answer: w, wrong: [x, y], why: `It says ${w}. Reading it back checks that you wrote the word you wanted.` }; },
+    () => { const w = pick(['duck', 'back', 'sock', 'kick', 'neck']);
+      return { say: `How do you spell the end of ${w}? The vowel is short.`, visual: ex(w.slice(0, -2) + ' _ _'), answer: 'ck', wrong: ['ke', 'k'], why: `${w} has a short vowel, so the k sound at the end is c k: ${w}.` }; },
+    () => { const w = pick(['bake', 'like', 'cake', 'woke', 'bike']);
+      return { say: `How do you spell the end of ${w}? The vowel says its name.`, visual: ex(w.slice(0, -2) + ' _ _'), answer: 'ke', wrong: ['ck', 'c'], why: `In ${w} the vowel says its name, so we write k and a silent e: ${w}.` }; },
+    () => { const w = pick(['ship', 'shop', 'shell', 'fish', 'dish']); const start = w.startsWith('sh');
+      return { say: `How do you write the sh sound in ${w}?`, visual: ex(start ? '_ _' + w.slice(2) : w.slice(0, -2) + '_ _'), answer: 'sh', wrong: ['s', 'ch'], why: `The sh sound needs two letters, s and h: ${w}.` }; },
+    () => { const w = pick(['bell', 'doll', 'hill', 'well', 'fill']);
+      return { say: `How do you spell the end of ${w}?`, visual: ex(w.slice(0, -2) + ' _ _'), answer: 'll', wrong: ['l', 'le'], why: `${w} is a short word with a short vowel, so the l is doubled: ${w}.` }; },
+    () => { const [w, s] = pick([['mat', 'm-a-t'], ['bun', 'b-u-n'], ['jog', 'j-o-g']]);
+      return { say: `Your teacher says a word that is not on your list: ${w}. What can you do?`, visual: ex(w + '?'), answer: `Sound it out: ${s}`, wrong: ['Give up', 'Write a list word'], why: `You can spell new words too! Say it slowly, ${s}, and write a letter for each sound.` }; },
   ],
   read: [
-    ['You see a new word. What do you look for first?', 'The vowel', ['The pictures', 'The last page'], 'Find the vowel first (a, e, i, o, u). It tells you the sound in the middle of the word.'],
-    ['What do you do after you say each sound?', 'Blend the sounds together', ['Stop reading', 'Skip the word'], 'Say the sounds, then push them together: c-a-t... cat!'],
-    ['A question asks "Where...?". What are you looking for?', 'A place', ['A person', 'A time'], 'Where asks for a place, like at school or in the park.'],
-    ['A question asks "Who...?". What are you looking for?', 'A person or animal', ['A place', 'A reason'], 'Who asks for a person or an animal, like Mum or the dog.'],
-    ['A question asks "When...?". What are you looking for?', 'A time', ['A place', 'A colour'], 'When asks for a time, like in the morning or on Sunday.'],
-    ['A question asks "Why...?". What are you looking for?', 'A reason', ['A place', 'A name'], 'Why asks for a reason. The answer often has because in it.'],
-    ['You do not know the answer to a story question. What do you do?', 'Look back in the story', ['Guess', 'Close the book'], 'The answer is in the story. Go back and read it again to find it.'],
-    ['How do you know if you picked the right word for a sentence?', 'Read the sentence again. Does it make sense?', ['Pick the longest word', 'Pick the first word'], 'Put the word in and read the whole sentence. If it makes sense, it is right.'],
+    ...QTYPES.map(([qw, qs, ans]) => () => {
+      const qq = pick(qs);
+      return { say: `Look at this question: ${qq} What will the answer tell you?`, visual: ex(`"${qq}"`), answer: ans,
+        wrong: QTYPES.filter(x => x[0] !== qw).map(x => x[2]).slice(0, 2),
+        why: `The question starts with ${qw}. ${qw} asks for ${ans.charAt(0).toLowerCase() + ans.slice(1)}.` };
+    }),
+    () => { const [w, v, others] = pick([['ship', 'i', ['s', 'p']], ['frog', 'o', ['f', 'g']], ['duck', 'u', ['d', 'k']], ['hen', 'e', ['h', 'n']], ['crab', 'a', ['c', 'b']]]);
+      return { say: `Here is a new word. Find the vowel first. Which letter is the vowel?`, visual: ex(w), answer: v, wrong: others, why: `The vowel in ${w} is ${v}. Finding the vowel helps you know how to say the word.` }; },
+    () => { const [snd, w, wr] = pick([['c - a - t', 'cat', ['cut', 'cap']], ['s - u - n', 'sun', ['sit', 'nut']], ['b - e - d', 'bed', ['bad', 'red']], ['f - i - sh', 'fish', ['dish', 'fin']], ['m - o - p', 'mop', ['map', 'top']]]);
+      return { say: `Say each sound, then push them together. What word is it?`, visual: ex(snd), answer: w, wrong: wr, why: `${snd}... ${w}! Blending the sounds makes the word.` }; },
+    () => { const [story, q, a, wr] = pick([['Kim has a red kite.', 'What colour is the kite?', 'red', ['blue', 'green']], ['Ben has a dog. The dog is named Spot.', 'What is the dog named?', 'Spot', ['Tip', 'Rex']], ['Pam went to the beach on Sunday.', 'When did Pam go to the beach?', 'on Sunday', ['on Monday', 'at night']]]);
+      return { say: `Read the story. Then look back in the story to answer: ${q}`, visual: ex(story) + ex(q), answer: a, wrong: wr, why: `Look back in the story: "${story}" The answer is ${a}.` }; },
+    () => { const [sent, a, wr] = pick([['I sit on a ___.', 'chair', ['sky', 'run']], ['The cat drinks ___.', 'milk', ['sad', 'jump']], ['We read a ___.', 'book', ['hat', 'red']]]);
+      return { say: `Try each word in the sentence. Which word makes sense?`, visual: ex(sent), answer: a, wrong: wr, why: `"${sent.replace('___', a)}" makes sense. Read the sentence with the word in it to check.` }; },
   ],
 };
 const howSkill = (id, name, emoji, kind) => ({
@@ -322,10 +364,10 @@ const howSkill = (id, name, emoji, kind) => ({
     if (l > 1 && Math.random() < 0.4) {
       const o = pick(HOW_ORDER[kind]);
       return { type: 'order', say: `Put the steps for ${o.name} in the right order.`, items: shuffle(o.steps), answer: o.steps,
-        explain: `The steps for ${o.name}: ${o.steps.map((x, i) => `${i + 1}. ${x}`).join('. ')}.` };
+        explain: `The steps for ${o.name}: ${o.steps.map((x, i) => `${i + 1}. ${x}`).join('. ').replace(/\?\./g, '?')}.` };
     }
-    const [qq, a, wrong, why] = pick(HOW_QS[kind]);
-    return { say: qq, readFirst: l === 3, options: shuffle([a, ...wrong]).map(x => ({ html: `<span class="lbl" style="font-size:24px">${x}</span>`, value: x, say: x })), answer: a,
+    const { say, visual, answer, wrong, why } = pick(HOW_QS[kind])();
+    return { say, visual, readFirst: l === 3, options: shuffle([answer, ...wrong]).map(x => ({ html: `<span class="lbl" style="font-size:24px">${x}</span>`, value: x, say: x })), answer,
       explain: why };
   },
 });

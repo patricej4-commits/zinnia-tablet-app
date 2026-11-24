@@ -1,7 +1,7 @@
 // Story Tree: reading practice. Words are shown but NOT read out, so she has to read.
 // Sentences use the sounds from her class charts (ck, sh, th, ar, or, igh, oo, ...).
 import { pick, shuffle, sample, esc } from '../util.js';
-import { PICS, picOf } from './pictures.js';
+import { PICS, FIND_PICS, picOf } from './pictures.js';
 
 // [sentence, matching picture word, other picture words]
 const SENTENCES = [
@@ -9,17 +9,17 @@ const SENTENCES = [
   [1, 'The cat sat on a mat.', 'cat', ['dog', 'pig']], [1, 'I see a red bus.', 'bus', ['car', 'boat']], [1, 'The hen is in a box.', 'hen', ['fox', 'duck']],
   [1, 'A big pig can run.', 'pig', ['cat', 'cow']], [1, 'The sun is hot.', 'sun', ['moon', 'snow']], [1, 'I can hop like a frog.', 'frog', ['fish', 'duck']],
   [1, 'The dog has a bone.', 'dog', ['cat', 'hen']], [1, 'Ten pens are in the cup.', 'pen', ['bat', 'egg']], [1, 'The duck is wet.', 'duck', ['frog', 'pig']],
-  [1, 'Look at my hat!', 'hat', ['cap', 'bag']], [1, 'The fox is in the den.', 'fox', ['dog', 'cat']], [1, 'Mum has a hot cup of tea.', 'cup', ['bed', 'pot']],
+  [1, 'Look at my hat!', 'hat', ['shoe', 'bag']], [1, 'The fox is in the den.', 'fox', ['dog', 'cat']], [1, 'Mum has a hot cup of tea.', 'cup', ['bed', 'pot']],
   // level 2: special sounds charts 6 & 7
   [2, 'The ship is on the sea.', 'ship', ['train', 'plane']], [2, 'A fish can swim fast.', 'fish', ['bird', 'snake']], [2, 'The clock says it is time for bed.', 'clock', ['bell', 'book']],
   [2, 'I can see a crab on the sand.', 'crab', ['frog', 'shark']], [2, 'The train goes on the track.', 'train', ['ship', 'bike']], [2, 'A plane can fly in the sky.', 'plane', ['car', 'boat']],
   [2, 'Grandma has a black and white sheep.', 'sheep', ['goat', 'cow']], [2, 'The snail is very slow.', 'snail', ['snake', 'frog']], [2, 'Dad will drum on the drum.', 'drum', ['bell', 'ball']],
-  [2, 'The snake is long and green.', 'snake', ['snail', 'worm']], [2, 'I put a stamp on the flag.', 'flag', ['kite', 'cake']], [2, 'We had cake at the party!', 'cake', ['bread', 'egg']],
-  [2, 'The queen has a crown.', 'crown', ['ring', 'hat']], [2, 'Kai rides his bike to school.', 'bike', ['bus', 'car']],
+  [2, 'The snake is long and green.', 'snake', ['snail', 'worm']], [2, 'The flag flaps in the wind.', 'flag', ['cake', 'drum']], [2, 'We had cake at the party!', 'cake', ['bread', 'egg']],
+  [2, 'The queen has a crown.', 'crown', ['ring', 'hat']], [2, 'Kai rides his bike to school.', 'bike', ['bus', 'car']], [2, 'I brush my teeth.', 'brush', ['spoon', 'pen']],
   // level 3: chart 8 sounds and longer sentences
-  [3, 'The stars shine at night.', 'stars', ['sun', 'cloud']], [3, 'A shark swims in the dark sea.', 'shark', ['whale', 'turtle']], [3, 'The owl sits on a branch at night.', 'owl', ['bird', 'bat']],
-  [3, 'I brush my tooth with a toothbrush.', 'tooth', ['foot', 'hand']], [3, 'The boy has a toy truck.', 'truck', ['car', 'bus']], [3, 'Look at the moon! It is so bright.', 'moon', ['sun', 'star']],
-  [3, 'The bird sat on the fork.', 'bird', ['fish', 'bee']], [3, 'A brown cow is in the barn.', 'cow', ['horse', 'pig']], [3, 'Turn on the light so I can read.', 'light', ['moon', 'fire']],
+  [3, 'A star shines at night.', 'star', ['sun', 'cloud']], [3, 'A shark swims in the dark sea.', 'shark', ['whale', 'turtle']], [3, 'The owl sits on a branch at night.', 'owl', ['cow', 'fish']],
+  [3, 'The boy has a toy truck.', 'truck', ['car', 'bus']], [3, 'Look at the moon! It is so bright.', 'moon', ['sun', 'star']],
+  [3, 'The bird sat on the branch.', 'bird', ['fish', 'cow']], [3, 'A brown cow is in the barn.', 'cow', ['horse', 'pig']], [3, 'Turn on the light so I can read.', 'light', ['moon', 'fire']],
   [3, 'The girl has a pink shirt.', 'girl', ['boy', 'baby']], [3, 'My house has a big red door.', 'house', ['school', 'tent']], [3, 'I put a coin in my piggy bank.', 'coin', ['key', 'ring']],
   [3, 'Three little chicks are in the yard.', 'chick', ['hen', 'duck']], [3, 'The horse can run and jump.', 'horse', ['cow', 'goat']],
 ];
@@ -30,17 +30,17 @@ const SIGHT = ['the', 'see', 'my', 'me', 'is', 'a', 'I', 'can', 'we', 'go', 'to'
 // [story, [question, answer, wrong, wrong]...]
 const MINI_STORIES = [
   ['Zinnia has a pet fish. The fish is gold. It swims in a big bowl. Every morning Zinnia feeds it.',
-    [['What pet does Zinnia have?', 'a fish', 'a dog', 'a cat'], ['What colour is the fish?', 'gold', 'red', 'black'], ['Where does the fish swim?', 'in a big bowl', 'in the sea', 'in a cup'], ['When does Zinnia feed it?', 'every morning', 'at night', 'never']]],
+    [['What pet does Zinnia have?', 'a fish', 'a dog', 'a cat'], ['What colour is the fish?', 'gold', 'red', 'black'], ['Where does the fish swim?', 'in a big bowl', 'in the sea', 'in a cup'], ['When does Zinnia feed the fish?', 'every morning', 'at night', 'never']]],
   ['Kai went to the shop with Dad. They got milk and bread. Then they went home and made toast.',
-    [['Who went to the shop with Kai?', 'Dad', 'Mum', 'Grandma'], ['What did they get?', 'milk and bread', 'cake and juice', 'fish'], ['What did they do first?', 'went to the shop', 'made toast', 'went to bed'], ['What did they make?', 'toast', 'soup', 'a kite']]],
+    [['Who went to the shop with Kai?', 'Dad', 'Mum', 'Grandma'], ['What did Kai and Dad get?', 'milk and bread', 'cake and juice', 'fish'], ['What did Kai and Dad do first?', 'went to the shop', 'made toast', 'went to bed'], ['What did Kai and Dad make?', 'toast', 'soup', 'a kite']]],
   ['The sun is up. Maya puts on her hat. She plays in the sand at the beach. She makes a big sand castle.',
-    [['Where does Maya play?', 'at the beach', 'at school', 'in bed'], ['What does Maya put on?', 'her hat', 'her coat', 'her boots'], ['What does she make?', 'a sand castle', 'a cake', 'a boat'], ['Why does Maya wear a hat?', 'the sun is up', 'it is raining', 'it is night']]],
+    [['Where does Maya play?', 'at the beach', 'at school', 'in bed'], ['What does Maya put on?', 'her hat', 'her coat', 'her boots'], ['What does Maya make?', 'a sand castle', 'a cake', 'a boat'], ['Why does Maya wear a hat?', 'the sun is up', 'it is raining', 'it is night']]],
   ['A little frog sat on a log. It saw a fly. Snap! The frog ate the fly. Then it jumped into the pond.',
     [['Where did the frog sit?', 'on a log', 'on a car', 'on a bed'], ['What did the frog eat?', 'a fly', 'a fish', 'a cake'], ['What did the frog do last?', 'jumped into the pond', 'sat on a log', 'saw a fly']]],
   ['Leo has a red kite. The wind is strong. The kite flies up, up, up! Leo holds the string tight.',
     [['What colour is the kite?', 'red', 'green', 'blue'], ['Why can the kite fly?', 'the wind is strong', 'it is raining', 'Leo is sleeping'], ['What does Leo hold?', 'the string', 'a cup', 'a book']]],
   ['It is night. The stars shine. Ava says her prayers. Then she gets into bed with her teddy.',
-    [['When does this happen?', 'at night', 'in the morning', 'at lunch'], ['What does Ava do first?', 'says her prayers', 'gets into bed', 'eats lunch'], ['Who is in bed with Ava?', 'her teddy', 'her dog', 'her mum']]],
+    [['When does this happen?', 'at night', 'in the morning', 'at lunch'], ['What does Ava do first?', 'says her prayers', 'gets into bed', 'eats lunch'], ['What is in bed with Ava?', 'her teddy', 'her dog', 'her mum']]],
   ['Grandma has six hens. Each hen lays an egg. Grandma puts the eggs in a basket. She will bake a cake.',
     [['How many hens does Grandma have?', 'six', 'two', 'ten'], ['Where does Grandma put the eggs?', 'in a basket', 'in a box', 'in the sea'], ['What will Grandma bake?', 'a cake', 'bread', 'a pie']]],
   ['The bus is big and yellow. It takes the children to school. They sing on the bus. The driver waves goodbye.',
@@ -50,9 +50,9 @@ const MINI_STORIES = [
   ['It rained all day. Kai could not play outside. He read a book and drew a picture of a rainbow.',
     [['What was the weather?', 'rainy', 'sunny', 'windy'], ['Why did Kai stay inside?', 'it rained', 'he was sick', 'it was night'], ['What did Kai draw?', 'a rainbow', 'a dog', 'a car']]],
   ['On Sunday we went to church. We sang songs and prayed. After church, we ate rice and peas with chicken.',
-    [['When did they go to church?', 'on Sunday', 'on Monday', 'at night'], ['What did they do at church?', 'sang songs and prayed', 'went swimming', 'played ball'], ['What did they eat after?', 'rice and peas with chicken', 'cake', 'ice cream']]],
+    [['When did we go to church?', 'on Sunday', 'on Monday', 'at night'], ['What did we do at church?', 'sang songs and prayed', 'went swimming', 'played ball'], ['What did we eat after church?', 'rice and peas with chicken', 'cake', 'ice cream']]],
   ['Maya planted a seed. She gave it water every day. The sun shone on it. Soon a pretty flower grew!',
-    [['What did Maya plant?', 'a seed', 'a stone', 'a toy'], ['What did she give it every day?', 'water', 'milk', 'juice'], ['What grew?', 'a flower', 'a tree house', 'a mango'], ['What happened first?', 'Maya planted a seed', 'a flower grew', 'the sun shone']]],
+    [['What did Maya plant?', 'a seed', 'a stone', 'a toy'], ['What did Maya give the seed every day?', 'water', 'milk', 'juice'], ['What grew?', 'a flower', 'a tree house', 'a mango'], ['What happened first?', 'Maya planted a seed', 'a flower grew', 'the sun shone']]],
 ];
 
 const levelSentences = l => SENTENCES.filter(s => s[0] <= l && (l === 1 || s[0] >= l - 1));
@@ -92,7 +92,7 @@ export const readingSkills = [
   {
     id: 'r-word', name: 'Word to picture', emoji: '🖼️',
     gen(l) {
-      const pool = Object.keys(PICS).filter(w => (l === 1 ? w.length <= 3 : l === 2 ? w.length <= 5 : w.length >= 4) && !w.includes(' '));
+      const pool = FIND_PICS.filter(w => (l === 1 ? w.length <= 3 : l === 2 ? w.length <= 5 : w.length >= 4) && !w.includes(' '));
       const words = sample(pool, 3);
       const w = words[0];
       return {
@@ -110,7 +110,7 @@ export const readingSkills = [
       return {
         say: `Find the word: ${words[0]}.`, text: 'Find the word you hear! 👂',
         options: shuffle(words).map(w => ({ html: w, value: w })), answer: words[0],
-        explain: `This is the word ${words[0]}. We see it in lots of books!`,
+        explain: `This is the word "${words[0]}". We see it in lots of books!`,
       };
     },
   },

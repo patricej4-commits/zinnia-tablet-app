@@ -29,11 +29,18 @@ export const PICS = {
 // Remove duplicates, ambiguous pictures, and very new emoji older tablets can't show
 const DROP = ['igloo', 'ackee', 'patty', 'rake', 'mop', 'broom', 'desk', 'barn', 'mat', 'gate', 'cave', 'throne', 'lamp', 'frost',
   'smoke', 'glass', 'toothbrush', 'pool', 'fries', 'mug', 'glue', 'flute', 'jellyfish', 'comb', 'fan', 'dragonfly', 'sweep', 'nest',
-  'dish', 'spoon', 'nurse', 'oil', 'chain', 'shoes', 'farm', 'circle', 'wood', 'boot', 'thread', 'ink', 'pin', 'church', 'skull', 'cook'];
+  'dish', 'spoon', 'nurse', 'oil', 'chain', 'shoes', 'farm', 'circle', 'wood', 'boot', 'thread', 'ink', 'pin', 'church', 'skull', 'cook',
+  'football']; // 🏈 is American football; in Jamaica football is ⚽ (already 'ball')
 // Pictures that are fine as a hint next to a written word (but too ambiguous for "find the picture")
 const HINT_OK = ['broom', 'nest', 'spoon', 'nurse', 'oil', 'chain', 'shoes', 'farm', 'circle', 'wood', 'boot', 'thread', 'ink', 'pin', 'church', 'cook', 'glass', 'mug', 'fries', 'pool', 'smoke'];
 const HINTS = {};
 for (const k of HINT_OK) HINTS[k] = PICS[k];
 for (const k of Object.keys(PICS)) if (/\d$/.test(k) || DROP.includes(k)) delete PICS[k];
+// Pictures that are weak or easy to mix up with another word (e.g. 😢 cry vs eye, 🚴 ride vs bike).
+// They still work as a hint next to a written word, but not for "find the picture" games.
+const WEAK = ['jet', 'eat', 'read', 'grass', 'doll', 'eye', 'ear', 'rope', 'lake', 'king', 'queen', 'sled', 'block', 'stars', 'neck',
+  'swing', 'hill', 'sack', 'cone', 'pot', 'jam', 'chalk', 'talk', 'night', 'storm', 'smile', 'cry', 'ride', 'wave', 'finger', 'jump',
+  'wash', 'goldfish', 'hook', 'plug', 'scarf', 'man', 'net'];
+export const FIND_PICS = Object.keys(PICS).filter(w => !WEAK.includes(w));
 export const hasPic = w => !!(PICS[w] || HINTS[w]);
 export const picOf = w => PICS[w] || HINTS[w] || '';

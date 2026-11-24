@@ -11,7 +11,7 @@ const words = (list, cls = '') => list.map(w => ({ html: `<span class="lbl ${cls
 // [picture, right word, look-alike words]
 const PIC_WORDS = [
   ['🛁', 'tub', ['tan', 'tug']], ['🖊️', 'pen', ['pet', 'pan']], ['🐷', 'pig', ['peg', 'big']], ['🪆', 'doll', ['dull', 'dot']],
-  ['🍖', 'ham', ['him', 'hat']], ['6️⃣', 'six', ['sat', 'sit']], ['🕸️', 'web', ['wet', 'wed']], ['🟥', 'red', ['rib', 'rod']],
+  ['6️⃣', 'six', ['sat', 'sit']], ['🕸️', 'web', ['wet', 'wed']], ['🟥', 'red', ['rib', 'rod']],
   ['🦆', 'duck', ['ducks', 'dogs']], ['🪣', 'pail', ['peel', 'pile']], ['🥛', 'milk', ['silk', 'mill']], ['🐝🐝🐝', 'bees', ['bee', 'beds']],
   ['🐝', 'bee', ['bees', 'see']], ['🧼', 'soap', ['sob', 'soup']], ['🍽️', 'plate', ['plates', 'plane']], ['🚚🚚', 'trucks', ['truck', 'tracks']],
   ['🚚', 'truck', ['trucks', 'track']], ['🐱', 'cat', ['cats', 'cut']], ['🐱🐱🐱', 'cats', ['cat', 'caps']], ['🐶', 'dog', ['dogs', 'dig']],
@@ -19,7 +19,7 @@ const PIC_WORDS = [
   ['🏏', 'bat', ['bet', 'but']], ['🥫', 'can', ['ran', 'cap']], ['🎩', 'hat', ['hot', 'hut']], ['🦊', 'fox', ['box', 'fix']],
   ['📦', 'box', ['fox', 'bus']], ['🔟', 'ten', ['tan', 'hen']], ['🚆', 'train', ['rain', 'trap']], ['⛵', 'boat', ['coat', 'bat']],
   // action words (Lesson 14: run, hop, dig, jump, yell, lick, sip)
-  ['🏃', 'run', ['ran', 'sun']], ['🤸', 'jump', ['hump', 'jam']], ['🐸💨', 'hop', ['hip', 'top']], ['🗣️', 'yell', ['bell', 'yes']],
+  ['🏃', 'run', ['ran', 'sun']], ['🤸', 'jump', ['hump', 'jam']], ['🦘', 'hop', ['hip', 'top']], ['🗣️', 'yell', ['bell', 'yes']],
   ['🍦👅', 'lick', ['lock', 'kick']], ['🥤', 'sip', ['sit', 'lip']], ['⛏️', 'dig', ['dog', 'big']],
   // more words from her spelling lists and sound charts
   ['🚌', 'bus', ['bug', 'bun']], ['☀️', 'sun', ['run', 'sum']], ['🐻', 'cub', ['cup', 'cab']], ['🐐', 'goat', ['coat', 'gate']],
@@ -38,71 +38,70 @@ const PIC_WORDS = [
 // ---- Finish the sentence (Lessons 14, 19, 27 and "Finish the sentences")
 // [picture, sentence, answer, other choices]
 const FINISH = [
-  ['🥫', 'Sam will hit the ___.', 'can', ['ran']], ['🏏', 'Tom hid the ___.', 'bat', ['win']], ['🐱', 'Jill will pet the ___.', 'cat', ['hat']],
-  ['🐷', 'The pig is in a ___.', 'pen', ['nap', 'hand']], ['🐶✋', "The dog will lick Tim's ___.", 'hand', ['pen', 'nap']],
+  ['🥫', 'Sam has a ___ of juice.', 'can', ['ran', 'cap']], ['🏏', 'Tom hid the ___.', 'bat', ['win']], ['🐱', 'Jill will pet the ___.', 'cat', ['hat']],
+  ['🐷', 'The pig is in the ___.', 'mud', ['bud', 'mad']], ['🐶✋', "The dog will lick Tim's ___.", 'hand', ['pen', 'nap']],
   ['🐱😴', 'The cat will take a ___.', 'nap', ['hand', 'pen']], ['🐀🏏', 'The rat had a ___.', 'bat', ['hat', 'mat']],
-  ['🐀🎩', 'The rat ate a ___.', 'hat', ['bat', 'cat']], ['👧🐱', "The cat sat in Pat's ___.", 'lap', ['cap', 'map']],
+  ['🐀🎩', 'The rat has a ___.', 'hat', ['bat', 'cat']], ['👧🐱', "The cat sat in Pat's ___.", 'lap', ['cap', 'map']],
   ['🐱💤', 'The cat had a ___.', 'nap', ['net', 'nut']], ['🐔', "Ted's pet is a red ___.", 'hen', ['pen', 'ten']],
   ['👩‍🍳🥧', 'Meg will help Mom ___ a pie.', 'bake', ['bike']], ['🚴', 'Dan likes to ___ his bike.', 'ride', ['rope']],
-  ['🐻', 'The cub will ___ in the cave.', 'sit', ['sip']], ['🐶🛁', 'The dog is ___.', 'wet', ['web', 'well']],
+  ['🐻', 'The cub will ___ in the cave.', 'sit', ['sip']], ['🐶🛁', 'The dog is ___.', 'wet', ['web', 'wig']],
   ['⛵', 'A boat can sail on the blue ___.', 'sea', ['see', 'tea']], ['🚆', 'Tim rode on a fast ___.', 'train', ['rain', 'tray']],
-  ['☀️', 'God made the ___ that shines on me.', 'sun', ['son', 'run']], ['🐐🌱', 'The goat likes to eat ___.', 'grass', ['glass', 'gas']],
+  ['☀️', 'God made the ___ that shines on me.', 'sun', ['fun', 'run']], ['🐐🌱', 'The goat likes to eat ___.', 'grass', ['glass', 'gas']],
   ['🐶', 'A dog can wag his ___.', 'tail', ['tall', 'tell']],
   ['🐐⛵', 'The goat is in the ___.', 'boat', ['coat', 'bean']], ['🪁', 'I can fly my ___.', 'kite', ['cake', 'cute']],
   ['🎂', 'Mom will bake a ___.', 'cake', ['came', 'kick']], ['🐍', 'The ___ is long and green.', 'snake', ['snack', 'shake']],
   ['🕰️', 'The ___ says tick-tock.', 'clock', ['brick', 'lick']], ['🙏', 'We ___ to God every day.', 'pray', ['play', 'gray']],
-  ['⚽', 'The children ___ in the park.', 'play', ['pray', 'stay']], ['🔔', 'Ring the ___!', 'bell', ['well', 'doll']],
-  ['😭', 'The baby will ___.', 'cry', ['try', 'my']], ['🐑', 'The ___ says baa.', 'sheep', ['shade', 'she']],
+  ['⚽', 'The children ___ in the park.', 'play', ['plate', 'tray']], ['🔔', 'Ring the ___!', 'bell', ['well', 'doll']],
+  ['😭', 'The baby will ___.', 'cry', ['fly', 'my']], ['🐑', 'The ___ says baa.', 'sheep', ['shade', 'she']],
   ['🪥', 'I ___ my teeth.', 'brush', ['fresh', 'shy']], ['☁️', 'A big ___ is in the sky.', 'cloud', ['shout', 'round']],
-  ['🐮', 'The brown ___ says moo.', 'cow', ['now', 'town']], ['👑', 'The king has a ___.', 'crown', ['clown', 'down']],
+  ['🐮', 'The brown ___ says moo.', 'cow', ['now', 'town']], ['👑', 'The king has a ___.', 'crown', ['brown', 'down']],
   ['👧', 'The ___ has a red shirt.', 'girl', ['first', 'stir']], ['🐦', 'The ___ can fly.', 'bird', ['third', 'dirt']],
   ['🪙', 'I put a ___ in my bank.', 'coin', ['join', 'oil']], ['🧸', 'The boy has a ___.', 'toy', ['joy', 'boy']],
   ['📖', 'I like to read a ___.', 'book', ['look', 'foot']], ['🌙', 'The ___ shines at night.', 'moon', ['room', 'roof']],
-  ['🚌', 'We ride the ___ to school.', 'bus', ['sun', 'net']], ['🥅', 'The fish is in the ___.', 'net', ['nut', 'hot']],
+  ['🚌', 'We ride the ___ to school.', 'bus', ['sun', 'net']],
   ['☀️', 'The ___ is hot.', 'sun', ['sit', 'bus']], ['🐻', 'The ___ is a baby bear.', 'cub', ['cup', 'cab']],
 ];
 
 // ---- Word-bank stories (Lesson "Write the correct words in the blanks. Read the story.")
 // Each story: sentences with {word} blanks. One blank is asked; the others are shown filled in.
 const STORIES = [
-  { title: 'The Goat', bank: ['eat', 'at', 'grass', 'Ann', 'Goat'], pic: '🐐👧',
-    lines: ['The {Goat}', 'The goat is {at} the pond.', '{Ann} will feed him.', 'The goat likes to {eat} {grass}.'] },
+  { title: 'The Goat', bank: ['eat', 'at', 'grass', 'Ann'], pic: '🐐👧',
+    lines: ['The goat is {at} the pond.', '{Ann} will feed him.', 'The goat likes to {eat} {grass}.'] },
   { title: 'The Hike', bank: ['hill', 'hike', 'lake', 'rocks'], pic: '👨👦⛰️',
-    lines: ['Dad and Ben went on a {hike}.', 'Ben ran up the {hill}.', 'Dad and Ben will toss {rocks} in the {lake}.'] },
+    lines: ['Dad and Ben went for a {hike}.', 'Ben ran up a big {hill}.', 'Dad and Ben will toss {rocks} in the {lake}.'] },
   { title: 'Ted and Tip', bank: ['cat', 'Tip', 'sun', 'play'], pic: '👦🐱',
     lines: ['Ted has a big {cat}.', 'The cat is named {Tip}.', 'Tip naps in the {sun}.', 'Ted and Tip like to {play}.'] },
   { title: "Greg's Boat", bank: ['boat', 'blue', 'fast', 'beat'], pic: '⛵⛵',
-    lines: ['Greg has a fine {boat}.', 'It is red and {blue}.', "Greg's boat can sail {fast}.", "It will {beat} Tom's boat."] },
+    lines: ['Greg has a fine {boat}.', 'It is {blue}, like the sky.', "Greg's boat can sail {fast}.", "It will {beat} Tom's boat."] },
   { title: 'Pat and the Cat', bank: ['lap', 'nap', 'milk', 'pet'], pic: '👧🐱',
     lines: ['Pat has a {pet} cat.', "The cat sat in Pat's {lap}.", 'The cat had a {nap}.', 'Then the cat had some {milk}.'] },
   { title: 'The Kite', bank: ['kite', 'wind', 'up', 'Kim'], pic: '👧🪁',
-    lines: ['{Kim} has a red {kite}.', 'The {wind} is strong.', 'The kite goes {up}, up, up!'] },
+    lines: ['{Kim} has a red {kite}.', 'The {wind} blows the kite.', 'The kite goes {up}, up, up!'] },
   { title: 'The Snow Day', bank: ['snow', 'cold', 'coat', 'hat'], pic: '❄️🧥',
-    lines: ['The {snow} is white.', 'It is very {cold}.', 'Ben puts on his {coat}.', 'He puts on his {hat} too.'] },
+    lines: ['The {snow} falls from the sky.', 'It is very {cold}.', 'Ben puts on his warm {coat} with buttons.', 'He puts a {hat} on his head.'] },
   { title: 'At the Farm', bank: ['cow', 'hen', 'eggs', 'goat'], pic: '🐮🐔',
-    lines: ['The brown {cow} says moo.', 'The {hen} sat on her {eggs}.', 'The {goat} likes to eat grass.'] },
+    lines: ['The brown {cow} says moo.', 'The {hen} says cluck.', 'She sat on her {eggs}.', 'The {goat} says maa.'] },
   { title: 'Time to Pray', bank: ['pray', 'God', 'bed', 'moon'], pic: '🙏🌙',
     lines: ['The {moon} is up.', 'Meg kneels by her {bed}.', 'She will {pray} to {God}.'] },
   { title: 'The Clown', bank: ['clown', 'crown', 'shout', 'down'], pic: '🤡👑',
-    lines: ['The {clown} has a big {crown}.', 'He fell {down}!', 'The children {shout} and clap.'] },
+    lines: ['The {clown} has a big {crown}.', 'He jumps up and {down}.', 'He does a funny trick!', 'The children {shout} and clap.'] },
   { title: 'The Good Book', bank: ['book', 'look', 'room', 'good'], pic: '📖👦',
-    lines: ['Tom is in his {room}.', 'He has a {good} {book}.', 'Come and {look} at it!'] },
+    lines: ['Tom is in his {room}.', 'He reads a {good} {book}.', 'Come and {look} at it!'] },
 ];
 
 // ---- Which sentence tells about the picture? (Lesson "Circle the sentence that tells about the picture")
 // [picture, right sentence, wrong sentences]
 const TELLS = [
-  ['🐻🕳️', 'The cub is in the den.', ['The cub is lost.', 'The cub is in the net.']],
+  ['🐻🕳️', 'The cub is in the den.', ['The cub is in a tree.', 'The cub is on a bike.']],
   ['🦭🐟', 'Sam Seal ate the fish.', ['Sam Seal will take a nap.', 'Sam Seal is in the bag.']],
-  ['👧👀🐬', 'Jan likes the trick.', ['Jan can eat a big cone.', 'Jan is on the bed.']],
-  ['🐞🍃', 'The red bug is on the leaf.', ['The red bug is on the tree.', 'The red bug is in the box.']],
+  ['👧👀🐬', 'Jan sees a dolphin.', ['Jan can eat a big cone.', 'Jan is on the bed.']],
+  ['🐞🍃', 'The red bug is on the leaf.', ['The red bug is on the bed.', 'The red bug is in the box.']],
   ['🐶🫧🛁', 'The dog is wet.', ['The cat is wet.', 'The dog is on the log.']],
-  ['🐸🪵', 'The frog is on the log.', ['The frog is in the net.', 'The frog is on the bed.']],
-  ['🐟🥅', 'The fish is in the net.', ['The fish is on the log.', 'The fish is in the bag.']],
-  ['🦊💤', 'The fox is in the den.', ['The fox is at the well.', 'The fox is in the net.']],
+  ['🐸🪵', 'The frog is on the log.', ['The frog is in the box.', 'The frog is on the bed.']],
+  ['🦊💤', 'The fox is asleep.', ['The fox can run.', 'The fox is at the well.']],
   ['🐱👜', 'The cat is in the bag.', ['The cat is on the bed.', 'The cat is on the log.']],
   ['👦📖🛏️', 'The boy is on the bed.', ['The boy is in the bag.', 'The boy is at the well.']],
-  ['🐀🎩', 'The rat ate a hat.', ['The rat had a bat.', 'The cat had a nap.']],
+  ['🐀🎩', 'The rat has a hat.', ['The rat has a bat.', 'The cat had a nap.']],
   ['🐱💤', 'The cat had a nap.', ['The cat ate a hat.', 'The cat is wet.']],
   ['⛵🌊', 'A boat can sail on the sea.', ['A boat can ride on a track.', 'A boat can fly in the sky.']],
   ['🐮🌳', 'The cow is by the tree.', ['The cow is in the bed.', 'The cat is by the tree.']],
@@ -119,7 +118,7 @@ const TELLS = [
 
 // ---- Riddles ("Finish the riddle")
 const RIDDLES = [
-  ['I am not a plane. I ride on a track. I am a ___.', 'train', '🚆', [['plane', '✈️'], ['boat', '⛵']]],
+  ['I am not a plane. I run on a track. I am a ___.', 'train', '🚆', [['plane', '✈️'], ['boat', '⛵']]],
   ['I say tick-tock. I have two hands. I am a ___.', 'clock', '🕰️', [['bell', '🔔'], ['book', '📖']]],
   ['I am big and yellow. I take children to school. I am a ___.', 'bus', '🚌', [['bike', '🚲'], ['plane', '✈️']]],
   ['I live on a farm. I say moo. I am a ___.', 'cow', '🐮', [['hen', '🐔'], ['pig', '🐷']]],
@@ -129,17 +128,17 @@ const RIDDLES = [
   ['I have pages. You can read me. I am a ___.', 'book', '📖', [['bed', '🛏️'], ['hat', '🎩']]],
   ['I am round. You can kick me. I am a ___.', 'ball', '⚽', [['box', '📦'], ['kite', '🪁']]],
   ['I lay eggs. I say cluck, cluck. I am a ___.', 'hen', '🐔', [['cat', '🐱'], ['dog', '🐶']]],
-  ['I have wings. I fly in the sky. I am not a bird. I am a ___.', 'plane', '✈️', [['bus', '🚌'], ['bee', '🐝']]],
+  ['I have wings. I fly in the sky. I am not a bird. I am a ___.', 'plane', '✈️', [['bus', '🚌'], ['car', '🚗']]],
   ['You sleep on me at night. I am a ___.', 'bed', '🛏️', [['chair', '🪑'], ['cup', '☕']]],
   ['I am white and cold. I fall from the sky. I am ___.', 'snow', '❄️', [['rain', '🌧️'], ['sun', '☀️']]],
-  ['I say baa. I have soft wool. I am a ___.', 'sheep', '🐑', [['goat', '🐐'], ['cow', '🐮']]],
+  ['I say baa. I have soft wool. I am a ___.', 'sheep', '🐑', [['dog', '🐶'], ['cow', '🐮']]],
   ['I swim in the sea. I have fins. I am a ___.', 'fish', '🐟', [['frog', '🐸'], ['bird', '🐦']]],
   ['You brush your teeth with me. I am a ___.', 'toothbrush', '🪥', [['spoon', '🥄'], ['pen', '🖊️']]],
   ['I shine at night. I am in the sky. I am the ___.', 'moon', '🌙', [['sun', '☀️'], ['cloud', '☁️']]],
   ['I am a baby bear. I am a ___.', 'cub', '🐻', [['pup', '🐶'], ['kitten', '🐱']]],
   ['I am sweet. You eat me at a party. I am a ___.', 'cake', '🎂', [['bread', '🍞'], ['egg', '🥚']]],
   ['I fly on a string in the wind. I am a ___.', 'kite', '🪁', [['bird', '🐦'], ['plane', '✈️']]],
-  ['A king wears me on his head. I am a ___.', 'crown', '👑', [['hat', '🎩'], ['ring', '💍']]],
+  ['A king wears me on his head. I am a ___.', 'crown', '👑', [['shoe', '👟'], ['ring', '💍']]],
   ['I go ding-dong. I am a ___.', 'bell', '🔔', [['drum', '🥁'], ['clock', '🕰️']]],
 ];
 
@@ -182,7 +181,7 @@ export const workbookSkills = [
       return {
         say: 'Look at the picture. Read the words. Which word matches the picture?', readFirst: true,
         visual: big(p), options: shuffle(words(opts)), cols: opts.length === 2 ? 'two' : undefined, answer: w,
-        explain: `The picture shows ${w}. Look at every letter: ${w.split('').join(', ')}.`,
+        explain: `This word is ${w}. Look at every letter: ${w.split('').join(', ')}.`,
       };
     },
   },
@@ -242,7 +241,7 @@ export const workbookSkills = [
       const [r, a, pic, others] = pick(RIDDLES);
       const opts = [[a, pic], ...others];
       return {
-        say: l === 1 ? `Here is a riddle. ${r.replace('___', 'what')}?` : 'Read the riddle. What am I?',
+        say: l === 1 ? `Here is a riddle. ${r.replace(/I am (a |the )?___\./, 'What am I?')}` : 'Read the riddle. What am I?',
         text: l === 1 ? 'Finish the riddle!' : undefined, readFirst: l > 1,
         visual: `<div class="sentence" style="text-align:left">${esc(r).replace('___', blank)}</div>`,
         options: shuffle(opts.map(([w, e]) => ({ html: `<span class="pic">${e}</span>${l === 3 ? '' : `<span class="lbl">${w}</span>`}`, value: w, say: w }))), answer: a,

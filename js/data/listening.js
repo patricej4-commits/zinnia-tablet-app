@@ -1,9 +1,15 @@
 // Listening Lagoon: listening, focus and following instructions.
-import { pick, shuffle, sample, rnd, NUM_WORDS } from '../util.js';
+import { pick, shuffle, sample, rnd, numOptions, NUM_WORDS } from '../util.js';
 import { SHAPE_NAMES, COLOURS } from '../visuals.js';
-import { PICS } from './pictures.js';
+import { FIND_PICS, picOf } from './pictures.js';
 
-const pic = w => ({ html: `<span class="pic">${PICS[w]}</span>`, value: w, say: w });
+const pic = w => ({ html: `<span class="pic">${picOf(w)}</span>`, value: w, say: w });
+// Action words sound odd in "Find the ___" (they are used in other games)
+const ACTIONS = ['swim', 'run', 'sleep', 'eat', 'jump', 'sing', 'read', 'cry', 'dance', 'cook', 'write', 'ride', 'wave', 'skate', 'drink', 'clap', 'sweep', 'wash', 'walk', 'talk', 'smile'];
+const HEAR_PICS = FIND_PICS.filter(w => !ACTIONS.includes(w));
+// First-sound words: short, with a clear picture, and starting with a plain letter sound
+// (no sh/ch/th/wh, no "ow" as in owl, no long vowels like ice). Octopus gives a good short o.
+const FIRST_SOUND = [...HEAR_PICS.filter(w => w.length <= 5 && !/^(sh|ch|th|wh|ph|kn|wr|qu)/.test(w) && !['owl', 'ice', 'orange', 'eye', 'ear'].includes(w)), 'octopus'];
 
 // Mini stories to listen to (set in Jamaica, using class words)
 const STORIES = [
@@ -30,8 +36,8 @@ const RHYMES = [['cat', ['hat', 'bat'], ['dog', 'sun', 'pig']], ['dog', ['frog']
   ['cake', ['snake'], ['dog', 'fish', 'sun']], ['goat', ['boat'], ['fish', 'cup', 'star']], ['bee', ['tree'], ['cat', 'bus', 'pig']],
   ['house', ['mouse'], ['tree', 'dog', 'cup']], ['clock', ['sock', 'lock'], ['bed', 'sun', 'egg']], ['bear', ['chair'], ['cat', 'ball', 'moon']],
   ['box', ['fox'], ['bed', 'hat', 'sun']], ['hen', ['pen', 'ten'], ['cat', 'bus', 'pig']], ['bell', ['shell'], ['car', 'dog', 'cake']],
-  ['king', ['ring'], ['boat', 'cup', 'bed']], ['moon', ['spoon'].filter(w => w), ['hat', 'pig', 'car']], ['bed', ['sled'], ['cat', 'dog', 'sun']]]
-  .map(([w, r, n]) => [w, r.filter(x => PICS[x]), n.filter(x => PICS[x])]).filter(([, r, n]) => r.length && n.length >= 2);
+  ['king', ['ring'], ['boat', 'cup', 'bed']], ['moon', ['spoon'], ['hat', 'pig', 'car']], ['bed', ['bread'], ['cat', 'dog', 'sun']]]
+  .map(([w, r, n]) => [w, r.filter(x => picOf(x)), n.filter(x => picOf(x))]).filter(([, r, n]) => r.length && n.length >= 2);
 
 export const listenSkills = [
   {
@@ -57,19 +63,19 @@ export const listenSkills = [
   {
     id: 'l-word', name: 'Hear & find', emoji: '🔊',
     gen() {
-      const words = sample(Object.keys(PICS), 4);
+      const words = sample(HEAR_PICS, 4);
       const w = words[0];
-      return { listenOnly: true, say: `Find the ${w}.`, options: shuffle(words).map(pic), answer: w, explain: `That one is the ${w}.` };
+      return { listenOnly: true, say: `Find the ${w}.`, options: shuffle(words).map(pic), answer: w, explain: `The word was ${w}. Here is the picture of ${w}.` };
     },
   },
   {
     id: 'l-first-sound', name: 'First sound', emoji: '🅰️',
     gen() {
-      const w = pick(Object.keys(PICS).filter(x => x.length <= 5));
+      const w = pick(FIRST_SOUND);
       const first = w[0];
       const letters = new Set([first]);
       while (letters.size < 3) letters.add(pick('abcdefghijklmnoprstw'.split('')));
-      return { listenOnly: true, say: `What sound does ${w} start with? ${w}.`, visual: `<div style="font-size:110px">${PICS[w]}</div>`,
+      return { listenOnly: true, say: `What sound does ${w} start with? ${w}.`, visual: `<div style="font-size:110px">${picOf(w)}</div>`,
         options: shuffle([...letters]).map(c => ({ html: c, value: c, say: c })), answer: first,
         explain: `${w} starts with ${first}.` };
     },
@@ -101,8 +107,9 @@ export const listenSkills = [
       const other = pick(['splash', 'zoom', 'tick']);
       const n = rnd(2, l === 1 ? 4 : 6);
       const seq = shuffle([...Array(n).fill(word), ...Array(l === 1 ? 0 : rnd(1, 3)).fill(other)]);
-      return { listenOnly: true, maxReplays: 1, say: `How many times do I say ${word}? ... ${seq.join(', ')}.`,
-        options: [n - 1, n, n + 1, n + 2].filter(x => x > 0).map(v => ({ html: String(v), value: v })), answer: n,
+      // Each sound is its own short sentence so the voice pauses between them
+      return { listenOnly: true, maxReplays: 1, say: `Listen and count! ... ${seq.map(x => `${x}!`).join(' ... ')} ... How many ${word}s did you hear?`,
+        options: numOptions(n, 1, 9).map(o => ({ html: o.html, value: o.value })), answer: n,
         explain: `I said ${word} ${NUM_WORDS[n]} times.` };
     },
   },
