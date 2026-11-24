@@ -254,3 +254,20 @@ button { font-family: inherit; color: inherit; border: none; cursor: pointer; }
 .remind { background: #eef7ff; border: 2px dashed #5b8def; border-radius: 16px; padding: 6px 14px; max-width: 760px; text-align: left;
   font-size: clamp(15px, 2.2vw, 20px); color: #23407a; line-height: 1.35; }
 .teach.why { background: #e9fbe9; border-color: #2ec27e; }
+
+/* Fun Zone */
+.funtabs { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 10px; justify-content: center; }
+.funtabs .pill { border: 0; cursor: pointer; font-size: 17px; }
+.funtabs .pill.on { background: #ff6fae; color: #fff; }
+.shelf { display: grid; grid-template-columns: repeat(auto-fill, minmax(130px, 1fr)); gap: 10px; }
+.shopitem { background: #fff; border: 0; border-radius: 18px; padding: 10px 6px; display: flex; flex-direction: column; align-items: center; gap: 4px;
+  font-size: 16px; box-shadow: 0 5px 0 rgba(0,0,0,.08); cursor: pointer; font-family: inherit; color: #2d2a4a; }
+.shopitem.owned { outline: 3px solid #2ec27e; }
+.shopitem .swatch { width: 64px; height: 64px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 34px; border: 3px solid rgba(0,0,0,.08); }
+.shopitem .lbl { text-align: center; line-height: 1.15; }
+.coinrow { display: flex; gap: 16px; }
+.coin { width: 86px; height: 86px; border-radius: 50%; border: 0; font-size: 32px; font-weight: 800; color: #6b4a00; cursor: pointer;
+  background: radial-gradient(circle at 35% 30%, #fff3b0, #ffd23f 55%, #d4a017); box-shadow: 0 5px 0 #b58900; font-family: inherit; }
+.coin.c10 { width: 100px; height: 100px; } .coin.c1 { width: 70px; height: 70px; font-size: 26px; }
+.coin.small { width: 50px; height: 50px; font-size: 20px; box-shadow: 0 3px 0 #b58900; }
+.sticker.gold, .prize.gold { box-shadow: 0 0 0 5px #ffd23f, 0 0 18px #ffd23f; }

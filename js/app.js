@@ -4,6 +4,7 @@ import { runQuestion } from './games.js';
 import { pick, shuffle, esc, rnd } from './util.js';
 import { WORLDS, ALL_SKILLS } from './worlds.js';
 import { reminderFor } from './data/rules.js';
+import { funZone, STICKER_PAGES, ALL_STICKERS } from './fun.js';
 import { EXAMS, examReadiness, examSkills, daysUntil, nextExam, examNeed, skillReadiness, mocksFor } from './exam.js';
 
 const app = document.getElementById('app');
@@ -21,8 +22,9 @@ const PETS = {
 const PET_STEPS = [0, 5, 15, 35];
 // From the Grade 1B Christmas term revision guide
 const LISTEN_TIPS = ['Remember to listen carefully!', 'Listening ears on!', 'Listen closely to every word.', 'Good listeners hear the whole question.', 'Ears ready? Listen carefully!', 'Listen first, then answer.'];
-const STICKERS = ['🦋', '🐬', '🕊️', '🌈', '✝️', '📖', '🙏', '⛪', '💖', '🍦', '🧁', '🎀', '👑', '🐠', '🦩', '🐼', '🐨', '🦊', '🐯', '🐸', '🐙', '🦀', '🐳', '🌻', '🌺', '🍓', '🍉', '🍍', '🥭', '🎈', '🎨', '🎵', '🚀', '⭐', '🌙', '☀️', '🪐', '💎', '🏆', '🎁', '🍭', '🐝', '🐞', '🦜', '🐢', '🦒', '🐘', '🦓', '🐧', '🦉', '🌴', '🏝️', '🎠', '🎡', '🛼', '🪁', '🧸', '🍩', '🥥', '🐚', '🦕', '🐿️', '🦔', '🌷'];
+const OLD_STICKERS = ['🦋', '🐬', '🕊️', '🌈', '✝️', '📖', '🙏', '⛪', '💖', '🍦', '🧁', '🎀', '👑', '🐠', '🦩', '🐼', '🐨', '🦊', '🐯', '🐸', '🐙', '🦀', '🐳', '🌻', '🌺', '🍓', '🍉', '🍍', '🥭', '🎈', '🎨', '🎵', '🚀', '⭐', '🌙', '☀️', '🪐', '💎', '🏆', '🎁', '🍭', '🐝', '🐞', '🦜', '🐢', '🦒', '🐘', '🦓', '🐧', '🦉', '🌴', '🏝️', '🎠', '🎡', '🛼', '🪁', '🧸', '🍩', '🥥', '🐚', '🦕', '🐿️', '🦔', '🌷'];
 
+const STICKERS = ALL_STICKERS; // 14 themed pages; after all of them, ✨ golden stickers
 if (store.pet && !PETS[store.pet.kind]) { store.pet = null; save(); }
 
 function petStage() {
@@ -492,6 +494,12 @@ function map(greet) {
   }
   s.append(card);
 
+  // ----- 🎀 Fun Zone (reward): uses a ticket won by doing well
+  const tk = store.fun?.tickets ?? 1;
+  const fz = h(`<button class="big-btn adventure-btn" style="background:linear-gradient(#ff9ccf,#ff6fae);color:#fff"><span style="font-size:40px">🎀</span> Fun Zone: shop, dress up & salon <small style="font-size:.6em">(🎟️ ${tk} ticket${tk === 1 ? '' : 's'})</small></button>`);
+  fz.onclick = () => { sfx.tap(); openFunZone(); };
+  s.append(fz);
+
   // ----- 📊 Exam readiness meter (every upcoming exam) -----
   const upcoming = EXAMS.filter(e => e.date && daysUntil(e.date) >= 0);
   if (upcoming.length) {
@@ -934,15 +942,23 @@ function results({ stars, earned, bestCombo, grew, missionComplete, retryArea, p
     chest.onclick = null;
     sfx.correct(); confetti(30);
     const left = STICKERS.filter(x => !store.stickers.includes(x));
-    let prize;
-    if (left.length) { prize = pick(left); store.stickers.push(prize); }
-    else { prize = '🪙'; store.coins += 10; }
+    store.goldStickers ||= [];
+    const goldLeft = left.length ? [] : STICKERS.filter(x => !store.goldStickers.includes(x));
+    let prize, msg;
+    if (left.length) { prize = pick(left); store.stickers.push(prize); msg = 'A new sticker for your sticker book!'; }
+    else if (goldLeft.length) { prize = pick(goldLeft); store.goldStickers.push(prize); msg = 'A shiny golden sticker for your book!'; }
+    else { prize = '🪙'; store.coins += 10; msg = 'Ten bonus coins!'; }
+    // 🎟️ Fun Zone tickets for doing well
+    store.fun ||= {}; store.fun.tickets ??= 1;
+    const tickets = (stars === 3 ? 1 : 0) + (planComplete ? 2 : 0) + (missionComplete ? 1 : 0);
+    store.fun.tickets += tickets;
     save();
-    chest.className = 'prize'; chest.textContent = prize;
-    s.querySelector('.bubble').textContent = left.length ? 'A new sticker for your book!' : '+10 bonus coins!';
-    say(left.length ? 'A new sticker for your sticker book!' : 'Ten bonus coins!');
+    chest.className = 'prize' + (goldLeft.length && !left.length ? ' gold' : ''); chest.textContent = prize;
+    s.querySelector('.bubble').textContent = msg.replace('Ten bonus coins!', '+10 bonus coins!');
+    say(msg + (tickets ? ` And you won ${tickets === 1 ? 'a Fun Zone ticket' : tickets + ' Fun Zone tickets'}!` : ''));
     const after = s.querySelector('.after');
     after.classList.remove('hidden');
+    if (tickets) after.append(h(`<div class="bubble">🎟️ You won ${tickets === 1 ? 'a Fun Zone ticket' : tickets + ' Fun Zone tickets'}! Use ${tickets === 1 ? 'it' : 'them'} on the map. 🎀</div>`));
     if (grew) {
       after.append(h(`<div class="bubble">✨ Your ${esc(store.pet.name)} ${petStage() === 1 ? 'came out of the gift' : 'grew'}! ${petEmoji()}</div>`));
       setTimeout(() => say(`Look! Your ${store.pet.name} ${petStage() === 1 ? 'came out of the gift' : 'grew bigger'}!`), 2200);
@@ -1132,20 +1148,34 @@ function stickerBook() {
   onMap = false;
   stopSpeaking();
   app.innerHTML = '';
+  const gold = store.goldStickers || [];
   const s = h('<div class="screen"></div>');
   s.append(topbar(() => map(false)));
   s.append(h(`<div class="title" style="text-align:center">📒 My Sticker Book</div>`));
-  s.append(h(`<div class="white" style="text-align:center;margin-bottom:12px">${store.stickers.length} of ${STICKERS.length} stickers</div>`));
-  const g = h('<div class="sticker-grid"></div>');
-  for (const st of STICKERS) {
-    const has = store.stickers.includes(st);
-    const c = h(`<button class="sticker ${has ? '' : 'locked'}">${has ? st : '?'}</button>`);
-    if (has) c.onclick = () => { sfx.pop(); c.animate([{ transform: 'scale(1)' }, { transform: 'scale(1.3) rotate(-10deg)' }, { transform: 'scale(1)' }], 400); };
-    g.append(c);
+  s.append(h(`<div class="white" style="text-align:center;margin-bottom:12px">${store.stickers.filter(x => STICKERS.includes(x)).length} of ${STICKERS.length} stickers${gold.length ? ` · ✨ ${gold.length} golden` : ''}</div>`));
+  for (const [page, list] of Object.entries(STICKER_PAGES)) {
+    const got = list.filter(x => store.stickers.includes(x)).length;
+    s.append(h(`<h3 style="font-family:var(--fun);color:#fff;text-shadow:0 2px 0 rgba(0,0,0,.2);margin:14px 0 6px">${page} <small>${got}/${list.length} ${got === list.length ? '🏅' : ''}</small></h3>`));
+    const g = h('<div class="sticker-grid"></div>');
+    for (const st of list) {
+      const has = store.stickers.includes(st);
+      const c = h(`<button class="sticker ${has ? '' : 'locked'} ${gold.includes(st) ? 'gold' : ''}">${has ? st : '?'}</button>`);
+      if (has) c.onclick = () => { sfx.pop(); c.animate([{ transform: 'scale(1)' }, { transform: 'scale(1.3) rotate(-10deg)' }, { transform: 'scale(1)' }], 400); };
+      g.append(c);
+    }
+    s.append(g);
   }
-  s.append(g);
   app.append(s);
-  say(`You have ${store.stickers.length} stickers! Play more to win more!`);
+  say(`You have ${store.stickers.length} stickers! ${STICKERS.length - store.stickers.filter(x => STICKERS.includes(x)).length} more to find. Play more to win more!`);
+}
+
+function openFunZone() {
+  store.fun ||= {}; store.fun.tickets ??= 1;
+  if (store.fun.tickets < 1) { sfx.wrong(); say('You need a Fun Zone ticket. Get three stars in a game, or finish today\'s plan, to win one!'); return; }
+  if (!gate()) return;
+  store.fun.tickets--; save();
+  onMap = false;
+  funZone({ app, h, say, sfx, store, save, back: () => map(false), confetti, name });
 }
 
 // ---------- Parent zone ----------

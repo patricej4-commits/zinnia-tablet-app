@@ -153,3 +153,9 @@ the rule and can spell words the teacher picks that are not on the list.
 Anything not finished yesterday (topics, a redo area's missed topics, exam practice questions) is added to today as
 "📦 Yesterday's unfinished work", done first, on top of today's plan. Only one day's worth carries (no snowballing);
 25+ carried topics adds one extra sitting. Switch off in the Parent Zone.
+
+## Rewards: 220 stickers + golden stickers, and the 🎀 Fun Zone
+- 220 stickers on 14 themed pages (Animals, Under the sea, Church & Bible, Jamaica & beach, ...). After all of them she wins ✨ golden versions.
+- 🎟️ Fun Zone tickets: 1 for a 3-star game, 1 for finishing the mission, 2 for finishing today's plan. One ticket = 5 minutes of:
+  🛍️ Shop (buy clothes with her coins, paying by tapping 10, 5 and 1 coins = tens & ones), 👗 Dress up (Ollie describes the outfit),
+  💇‍♀️ Salon (hair styles, colours, clips, nails; customers ask for a look out loud — listen, then style; +5 coins when right).
