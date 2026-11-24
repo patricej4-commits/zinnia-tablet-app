@@ -168,8 +168,8 @@ export const phonicsSkills = [
       // Half the time the chart's key word, half the time any other word on the chart with that sound
       const anyWord = Math.random() < 0.5;
       const key = anyWord ? pick(chart[sound]) : chart[sound][0];
-      const wrong = sample(Object.keys(chart).filter(s => s !== sound && !clash(s, sound))
-        .map(s => (anyWord ? pick(chart[s]) : chart[s][0])).filter(w => !w.includes(sound)), 2);
+      const wrong = sample([...new Set(Object.keys(chart).filter(s => s !== sound && !clash(s, sound))
+        .map(s => (anyWord ? pick(chart[s]) : chart[s][0])).filter(w => !w.includes(sound) && w !== key))], 2);
       return {
         say: `Which word has the sound ${sound.split('').join(' ')}?`,
         visual: `<div class="word-big" style="border-radius:50%;padding:20px 34px;border:6px solid #ff5fa2">${sound}</div>`,
