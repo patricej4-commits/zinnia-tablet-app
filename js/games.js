@@ -519,13 +519,14 @@ function column(q, area, { onRight, speak, noteMiss }) {
     box.innerHTML = `
       <div class="crow">${cell('')}${cell('T', 'head')}${cell('O', 'head')}</div>
       <div class="crow small-row">${cell('')}${cell(smallT)}${cell('')}</div>
-      <div class="crow">${cell('')}${cell(topT, `tens ${step === 'borrow' ? 'tapme' : ''}`)}${cell(topO)}</div>
+      <div class="crow">${cell('')}${cell(topT, `tens ${step === 'borrow' || step === 'carry' ? 'tapme' : ''}`)}${cell(topO)}</div>
       <div class="crow">${cell(sub ? '−' : '+', 'op')}${cell(t || '')}${cell(o)}</div>
       <div class="cline"></div>
       <div class="crow">${cell('')}${cell(gotTens ?? (step === 'tens' ? '?' : ''), `ans ${step === 'tens' ? 'now' : ''}`)}${cell(gotOnes ?? (step === 'ones' ? '?' : ''), `ans ${step === 'ones' ? 'now' : ''}`)}</div>`;
     const tens = box.querySelector('.tens');
     tens.onclick = () => {
       if (step === 'borrow') { sfx.pop(); did = true; step = 'ones'; draw(); go(); }
+      else if (step === 'carry') { sfx.pop(); did = true; step = 'tens'; draw(); go(); }
     };
   }
   const miss = msg => { misses++; noteMiss(); sfx.wrong(); say1.textContent = msg; speak(msg); };
@@ -533,8 +534,33 @@ function column(q, area, { onRight, speak, noteMiss }) {
     ctl.innerHTML = `<div class="numpad">${[1, 2, 3, 4, 5, 6, 7, 8, 9, 0].map(n => `<button class="nk" data-n="${n}">${n}</button>`).join('')}</div>`;
     ctl.querySelectorAll('.nk').forEach(b => (b.onclick = () => typed(+b.dataset.n)));
   }
+  let buf = '';
+  function padMulti() {
+    ctl.innerHTML = `<div class="numpad">${[1, 2, 3, 4, 5, 6, 7, 8, 9, 0].map(n => `<button class="nk" data-n="${n}">${n}</button>`).join('')}</div>
+      <div style="display:flex;gap:10px;align-items:center"><div class="bubble entry" style="font-size:40px;min-width:90px;text-align:center">${buf || '?'}</div>
+      <button class="nk del" style="width:70px">⌫</button><button class="nk ok" style="width:90px;background:#2ec27e;color:#fff">✔</button></div>`;
+    ctl.querySelectorAll('.nk[data-n]').forEach(b => (b.onclick = () => { sfx.tap(); if (buf.length < 2) buf += b.dataset.n; padMulti(); }));
+    ctl.querySelector('.del').onclick = () => { buf = buf.slice(0, -1); padMulti(); };
+    ctl.querySelector('.ok').onclick = () => { const n = +buf; buf = ''; if (n || n === 0) typedSum(n); };
+  }
+  function typedSum(n) {
+    if (n !== O + o) {
+      stepMiss++;
+      if (stepMiss >= 2) { stepMiss = 0; miss(`${O} plus ${o} is ${O + o}.`); setTimeout(() => { step = 'ones'; go(); }, 2200); return; }
+      return miss(`Not quite. Start at ${Math.max(O, o)} and count on ${Math.min(O, o)}. Try again!`);
+    }
+    sfx.correct(); stepMiss = 0; step = 'ones'; go();
+  }
   function go() {
     draw();
+    if (step === 'onesSum') {
+      const msg = `Add the ones: ${O} plus ${o}. Type the answer, then tap the tick.`;
+      say1.textContent = msg; speak(msg); padMulti(); return;
+    }
+    if (step === 'carry') {
+      const msg = `Now carry the 1 ten! Tap the ${T} in the tens to carry it over.`;
+      say1.textContent = msg; speak(msg); ctl.innerHTML = ''; return;
+    }
     if (step === 'decide') {
       const msg = sub ? `Start with the ones. Can we take ${o} away from ${O}?` : `Start with the ones. ${O} plus ${o}. Is it 10 or more?`;
       say1.textContent = msg; speak(msg);
@@ -547,7 +573,7 @@ function column(q, area, { onRight, speak, noteMiss }) {
         if (!need) return miss(sub ? `${O} is bigger than ${o}, so we CAN take away. No need to borrow.` : `${O} plus ${o} is ${O + o}. That is less than 10, so there is nothing to carry.`);
         sfx.tap();
         if (sub) { step = 'borrow'; draw(); const m = `Yes! ${O} is smaller than ${o}, so we borrow. Tap the ${T} in the tens to borrow 1 ten.`; say1.textContent = m; speak(m); ctl.innerHTML = ''; }
-        else { did = true; step = 'ones'; go(); }
+        else { step = 'onesSum'; go(); }
       };
       pickPlain.onclick = () => {
         if (need) return miss(sub ? `Look again: ${O} is smaller than ${o}. We cannot take ${o} away from ${O}. We must borrow a ten.` : `${O} plus ${o} is ${O + o}. That is 10 or more, so we carry a ten.`);
@@ -558,12 +584,12 @@ function column(q, area, { onRight, speak, noteMiss }) {
     if (step === 'ones') {
       const msg = sub
         ? (did ? `Now the ones: ${O + 10} take away ${o}. Type the answer.` : `Now the ones: ${O} take away ${o}. Type the answer.`)
-        : (did ? `${O} plus ${o} is ${O + o}. Write the ${ansOnes} in the ones, and carry the 1 ten to the tens. Type the ones.` : `Now the ones: ${O} plus ${o}. Type the answer.`);
+        : (need ? `${O + o} is 1 ten and ${(O + o) % 10} ones. We write only the ONES in the ones place. Type the ones digit of ${O + o}.` : `Now the ones: ${O} plus ${o}. Type the answer.`);
       say1.textContent = msg; speak(msg); pad(); return;
     }
     if (step === 'tens') {
       const msg = sub ? (did ? `Now the tens: ${T - 1} take away ${t}. Type the answer.` : `Now the tens: ${T} take away ${t}. Type the answer.`)
-        : (did ? `Now the tens: ${T} plus ${t}, plus the 1 we carried. Type the answer.` : `Now the tens: ${T} plus ${t}. Type the answer.`);
+        : (did ? `Now the tens: the 1 we carried, plus ${T}, plus ${t}. Type the answer.` : `Now the tens: ${T} plus ${t}. Type the answer.`);
       say1.textContent = msg; speak(msg); pad(); return;
     }
   }
@@ -575,12 +601,14 @@ function column(q, area, { onRight, speak, noteMiss }) {
         if (stepMiss >= 2) {
           gotOnes = ansOnes; stepMiss = 0;
           miss(`The ones answer is ${ansOnes}. ${sub ? `${did ? O + 10 : O} take away ${o} is ${ansOnes}` : `${O} plus ${o} is ${O + o}`}.`);
+          if (!sub && need) { step = 'carry'; setTimeout(go, 2600); return; }
           if (ansTens === 0 && !(q.bot >= 10)) { setTimeout(done, 2600); return; }
           step = 'tens'; setTimeout(go, 2600); return;
         }
-        return miss(sub ? `Not quite. Count back: ${did ? O + 10 : O} take away ${o}. Try again!` : `Not quite. ${O} plus ${o}... try again!`);
+        return miss(sub ? `Not quite. Count back: ${did ? O + 10 : O} take away ${o}. Try again!` : need ? `Only the ones digit! ${O + o} is 1 ten and ${(O + o) % 10} ones. Type the ones.` : `Not quite. ${O} plus ${o}... try again!`);
       }
       sfx.correct(); gotOnes = n; stepMiss = 0;
+      if (!sub && need) { step = 'carry'; go(); return; }
       if (ansTens === 0 && !(q.bot >= 10)) return done();
       step = 'tens'; go(); return;
     }
@@ -596,7 +624,7 @@ function column(q, area, { onRight, speak, noteMiss }) {
   function done() {
     step = 'done'; draw(); ctl.innerHTML = '';
     const ans = sub ? q.top - q.bot : q.top + q.bot;
-    say1.textContent = `${q.top} ${sub ? 'take away' : 'plus'} ${q.bot} is ${ans}! ${sub ? `Check: ${ans} + ${q.bot} = ${q.top} ✔` : ''}`;
+    say1.textContent = `${q.top} ${sub ? 'take away' : 'plus'} ${q.bot} is ${ans}! ${sub ? `Check: ${ans} + ${q.bot} = ${q.top} ✔` : `Check: ${ans} − ${q.bot} = ${q.top} ✔`}`;
     onRight();
   }
   go();
