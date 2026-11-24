@@ -271,3 +271,29 @@ button { font-family: inherit; color: inherit; border: none; cursor: pointer; }
 .coin.c10 { width: 100px; height: 100px; } .coin.c1 { width: 70px; height: 70px; font-size: 26px; }
 .coin.small { width: 50px; height: 50px; font-size: 20px; box-shadow: 0 3px 0 #b58900; }
 .sticker.gold, .prize.gold { box-shadow: 0 0 0 5px #ffd23f, 0 0 18px #ffd23f; }
+
+.ghost { position: fixed; transform: translate(-50%, -50%) scale(1.1); pointer-events: none; z-index: 1000; filter: drop-shadow(0 8px 8px rgba(0,0,0,.25)); }
+.shopitem { user-select: none; -webkit-user-select: none; }
+.shopitem .tag { font-size: 18px; }
+.basket { font-size: 90px; background: #fff8d6; border: 4px dashed #ffd23f; border-radius: 28px; padding: 10px 22px; text-align: center; min-width: 150px; }
+.counter { background: #8b5a2b; border-radius: 22px; padding: 12px; min-width: 300px; min-height: 110px; text-align: center; box-shadow: inset 0 -8px 0 rgba(0,0,0,.2); }
+.counter .tray { display: flex; flex-wrap: wrap; gap: 6px; justify-content: center; min-height: 56px; }
+.counter .paidtxt { color: #fff; font-size: 26px; font-weight: 800; }
+.coin { display: flex; align-items: center; justify-content: center; user-select: none; }
+.pulse { animation: pulse 0.9s infinite; }
+@keyframes pulse { 50% { transform: scale(1.08); } }
+.tabicon { font-size: 30px !important; padding: 6px 14px; }
+.toolrow { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; }
+.tool { font-size: 40px; background: #fff; border: 0; border-radius: 18px; padding: 6px 10px; box-shadow: 0 4px 0 rgba(0,0,0,.08); cursor: pointer; }
+.tool.on { outline: 4px solid #ff6fae; }
+.tool.mini { padding: 2px; line-height: 0; }
+.dot { width: 46px; height: 46px; border-radius: 50%; border: 3px solid #fff; box-shadow: 0 3px 0 rgba(0,0,0,.12); cursor: pointer; font-size: 22px; }
+.dot.on { outline: 4px solid #ff6fae; }
+.bowpick { background: #fff; border-radius: 16px; padding: 4px; box-shadow: 0 4px 0 rgba(0,0,0,.08); cursor: grab; line-height: 0; }
+.salonbox .fx { position: absolute; inset: 0; width: 100%; height: 100%; pointer-events: none; }
+.salonbox { cursor: pointer; }
+.bottle { width: 58px; height: 70px; border: 0; background: none; cursor: pointer; padding: 0; }
+.bottle span { display: block; width: 40px; height: 52px; margin: auto; border-radius: 10px 10px 14px 14px; border: 3px solid rgba(0,0,0,.15); position: relative; }
+.bottle span::before { content: ''; position: absolute; top: -16px; left: 12px; width: 12px; height: 16px; background: #333; border-radius: 3px; }
+.bottle.on span { outline: 4px solid #ff6fae; outline-offset: 3px; }
+.handbox .nail { cursor: pointer; transform-box: fill-box; transform-origin: center; }

@@ -159,3 +159,7 @@ Anything not finished yesterday (topics, a redo area's missed topics, exam pract
 - 🎟️ Fun Zone tickets: 1 for a 3-star game, 1 for finishing the mission, 2 for finishing today's plan. One ticket = 5 minutes of:
   🛍️ Shop (buy clothes with her coins, paying by tapping 10, 5 and 1 coins = tens & ones), 👗 Dress up (Ollie describes the outfit),
   💇‍♀️ Salon (hair styles, colours, clips, nails; customers ask for a look out loud — listen, then style; +5 coins when right).
+
+- Fun Zone is hands-on (no words to press): drag things into the shop basket and coins onto the counter; drag clothes onto the doll;
+  in the salon rub shampoo into her hair (bubbles), rinse, blow-dry and comb (sparkles, shiny hair), drag bows anywhere on her hair,
+  pick hairstyles from little pictures, and paint each nail on a big hand.
