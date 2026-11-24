@@ -535,19 +535,31 @@ function chooseSkill(pool, last) {
 }
 
 // Fingerprint of a question, so the same question does not keep coming back
-const qSig = q => [q.skill, q.text, q.say, q.word, q.sentence, q.target, q.start, q.hops, JSON.stringify(q.answer)].join('|');
+// It includes what is on screen (the word, picture, sentence) and the choices, not just the instruction.
+const qSig = q => [q.skill, q.text, q.say, q.word, q.sentence, q.target, q.start, q.hops, JSON.stringify(q.answer),
+  plainText(q.visual).replace(/\s+/g, ' '), (q.options || []).map(o => o.value).sort().join(',')].join('|');
+// The main thing a question is about (its word or sentence), so the same word does not keep coming back
+// in a topic even when the question is worded a different way.
+const qKey = q => q.skill + ':' + (q.word || q.sentence || plainText(q.visual).replace(/\s+/g, ' ').slice(0, 60) || JSON.stringify(q.answer));
 
 function makeQuestion(sk, levelOverride) {
   const lvl = levelOverride || skill(sk.id).level;
   const recent = new Set(store.recentQs || []);
-  let q;
-  for (let i = 0; i < 20; i++) {
+  const recentKeys = new Set(store.recentKeys || []);
+  let q, fallback = null;
+  for (let i = 0; i < 40; i++) {
     q = sk.gen(lvl);
     q.skill = sk.id;
-    if (!recent.has(qSig(q))) break; // try for one she has not seen lately
+    if (recent.has(qSig(q))) continue;          // seen this exact question lately
+    fallback ||= q;
+    if (!recentKeys.has(qKey(q))) break;         // new question AND a word she has not had lately in this topic
+    q = null;
   }
+  q ||= fallback || sk.gen(lvl);
+  q.skill = sk.id;
   if (sk.type && !q.type) q.type = sk.type;
-  store.recentQs = [...(store.recentQs || []), qSig(q)].slice(-400);
+  store.recentQs = [...(store.recentQs || []), qSig(q)].slice(-1500);
+  store.recentKeys = [...(store.recentKeys || []), qKey(q)].slice(-600);
   return q;
 }
 

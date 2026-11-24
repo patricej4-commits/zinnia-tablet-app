@@ -48,6 +48,15 @@ const SENTENCES = [
   ['We cook with ___.', 'oil'], ['I play with my ___ truck.', 'toy'], ['Please do not make a ___.', 'noise'],
   ['I read a good ___.', 'book'], ['I can see the ___ at night.', 'moon'], ['I eat good ___.', 'food'], ['My ___ is in my shoe.', 'foot'],
   ['Please ___ with me.', 'stay'],
+  ['I can ___ the ball.', 'kick'], ['I ___ to eat mangoes.', 'like'], ['Please come ___ to me.', 'back'],
+  ['The fish is in the ___.', 'net'], ['Please ___ down on the chair.', 'sit'], ['I put on my ___ when it is cold.', 'coat'],
+  ['The ___ sails on the sea.', 'boat'], ['I like to ___ my book.', 'read'], ['We ___ a game at school.', 'made'], ['I ___ my bike to the park.', 'ride'],
+  ['Let us have a ___ after school.', 'snack'], ['The wind will ___ and blow.', 'puff'], ['Please ___ the bell.', 'ring'],
+  ['God will ___ you.', 'bless'], ['I ___ when I am sad.', 'cry'], ['Can you ___ again?', 'try'], ['I will ___ to the shop.', 'go'],
+  ['I like ___ fish.', 'fresh'], ['Let us go ___ to play.', 'out'], 
+  ['The ball is ___.', 'round'], ['She has a ___ in her hair.', 'curl'], ['It is my ___ to play.', 'turn'], ['Do not get ___ on your dress.', 'dirt'],
+  ['Please ___ the soup.', 'stir'], ['The water will ___.', 'boil'], ['I ___ my finger at the bird.', 'point'], ['My tooth is ___!', 'loose'],
+  ['___ at the stars!', 'look'], ['I wear a ___ on my foot.', 'boot'], ['It is time to ___ the table.', 'serve'],
 ];
 // Clue words: "Write the spelling word next to its clue"
 const CLUES = [
@@ -56,6 +65,13 @@ const CLUES = [
   ['You wear it when it is cold.', 'coat'], ['It rings: ding dong!', 'bell'], ['It tells the time.', 'clock'], ['It flies on a string.', 'kite'],
   ['A king wears it on his head.', 'crown'], ['It says moo.', 'cow'], ['It is white and falls from the sky when it is very cold.', 'snow'],
   ['You wear it on your top half.', 'shirt'], ['A boy plays with it.', 'toy'], ['It is the number after one.', 'two'],
+  ['It is a baby bear.', 'cub'], ['A big car that takes children to school.', 'bus'], ['It says maa and eats grass.', 'goat'], ['You fly it in the wind.', 'kite'],
+  ['You eat it at a party.', 'cake'], ['It is long and says hiss.', 'snake'], ['A little girl plays with it.', 'doll'], ['You brush your teeth with it.', 'brush'],
+  ['It is a funny man at the circus.', 'clown'], ['The colour of chocolate.', 'brown'], ['A young lady.', 'girl'], ['After first and second comes ___.', 'third'],
+  ['We cook with it.', 'oil'], ['It is money that is round.', 'coin'], ['A happy, glad feeling.', 'joy'], ['A young man.', 'boy'],
+  ['You talk to God.', 'pray'], ['The opposite of night.', 'day'], ['Horses eat it.', 'hay'], ['The opposite of fast.', 'slow'],
+  ['It is white and floats in the sky.', 'cloud'], ['Dirt that plants grow in.', 'soil'], ['To not go away.', 'stay'], ['The opposite of up.', 'down'],
+  ['You wear it on your foot.', 'boot'], ['The opposite of bad.', 'good'], ['A place in your house, like a bedroom.', 'room'], ['To talk very loudly.', 'shout'],
 ];
 // Rhyming families from the lists ("Color the words that rhyme with ...")
 const RHYMES = [['tan', ['man', 'ran']], ['float', ['coat', 'goat', 'boat']], ['lake', ['bake', 'snake', 'shake', 'cake']], ['stick', ['lick', 'kick', 'brick']],
@@ -136,7 +152,7 @@ export const spellingSkills = [
         say: `${clue} Spell the word.`, text: `${clue} Spell the word.`, readFirst: true, visual: '',
         explain: `${clue} The word is ${a}: ${a.split('').join(' ')}.`,
       };
-      const wrong = sample(CLUES.map(c => c[1]).filter(x => x !== a), 2);
+      const wrong = sample([...new Set(CLUES.map(c => c[1]))].filter(x => x !== a), 2);
       return {
         say: `${clue} Which spelling word is it?`, readFirst: l > 1,
         visual: `<div class="sentence">${esc(clue)}</div>`,
@@ -168,6 +184,16 @@ export const spellingSkills = [
         type: 'build', word: sw, extra: sample('abdeilmnorstuw'.split('').filter(c => !sw.includes(c)), 1),
         say: `Spell the sight word ${sw}. ${sw}.`, text: 'Spell the sight word you hear 👂', visual: '<div style="font-size:80px">👂</div>',
         explain: `${sw} is a sight word. We learn it by heart: ${sw.split('').join(' ')}.`,
+        };
+      }
+      const SIGHT_SENT = { a: 'I have ___ cat.', the: 'Look at ___ sun.', to: 'I like ___ play.', come: 'Please ___ here.', I: '___ can read.', you: 'I love ___.', of: 'A cup ___ tea.', one: 'I have ___ nose.', two: 'I have ___ eyes.', do: 'What ___ you see?', what: '___ is your name?', was: 'It ___ hot.', said: 'Mom ___ yes.', have: 'I ___ a dog.', give: 'Please ___ me a hug.' };
+      if (l === 2 && SIGHT_SENT[a] && Math.random() < 0.5) {
+        const s = SIGHT_SENT[a];
+        return {
+          say: 'Read the sentence. Which sight word goes in the blank?', readFirst: true,
+          visual: `<div class="sentence">${esc(s).replace('___', '<span style="color:#5b3fd1;border-bottom:5px solid #5b3fd1;padding:0 18px">?</span>')}</div>`,
+          options: shuffle([a, ...sample(SIGHT.filter(x => x !== a && x.toLowerCase() !== a.toLowerCase()), 2)]).map(x => ({ html: x, value: x })), answer: a,
+          explain: s.replace('___', a),
         };
       }
       return {
