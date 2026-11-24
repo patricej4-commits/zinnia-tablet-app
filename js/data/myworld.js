@@ -2,6 +2,9 @@
 // topics from the Christmas mid-term revision guide.
 import { pick, shuffle, sample } from '../util.js';
 
+// A music staff: 5 lines with 4 spaces between them
+const STAFF = '<svg viewBox="0 0 200 100" width="220">' + [10, 30, 50, 70, 90].map(y => `<line x1="5" y1="${y}" x2="195" y2="${y}" stroke="#2b2250" stroke-width="4"/>`).join('') + '</svg>';
+
 // [question, right answer (or a list of right answers, one is used), wrong answers, explanation, picture]
 const FACTS = {
   'w-body': [
@@ -29,7 +32,7 @@ const FACTS = {
     ['People who follow Christianity are called...', 'Christians', ['Muslims', 'Jews'], 'People who follow Jesus are called Christians.', '✝️'],
     ['People who follow Islam are called...', 'Muslims', ['Christians', 'Jews'], 'People who follow Islam are called Muslims.', '🕌'],
     ['People who follow Judaism are called...', 'Jews', ['Christians', 'Muslims'], 'People who follow Judaism are called Jews.', '🕍'],
-    ['People came from many lands to live in Jamaica. Which of these groups came from another land?', ['Africans', 'Indians', 'Chinese', 'Europeans'], ['Teachers', 'Neighbours'], 'Africans, Indians, Chinese and Europeans came from other lands to live in Jamaica. Out of many, one people!', '🇯🇲'],
+    ['Many people came from other lands to live in Jamaica. Which group came from another land?', ['Africans', 'Indians', 'Chinese', 'Europeans'], ['Teachers', 'Neighbours'], 'Africans, Indians, Chinese and Europeans came from other lands to live in Jamaica. Out of many, one people!', '🇯🇲'],
     ['Is a girl male or female?', 'female', ['male'], 'A girl is female. A boy is male.', '👧'],
     ['My surname is my...', 'last name', ['first name', 'nickname'], 'My first name is my given name. My last name is my surname.', '🏷️'],
   ],
@@ -63,10 +66,13 @@ const FACTS = {
     ['The treble clef is also called the...', 'G clef', ['F clef', 'stave'], 'The treble clef is also called the G clef.', '🎼'],
     ['The bass clef is also called the...', 'F clef', ['G clef', 'staff'], 'The bass clef is also called the F clef.', ''],
     ['Another name for the staff is the...', 'stave', ['clef', 'drum'], 'The staff is also called the stave.', '🎶'],
-    ['How many lines are on the staff?', '5', ['3', '10'], 'The staff has 5 lines and 4 spaces.', '🎼'],
-    ['How many spaces are on the staff?', '4', ['5', '2'], 'The staff has 5 lines and 4 spaces between them.', '🎼'],
+    ['Count the lines on the staff. How many lines are there?', '5', ['3', '10'], 'The staff has 5 lines and 4 spaces.', STAFF],
+    ['Count the spaces between the lines on the staff. How many spaces are there?', '4', ['5', '2'], 'The staff has 5 lines and 4 spaces between them.', STAFF],
   ],
 };
+
+// Name the action: a sentence to finish, or a question to answer, then "Tap ..."
+const ask = q => (q.endsWith('...') ? `${q} Tap the answer that finishes the sentence.` : `${q} Tap the answer.`);
 
 const META = {
   'w-body': ['My body', '🧍‍♀️'], 'w-food': ['Healthy food', '🥗'], 'w-groups': ['Groups & rules', '👨‍👩‍👧‍👦'],
@@ -104,7 +110,7 @@ Object.assign(FACTS, {
   'w-family': [
     ['Who was the first family?', 'Adam and Eve', ['Noah and his sons', 'Moses and his sister'], 'God made the first family: Adam and Eve.', '👫'],
     ['A family with a mother, father and children is a...', 'nuclear family', ['extended family', 'school family'], 'Mother, father and children make a nuclear family.', '👨‍👩‍👧'],
-    ['A family with grandparents, aunts and cousins too is an...', 'extended family', ['nuclear family', 'single-parent family'], 'When grandparents, aunts, uncles and cousins are included, it is an extended family.', '👵'],
+    ['A family with grandparents, aunts and cousins too is called...', 'extended family', ['nuclear family', 'single-parent family'], 'When grandparents, aunts, uncles and cousins are included, it is an extended family.', '👵'],
     ['A family with one parent and children is a...', 'single-parent family', ['extended family', 'nuclear family'], 'One parent with children is a single-parent family.', '👩‍👧'],
     ['What are the basic needs of a family?', 'food, clothing and shelter', ['toys, games and TV', 'sweets and soda'], 'Every family needs food, clothing and shelter (a home), and love!', '🏠'],
     ['What does a family tree show?', 'the people in my family', ['the trees in my yard', 'my toys'], 'A family tree shows the people in my family.', '🌳'],
@@ -182,9 +188,9 @@ FACTS['w-body'].push(
   ['Which joint is in the middle of my leg?', 'knee', ['elbow', 'wrist'], 'The knee is in the middle of the leg.', '🦵'],
 );
 FACTS['w-music'].push(
-  ['Which note is this?', 'whole note', ['half note', 'quarter note'], 'A whole note is open with no stem. It gets 4 beats.', WHOLE],
-  ['Which note is this?', 'half note', ['whole note', 'quarter note'], 'A half note is open with a stem. It gets 2 beats.', HALF],
-  ['Which note is this?', 'quarter note', ['whole note', 'half note'], 'A quarter note is filled in with a stem. It gets 1 beat.', QUARTER],
+  ['Look at the note. Which note is this?', 'whole note', ['half note', 'quarter note'], 'A whole note is open with no stem. It gets 4 beats.', WHOLE],
+  ['Look at the note. Which note is this?', 'half note', ['whole note', 'quarter note'], 'A half note is open with a stem. It gets 2 beats.', HALF],
+  ['Look at the note. Which note is this?', 'quarter note', ['whole note', 'half note'], 'A quarter note is filled in with a stem. It gets 1 beat.', QUARTER],
   ['How many beats does a whole note get?', '4', ['1', '2'], 'A whole note gets 4 beats.', WHOLE],
   ['How many beats does a half note get?', '2', ['4', '1'], 'A half note gets 2 beats.', HALF],
   ['How many beats does a quarter note get?', '1', ['2', '4'], 'A quarter note gets 1 beat.', QUARTER],
@@ -212,7 +218,7 @@ export const worldSkills = Object.keys(FACTS).map(id => ({
     const [q, ans, wrong, ex, pic] = pick(FACTS[id]);
     const a = Array.isArray(ans) ? pick(ans) : ans; // a list of right answers: one is used each time
     return {
-      say: q, readFirst: l === 3,
+      say: ask(q), readFirst: l === 3,
       visual: pic ? `<div style="font-size:100px">${pic}</div>` : '',
       options: shuffle([a, ...wrong]).map(x => ({ html: `<span class="lbl">${x}</span>`, value: x, say: x })),
       cols: wrong.length === 1 ? 'two' : '', answer: a, explain: ex,
@@ -236,7 +242,7 @@ worldSkills.push({
     const [task, three, four] = pick(STEPS);
     const steps = l === 3 && four ? four : three;
     return {
-      type: 'order', say: `${task}. Tap the steps in the correct order.`, text: `${task}: tap the steps in order`,
+      type: 'order', say: `${task}. Tap the step that comes first. Then tap the next step, until all the steps are in order.`, text: `${task}: tap the first step, then the next one.`,
       items: shuffle(steps), answer: steps,
       explain: `Step-by-step means one at a time, in the correct order: ${steps.map((x, i) => (i ? x[0].toLowerCase() + x.slice(1) : x)).join(', then ')}.`,
     };

@@ -25,7 +25,8 @@ function fill(l, item, explain) {
   const [sentence, answer, choices, reason] = item;
   const why = reason || (typeof explain === 'function' ? explain(item) : explain);
   return {
-    say: l === 1 ? `Which word goes in the box? ${spoken(sentence)}` : 'Read it. Which word goes in the box?',
+    say: l === 1 ? `Tap the word that goes in the box. ${spoken(sentence)}` : 'Read the sentence. Tap the word that goes in the box.',
+    text: l === 1 ? 'Tap the word that goes in the box.' : undefined,
     readFirst: l > 1,
     visual: `<div class="sentence">${boxed(sentence)}</div>`,
     options: shuffle(choices).map(c => ({ html: esc(c), value: c })), answer,
@@ -155,7 +156,7 @@ export const grammarSkills = [
         const others = sample(askNoun ? VERBS : NOUNS, many);
         const n = askNoun ? ans : others[0], v = askNoun ? others[0] : ans;
         return {
-          say: askNoun ? 'Which word is a noun, a naming word?' : 'Which word is a verb, an action word?',
+          say: askNoun ? 'Read the words. Tap the noun, the naming word.' : 'Read the words. Tap the verb, the action word.',
           readFirst: true,
           options: shuffle([ans, ...others]).map(w => ({ html: `<span class="lbl" style="font-size:40px">${w}</span>`, value: w })), cols: many === 1 ? 'two' : '',
           answer: ans,
@@ -166,7 +167,8 @@ export const grammarSkills = [
       const kind = pick(Object.keys(groups));
       const w = pick(groups[kind]);
       return {
-        say: `${w}. Is ${aan(w)} ${w} a person, a place, an animal, or a thing?`,
+        say: `Look at the word ${w}. Is ${aan(w)} ${w} a person, a place, an animal, or a thing? Tap one.`,
+        text: `Is ${aan(w)} ${w} a person, a place, an animal, or a thing? Tap one.`,
         visual: `<div style="display:flex;align-items:center;gap:12px">${picOf(w) ? `<span style="font-size:90px">${picOf(w)}</span>` : ''}<div class="word-big">${w}</div></div>`,
         options: [['person', '🧍'], ['place', '🏫'], ['animal', '🐾'], ['thing', '🧸']].map(([k, e]) => ({ html: `<span class="pic">${e}</span><span class="lbl">${k}</span>`, value: k, say: k })),
         answer: kind,
@@ -181,9 +183,10 @@ export const grammarSkills = [
         const isP = Math.random() < 0.5;
         const w = pick(isP ? PROPER : COMMON);
         return {
-          say: `${w}. Is it a common noun or a proper noun?`,
+          say: `Look at the word ${w}. Is it a special name, a proper noun? Or is it a common noun? Tap one.`,
+          text: `Look at the word. Tap common noun or proper noun (special name).`,
           visual: `<div class="word-big">${esc(w)}</div>`,
-          options: [{ html: '<span class="pic">🙂</span><span class="lbl">Common</span>', value: 'c', say: 'common noun' }, { html: '<span class="pic">👑</span><span class="lbl">Proper</span>', value: 'p', say: 'proper noun' }],
+          options: [{ html: '<span class="pic">🙂</span><span class="lbl">Common noun</span><small style="font-size:18px">any one, small letter</small>', value: 'c', say: 'common noun' }, { html: '<span class="pic">👑</span><span class="lbl">Proper noun</span><small style="font-size:18px">special name, big letter</small>', value: 'p', say: 'proper noun' }],
           cols: 'two', answer: isP ? 'p' : 'c',
           explain: isP ? `${theWord(w)} is a special name. It is a proper noun. It starts with a big letter.` : `${theWord(w)} is a common noun. It starts with a small letter.`,
         };
@@ -191,7 +194,7 @@ export const grammarSkills = [
       const p = pick(PROPER);
       const wrong = sample(COMMON, 2);
       return {
-        say: 'Which one is a special name? Look for the big letter!', readFirst: true,
+        say: 'Read the words. Tap the special name, the proper noun. Look for the big letter!', readFirst: true,
         options: shuffle([p, ...wrong]).map(w => ({ html: esc(w), value: w })), answer: p,
         explain: `${theWord(p)} is a special name. It starts with a big letter.`,
       };
@@ -204,9 +207,10 @@ export const grammarSkills = [
         const w = pick(['apple', 'cat', 'star', 'mango', 'fish', 'dog', 'ball', 'flower', 'car', 'egg'].filter(picOf));
         const many = Math.random() < 0.5;
         return {
-          say: 'Is it one, or more than one?',
+          say: 'Look at the picture. Is there one, or more than one? Tap singular for one. Tap plural for more than one.',
+          text: 'Is there one, or more than one? Tap singular or plural.',
           visual: `<div style="font-size:80px">${many ? Array(3).fill(picOf(w)).join(' ') : picOf(w)}</div>`,
-          options: [{ html: '<span class="pic">☝️</span><span class="lbl">Singular</span>', value: 's', say: 'singular' }, { html: '<span class="pic">🖐️</span><span class="lbl">Plural</span>', value: 'p', say: 'plural' }],
+          options: [{ html: '<span class="pic">☝️</span><span class="lbl">Singular</span><small style="font-size:18px">one</small>', value: 's', say: 'singular, one' }, { html: '<span class="pic">🖐️</span><span class="lbl">Plural</span><small style="font-size:18px">more than one</small>', value: 'p', say: 'plural, more than one' }],
           cols: 'two', answer: many ? 'p' : 's',
           explain: many ? 'More than one is plural.' : 'One is singular.',
         };
@@ -216,7 +220,7 @@ export const grammarSkills = [
       const right = es ? w + 'es' : w + 's';
       const wrong = es ? w + 's' : w + 'es';
       return {
-        say: `One ${w}. Two... which is right?`, readFirst: l === 3,
+        say: `Here is one ${w}. Now there are two. Tap the right way to write two.`, readFirst: l === 3,
         visual: `<div class="word-big">one ${w}</div>`,
         options: shuffle([right, wrong]).map(x => ({ html: `two ${x}`, value: x })), cols: 'two', answer: right,
         explain: !es ? `Just add s. One ${w}, two ${right}.`
@@ -232,7 +236,8 @@ export const grammarSkills = [
         const isAn = Math.random() < 0.5;
         const w = pick((isAn ? AN_WORDS : A_WORDS).filter(picOf));
         return {
-          say: `Is it a ${w}, or an ${w}?`,
+          say: `Look at the picture. Do we say a ${w}, or an ${w}? Tap the word that goes in the box.`,
+          text: `Tap a or an to go in the box.`,
           visual: `<div style="display:flex;align-items:center;gap:12px"><span style="font-size:90px">${picOf(w)}</span><div class="word-big">${BOX} ${w}</div></div>`,
           options: [{ html: 'a', value: 'a' }, { html: 'an', value: 'an' }], cols: 'two', answer: isAn ? 'an' : 'a',
           explain: `${aAnReason(w)} ${aan(w) === 'an' ? 'An' : 'A'} ${w}.`,
@@ -264,7 +269,7 @@ export const grammarSkills = [
         const v = pick(all);
         const others = sample(all.filter(x => x !== v), 2);
         return {
-          say: `Find the action: ${v}!`, text: 'Find the action you hear! 👂',
+          say: `Tap the picture that shows: ${v}!`, text: 'Tap the action you hear! 👂',
           options: shuffle([v, ...others]).map(w => ({ html: `<span class="pic">${VERB_PIC[w]}</span><span class="lbl">${w}</span>`, value: w, say: w })), answer: v,
           explain: `${theWord(v)} is an action word.`,
         };
@@ -272,7 +277,7 @@ export const grammarSkills = [
       const [s, v] = pick(l === 2 ? VERB_SENT_SHORT : VERB_SENT_LONG);
       const words = s.replace('.', '').split(' ');
       return {
-        say: 'Read it. Tap the action word!', readFirst: true,
+        say: 'Read the sentence. Tap the action word, the verb!', readFirst: true,
         visual: `<div class="sentence">${esc(s)}</div>`,
         options: [...new Set(words)].map(w => ({ html: esc(w), value: w })),
         answer: v,
@@ -286,7 +291,8 @@ export const grammarSkills = [
       if (l === 1 || Math.random() < 0.5) {
         const [e, w, a, wrong] = pick(ADJ_PIC);
         return {
-          say: `Which word describes the ${w}?`,
+          say: `Look at the ${w}. Tap the word that tells what the ${w} is like.`,
+          text: `Tap the word that describes the ${w}.`,
           visual: `<div style="font-size:110px">${e}</div>`,
           options: shuffle([a, ...wrong]).map(x => ({ html: x, value: x, say: x })), answer: a,
           explain: `The ${w} is ${a}. ${theWord(a)} describes the ${w}.`,
@@ -294,7 +300,7 @@ export const grammarSkills = [
       }
       const [s, a, noun] = pick(ADJ_SENT);
       return {
-        say: 'Read it. Tap the describing word!', readFirst: true,
+        say: 'Read the sentence. Tap the describing word, the adjective!', readFirst: true,
         visual: `<div class="sentence">${esc(s)}</div>`,
         options: [...new Set(s.replace('.', '').split(' '))].map(w => ({ html: esc(w), value: w })),
         answer: a,
@@ -313,7 +319,8 @@ export const grammarSkills = [
       const opts = [word, ...new Set(mixes)].slice(0, 3);
       const pic = COMPOUND_PIC[word] || picOf(word);
       return {
-        say: `${a} plus ${b} makes...?`, readFirst: l === 3,
+        say: l === 3 ? 'Read the two small words. Put them together. Tap the new word they make!' : `${a} plus ${b} makes one new word. Tap the new word!`,
+        text: 'Put the two words together. Tap the new word!', readFirst: l === 3,
         visual: `<div class="eq" style="font-size:clamp(36px,7vw,64px)">${a} + ${b} = <span class="gap">?</span></div>` + (pic ? `<div style="font-size:80px">${pic}</div>` : ''),
         options: shuffle(opts).map(x => ({ html: x, value: x })), answer: word,
         explain: `The words "${a}" and "${b}" make "${word}".`,
@@ -335,7 +342,8 @@ export const grammarSkills = [
       const wrong = l === 1 ? sample([noCap, noStop, noSpace], 2) : [noCap, noStop, noSpace];
       const opts = shuffle([s, ...wrong]);
       return {
-        say: 'Which one is written the right way?', readFirst: true,
+        say: 'Tap the sentence that is written the right way. Look for a big letter at the start, spaces between words, and a mark at the end.', readFirst: true,
+        text: 'Tap the sentence that is written the right way.',
         options: opts.map(x => ({ html: `<span class="lbl">${esc(x)}</span>`, value: x })), answer: s, cols: 'two',
         explain: `Big letter at the start. Spaces between words. ${mark === '!' ? 'An exclamation mark' : mark === '?' ? 'A question mark' : 'A period'} at the end. ${s}`,
       };
@@ -350,7 +358,7 @@ export const grammarSkills = [
       const k = pick(kinds);
       const w = pick(WORDS[k]);
       return {
-        say: `${w}. What kind of word is ${w}?`, text: `What kind of word is "${w}"?`,
+        say: `Look at the word ${w}. Is it ${kinds.map(x => `${aan(KIND[x].name)} ${KIND[x].name}`).join(', or ')}? Tap one.`, text: `What kind of word is "${w}"? Tap one.`,
         visual: `<div class="word-big">${esc(w)}</div>`,
         options: kinds.map(x => ({ html: `<span class="pic">${KIND[x].e}</span><span class="lbl">${KIND[x].name}</span><small style="font-size:18px">${KIND[x].hint}</small>`, value: x, say: KIND[x].name })),
         cols: kinds.length === 2 ? 'two' : '', answer: k,
@@ -375,7 +383,8 @@ export const grammarSkills = [
       const words = [...new Set(row.map(([w]) => w))];
       const sentence = row.map(([w]) => w).join(' ') + '.';
       return {
-        say: `Read the sentence. Tap the ${KIND[k].name}, the ${KIND[k].desc}!`, readFirst: l > 1,
+        say: l === 1 ? `${sentence} Tap the ${KIND[k].name}, the ${KIND[k].desc}!` : `Read the sentence. Tap the ${KIND[k].name}, the ${KIND[k].desc}!`,
+        text: `Tap the ${KIND[k].name}, the ${KIND[k].desc}!`, readFirst: l > 1,
         visual: `<div class="sentence">${esc(sentence)}</div>`,
         options: words.map(w => ({ html: esc(w), value: w })), answer: target,
         explain: `${theWord(target)} is the ${KIND[k].name}. ${KIND[k].rule}`,
@@ -388,7 +397,8 @@ export const grammarSkills = [
       const [sentence, k, opts] = pick(USE.filter(u => l === 3 || u[1] !== 'p'));
       const name = KIND[k].name, desc = KIND[k].desc;
       return {
-        say: l === 1 ? `Which word goes in the box? Use ${aan(name)} ${name}. ${spoken(sentence)}` : `Read it. Finish it with ${aan(name)} ${name}, ${aan(desc)} ${desc}.`,
+        say: l === 1 ? `Tap the ${name}, the ${desc}, that goes in the box. ${spoken(sentence)}` : `Read the sentence. Tap the ${name}, the ${desc}, that goes in the box.`,
+        text: `Tap the ${name} (${desc}) that goes in the box.`,
         readFirst: l > 1,
         visual: `<div class="sentence">${boxed(sentence)}</div>`,
         options: shuffle(Object.values(opts)).map(w => ({ html: esc(w), value: w })), answer: opts[k],
@@ -405,7 +415,7 @@ export const grammarSkills = [
       const words = s.split(' ');
       return {
         type: 'order',
-        say: l === 1 ? `Make this sentence: ${s}` : 'Look at the picture. Put the words in order to make a sentence!',
+        say: l === 1 ? `Make this sentence: ${s} Tap the words in order.` : 'Look at the picture. Tap the words in order to make a sentence about it!',
         text: 'Tap the words in order to make a sentence. Start with the big letter!',
         visual: `<div style="font-size:90px">${pic}</div>`,
         items: shuffle(words), answer: words,
@@ -424,7 +434,7 @@ export const grammarSkills = [
         const wrong = l === 1 ? [`${owner}s ${thing}`] : [`${owner}s ${thing}`, `${owner}s' ${thing}`];
         const opts = l === 3 ? [right, ...wrong].map(x => `${x[0].toUpperCase()}${x.slice(1)} is ${where}.`) : [right, ...wrong];
         return {
-          say: `The ${thing} belongs to ${owner}. Which is right?`, readFirst: l > 1,
+          say: `The ${thing} belongs to ${owner}. Tap the one that is written the right way.`, readFirst: l > 1,
           visual: `<div style="font-size:90px">${pic}</div>`,
           options: shuffle(opts).map(x => ({ html: esc(x), value: x })), answer: opts[0], cols: l === 1 ? 'two' : '',
           explain: `We add an apostrophe and s to show who owns it: ${right}.`,
@@ -432,7 +442,7 @@ export const grammarSkills = [
       }
       const sentence = l === 3 ? `Look! ${right} is ${where}.` : `This is ${right}.`;
       return {
-        say: `Read it. Whose ${thing} is it?`, readFirst: true,
+        say: `Read the sentence. Whose ${thing} is it? Tap the name.`, readFirst: true,
         visual: `<div class="sentence">${esc(sentence)}</div>`,
         options: shuffle([owner, ...sample(POSS.map(p => p[0]).filter(o => o !== owner), 2)]).map(x => ({ html: esc(x), value: x })), answer: owner,
         explain: `The words "${right}" mean the ${thing} belongs to ${owner}.`,
@@ -449,7 +459,7 @@ export const grammarSkills = [
       if (l === 1) {
         const letters = sample('abcdefghijklmnopqrstuvwxyz'.split(''), 3).sort();
         return {
-          type: 'order', say: 'Put the letters in ABC order.', items: shuffle(letters), answer: letters,
+          type: 'order', say: 'Tap the letters in ABC order. Tap the one that comes first in the alphabet, then the next.', text: 'Tap the letters in ABC order.', items: shuffle(letters), answer: letters,
           explain: `In ABC order: ${letters.join(', ')}.`,
         };
       }
@@ -457,12 +467,12 @@ export const grammarSkills = [
       do { words = sample(ABC_WORDS, l === 2 ? 3 : 4); } while (new Set(words.map(w => w[0])).size !== words.length);
       const sorted = [...words].sort();
       if (Math.random() < 0.4) return {
-        say: 'Which word comes first in ABC order? Look at the first letter.', readFirst: true,
+        say: 'Tap the word that comes first in ABC order. Look at the first letter of each word.', readFirst: true,
         options: shuffle(words).map(w => ({ html: w, value: w })), answer: sorted[0],
         explain: `${theWord(sorted[0])} starts with ${sorted[0][0]}, which comes first in the alphabet.`,
       };
       return {
-        type: 'order', say: 'Put the words in ABC order. Look at the first letter of each word.', items: shuffle(words), answer: sorted,
+        type: 'order', say: 'Tap the words in ABC order. Look at the first letter of each word.', text: 'Tap the words in ABC order.', items: shuffle(words), answer: sorted,
         explain: `In ABC order: ${sorted.join(', ')}.`,
       };
     },
@@ -472,7 +482,7 @@ export const grammarSkills = [
     gen(l) {
       const [s, mark] = pick(ENDMARKS);
       return {
-        say: l === 1 ? `${s}... Which mark goes at the end?` : 'Read it. Which mark goes at the end?', text: 'Which mark goes at the end?', readFirst: l > 1,
+        say: l === 1 ? `${s}... Tap the mark that goes in the box at the end.` : 'Read the sentence. Tap the mark that goes in the box at the end.', text: 'Tap the mark that goes in the box at the end.', readFirst: l > 1,
         visual: `<div class="sentence">${esc(s)} ${BOX}</div>`,
         options: ['.', '?', '!'].map(m => ({ html: `<span class="pic">${m}</span><span class="lbl">${END_NAME[m]}</span>`, value: m, say: END_NAME[m] })), answer: mark,
         explain: mark === '.' ? 'A telling sentence ends with a period.'
@@ -488,9 +498,11 @@ export const grammarSkills = [
       const pairs = OPPOSITES.filter(p => p[2] <= l);
       const [a, b] = pick(pairs);
       const [w, ans] = Math.random() < 0.5 ? [a, b] : [b, a];
-      const wrong = sample(pairs.flatMap(p => [p[0], p[1]]).filter(x => x !== ans && x !== w), 2);
+      // Leave out look-alike words (opposite of "up" is "down", so "bottom" is not offered).
+      const near = NEAR.filter(g => g.includes(w)).flat();
+      const wrong = sample(pairs.flatMap(p => [p[0], p[1]]).filter(x => x !== ans && x !== w && !near.includes(x)), 2);
       return {
-        say: `What is the opposite of ${w}?`, readFirst: l === 3,
+        say: `Tap the word that is the opposite of ${w}.`, readFirst: l === 3,
         visual: `<div class="word-big">${w}</div>`,
         options: shuffle([ans, ...wrong]).map(x => ({ html: x, value: x, say: x })), answer: ans,
         explain: `Opposites mean completely different, like hot and cold, up and down. The opposite of "${w}" is "${ans}".`,
@@ -507,6 +519,10 @@ const OPPOSITES = [
   ['give', 'take', 2], ['messy', 'neat', 2], ['more', 'less', 2], ['early', 'late', 2], ['asleep', 'awake', 2], ['tight', 'loose', 2], ['rich', 'poor', 2],
   ['wide', 'narrow', 3], ['deep', 'shallow', 3], ['curved', 'straight', 3], ['even', 'odd', 3], ['entrance', 'exit', 3],
 ];
+// Groups of words that are close in meaning, so they are never wrong answers for each other.
+const NEAR = [['up', 'down', 'top', 'bottom'], ['in', 'out', 'entrance', 'exit', 'open', 'shut'], ['before', 'after', 'early', 'late'],
+  ['empty', 'full', 'more', 'less'], ['big', 'small', 'thick', 'thin', 'wide', 'narrow'], ['far', 'near', 'deep', 'shallow'], ['night', 'day', 'asleep', 'awake'],
+  ['hard', 'soft', 'rough', 'smooth', 'heavy', 'light'], ['right', 'wrong', 'even', 'odd']];
 // [owner, thing, picture, where it is (level 3 sentences)]
 const POSS = [['Zinnia', 'book', '📖', 'on the bed'], ['Mummy', 'bag', '👜', 'on the chair'], ['Daddy', 'car', '🚗', 'red'], ['Spot', 'bone', '🦴', 'in the yard'],
   ['Kai', 'ball', '⚽', 'under the table'], ['Grandma', 'hat', '👒', 'very big'], ['Ruth', 'toy', '🧸', 'soft'], ['Maya', 'kite', '🪁', 'up in the sky'],

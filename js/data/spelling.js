@@ -116,7 +116,7 @@ const SENTENCES = [
   ['I like ___ fish.', 'fresh'], ['Let us go ___ to play.', 'out'], 
   ['The ball is ___.', 'round'], ['She has a ___ in her hair.', 'curl'], ['It is my ___ to play.', 'turn'], ['Do not get ___ on your dress.', 'dirt'],
   ['Please ___ the soup.', 'stir'], ['The water will ___.', 'boil'], ['I ___ my finger at the bird.', 'point'], ['My tooth is ___!', 'loose'],
-  ['___ at the stars!', 'look'], ['I wear a ___ on my foot.', 'boot'], ['It is time to ___ the table.', 'serve'],
+  ['___ at the stars!', 'look'], ['I wear a ___ on my foot.', 'boot'], ['We love to ___ the Lord.', 'serve'],
 ];
 // Clue words: "Write the spelling word next to its clue"
 const CLUES = [
@@ -125,19 +125,19 @@ const CLUES = [
   ['You wear it when it is cold.', 'coat'], ['It rings: ding dong!', 'bell'], ['It tells the time.', 'clock'], ['It flies on a string.', 'kite'],
   ['A king wears it on his head.', 'crown'], ['It says moo.', 'cow'], ['It is white and falls from the sky when it is very cold.', 'snow'],
   ['You wear it on your top half.', 'shirt'], ['A boy plays with it.', 'toy'], ['It is the number after one.', 'two'],
-  ['It is a baby bear.', 'cub'], ['A big car that takes children to school.', 'bus'], ['It says maa and eats grass.', 'goat'], ['You fly it in the wind.', 'kite'],
+  ['It is a baby bear.', 'cub'], ['It is a big car that takes children to school.', 'bus'], ['It says maa and eats grass.', 'goat'], ['You fly it in the wind.', 'kite'],
   ['You eat it at a party.', 'cake'], ['It is long and says hiss.', 'snake'], ['A little girl plays with it.', 'doll'], ['You brush your teeth with it.', 'brush'],
   ['It is a funny man at the circus.', 'clown'], ['The colour of chocolate.', 'brown'], ['A young lady.', 'girl'], ['After first and second comes ___.', 'third'],
   ['We cook with it.', 'oil'], ['It is money that is round.', 'coin'], ['A happy, glad feeling.', 'joy'], ['A young man.', 'boy'],
-  ['You talk to God.', 'pray'], ['The opposite of night.', 'day'], ['Horses eat it.', 'hay'], ['The opposite of fast.', 'slow'],
-  ['It is white and floats in the sky.', 'cloud'], ['Dirt that plants grow in.', 'soil'], ['To not go away.', 'stay'], ['The opposite of up.', 'down'],
-  ['You wear it on your foot.', 'boot'], ['The opposite of bad.', 'good'], ['A place in your house, like a bedroom.', 'room'], ['To talk very loudly.', 'shout'],
+  ['When you do this, you talk to God.', 'pray'], ['The opposite of night.', 'day'], ['Horses eat it.', 'hay'], ['The opposite of fast.', 'slow'],
+  ['It is white and floats in the sky.', 'cloud'], ['Dirt that plants grow in.', 'soil'], ['Do not go away. Please ___ here.', 'stay'], ['The opposite of up.', 'down'],
+  ['You wear it on your foot.', 'boot'], ['The opposite of bad.', 'good'], ['A place in your house, like a bedroom.', 'room'], ['When you talk very, very loudly, you ___.', 'shout'],
 ];
 // Rhyming families from the lists ("Color the words that rhyme with ...")
-const RHYMES = [['tan', ['man', 'ran']], ['float', ['coat', 'goat', 'boat']], ['lake', ['bake', 'snake', 'shake', 'cake']], ['stick', ['lick', 'kick', 'brick']],
-  ['day', ['play', 'pray', 'gray', 'stay', 'spray', 'clay', 'way', 'stray', 'hay']], ['muff', ['cuff', 'puff', 'stuff']], ['fell', ['well', 'bell']],
+const RHYMES = [['can', ['man', 'ran']], ['float', ['coat', 'goat', 'boat']], ['lake', ['bake', 'snake', 'shake', 'cake']], ['stick', ['lick', 'kick', 'brick']],
+  ['day', ['play', 'pray', 'gray', 'stay', 'spray', 'clay', 'way', 'stray', 'hay']], ['puff', ['cuff', 'stuff']], ['fell', ['well', 'bell']],
   ['how', ['cow', 'now']], ['gown', ['down', 'brown', 'clown', 'crown', 'town']], ['grow', ['slow', 'snow', 'blow', 'go', 'no', 'so']],
-  ['soil', ['oil', 'boil', 'spoil']], ['soy', ['boy', 'joy', 'toy']], ['turn', ['burn']], ['hook', ['book', 'look', 'shook']],
+  ['soil', ['oil', 'boil', 'spoil']], ['boy', ['joy', 'toy']], ['turn', ['burn']], ['hook', ['book', 'look', 'shook']],
   ['spoon', ['moon']], ['hood', ['good', 'wood']], ['fry', ['by', 'my', 'cry', 'try', 'shy']], ['sea', ['be', 'he', 'me', 'she']]];
 // For "Finish the sentence": answers that are naming words get non-naming wrong words, and the other way round
 const NOUN_ANS = new Set(['day', 'hay', 'boy', 'joy', 'sun', 'bus', 'goat', 'kite', 'cake', 'clock', 'snake', 'bell', 'doll', 'cub', 'sheep', 'cow', 'clown', 'crown',
@@ -157,6 +157,7 @@ const SIGHT = [...new Set(Object.values(LISTS).flatMap(L => L.sight))];
 // Skip pictures that show the wrong thing (king = prince, jam = honey, block = brick, jet = small plane)
 const NO_PIC = new Set(['king', 'jam', 'block', 'jet']);
 const img = w => (NO_PIC.has(w) ? '' : w === 'stars' ? '⭐' : picOf(w));
+const cap = t => t.charAt(0).toUpperCase() + t.slice(1);
 const pic = w => (img(w) ? `<div style="font-size:96px">${img(w)}</div>` : '');
 
 export const spellingSkills = [
@@ -169,7 +170,7 @@ export const spellingSkills = [
         return {
           type: 'build', word: w, parts, extra: sample(['sh', 'ck', 'ee', 'oo', 'a', 'e', 'i', 'o', 'u', 't', 'n'].filter(c => !parts.includes(c)), 2),
           rule: 'Big words are made of small parts. Spell one part at a time.',
-          say: `Stretch word! Spell ${w}. ${w}. Spell it one small part at a time.`, text: '🌟 Stretch word! Spell it one part at a time 👂',
+          say: `Stretch word! Spell ${w}. ${w}. Tap the tiles in order, one small part at a time.`, text: '🌟 Stretch word! Tap the tiles to spell the word you hear 👂',
           visual: img(w) ? pic(w) : '<div style="font-size:80px">👂</div>',
           explain: `${w} is spelled ${w.split('').join(' ')}. Big words are made of small parts you already know.`,
         };
@@ -181,8 +182,8 @@ export const spellingSkills = [
       const test = l === 3; // spelling-test style: no picture
       return {
         type: 'build', word: w, parts, extra, rule: list.rule,
-        say: isNew ? `A new word! Use your list ${n} rule. Spell ${w}. ${w}.` : `Spelling list ${n}. Spell ${w}. ${w}.`,
-        text: isNew ? `🆕 New word! Use the list ${n} rule: spell the word you hear 👂` : `Spelling list ${n}: spell the word you hear 👂`,
+        say: isNew ? `A new word! Use your list ${n} rule. Spell ${w}. ${w}. Tap the letters in order.` : `Spelling list ${n}. Spell ${w}. ${w}. Tap the letters in order.`,
+        text: isNew ? `🆕 New word! Use the list ${n} rule. Tap the letters to spell the word you hear 👂` : `Spelling list ${n}: tap the letters to spell the word you hear 👂`,
         visual: test || !img(w) ? '<div style="font-size:80px">👂</div>' : pic(w),
         explain: `${w} is spelled ${spaced(w)}. ${wordNote(w, n, list)}${newNote(isNew, n)}`,
       };
@@ -208,7 +209,7 @@ export const spellingSkills = [
       // One box for the missing sound, so the number of blanks does not give it away
       const shown = w.slice(0, found.i) + '_' + w.slice(found.i + found.s.length);
       return {
-        say: `${isNew ? 'A new word! ' : ''}Fill in the missing letters. ${w}.`, text: `${isNew ? '🆕 New word! ' : ''}Fill in the missing letters 👂`,
+        say: `${isNew ? 'A new word! ' : ''}Listen: ${w}. Tap the letters that go in the blank.`, text: `${isNew ? '🆕 New word! ' : ''}Tap what goes in the blank 👂`,
         visual: `<div style="display:flex;align-items:center;gap:12px;justify-content:center">${pic(w)}<div class="word-big">${esc(shown)}</div></div>`,
         options: shuffle([found.s, ...others]).map(s => ({ html: s, value: s, say: spaced(s) })), answer: found.s, rule: list.rule,
         explain: `${w} is spelled ${spaced(w)}. ${wordNote(w, n, list)}${newNote(isNew, n)}`,
@@ -225,7 +226,7 @@ export const spellingSkills = [
       for (let t = 0; t < 40 && (mixed === w || !notWord(mixed)); t++) mixed = shuffle(w.split('')).join('');
       return {
         type: 'build', word: w, extra: [],
-        say: `Unscramble the letters to make a spelling word. It is ${w}.`, text: `Unscramble the letters to make a spelling word: ${mixed}`,
+        say: `These letters are mixed up. Tap them in the right order to spell ${w}. ${w}.`, text: `Mixed-up letters! Tap them in order to spell the word you hear 👂`,
         visual: `<div class="word-big" style="background:#ffd6d9">${esc(mixed)}</div>`,
         explain: `The letters ${mixed.split('').join(' ')} make ${w}.`,
       };
@@ -239,10 +240,11 @@ export const spellingSkills = [
       const inS = x => new RegExp(`\\b${x}\\b`, 'i').test(s);
       const wrong = sample((NOUN_ANS.has(a) ? NOT_NOUNS : NOUNS).filter(x => x !== a && !inS(x)), 2);
       return {
-        say: l === 1 ? `Finish the sentence. ${s.replace('___', 'blank')}` : 'Read the sentence. Which spelling word finishes it?', readFirst: l > 1,
+        say: l === 1 ? `Listen: ${s.replace('___', 'blank')} Tap the word that goes in the blank.` : 'Read the sentence. Tap the word that goes in the blank.', readFirst: l > 1,
+        text: 'Tap the word that goes in the blank.',
         visual: `<div class="sentence">${esc(s).replace('___', '<span style="color:#5b3fd1;border-bottom:5px solid #5b3fd1;padding:0 18px">?</span>')}</div>`,
         options: shuffle([a, ...wrong]).map(x => ({ html: esc(x), value: x })), answer: a,
-        explain: s.replace('___', a),
+        explain: cap(s.replace('___', a)),
       };
     },
   },
@@ -250,11 +252,11 @@ export const spellingSkills = [
     id: 's-clue', name: 'Word clues', emoji: '🔎',
     gen(l) {
       const [clue, a] = pick(CLUES);
-      const sayClue = clue.replace(' ___.', '...');
+      const sayClue = clue.replace(' ___.', '...').replace('___', 'blank');
       const full = clue.includes('___') ? `${clue.replace('___', a)}` : `${clue} The word is ${a}.`;
       if (l === 3) return {
         type: 'build', word: a, extra: sample('abdeilmnorstu'.split('').filter(c => !a.includes(c)), 2),
-        say: `${sayClue} Spell the word.`, text: `${clue} Spell the word.`, readFirst: true, visual: '',
+        say: `Read the clue. ${sayClue} Tap the letters to spell the word.`, text: `${clue} Tap the letters to spell the word.`, readFirst: true, visual: '',
         explain: `${full} ${a}: ${spaced(a)}.`,
       };
       const k = KIND[a], no = ALSO_FITS[a] || [];
@@ -262,7 +264,7 @@ export const spellingSkills = [
       const fits = x => x !== a && (k ? !KIND[x] || (KIND[x] !== k && !no.includes(KIND[x])) : !!KIND[x]);
       const wrong = sample([...new Set(CLUES.map(c => c[1]))].filter(fits), 2);
       return {
-        say: `${sayClue} Which spelling word is it?`, readFirst: l > 1,
+        say: `Listen to the clue: ${sayClue} Tap the word that matches the clue.`, text: 'Tap the word that matches the clue.', readFirst: l > 1,
         visual: `<div class="sentence">${esc(clue)}</div>`,
         options: shuffle([a, ...wrong]).map(x => ({ html: `${img(x) && l === 1 ? `<span class="pic">${img(x)}</span>` : ''}<span class="lbl">${x}</span>`, value: x })), answer: a,
         explain: full,
@@ -276,7 +278,7 @@ export const spellingSkills = [
       const a = pick(fam);
       const wrong = sample(ALL_WORDS.filter(x => !fam.includes(x) && x.slice(-2) !== a.slice(-2)), 2);
       return {
-        say: `Which word rhymes with ${word}?`, text: `Which word rhymes with "${word}"?`,
+        say: `Tap the word that rhymes with ${word}. ${word}.`, text: `Tap the word that rhymes with "${word}" 👂`,
         options: shuffle([a, ...wrong]).map(x => ({ html: x, value: x, say: x })), answer: a,
         explain: `${word} and ${a} rhyme. They end with the same sound.`,
       };
@@ -291,13 +293,15 @@ export const spellingSkills = [
       const hear = x => HINT[x] || x;
       const fair = a => x => x !== a && x.toLowerCase() !== a.toLowerCase() && !(ALIKE[a] || []).includes(x);
       // n wrong words: none sounds like the answer or like each other
-      const wrongFor = (a, n) => shuffle(SIGHT).reduce((got, x) => (got.length < n && [a, ...got].every(y => fair(y)(x)) ? [...got, x] : got), []);
+      const wrongFor = (a, n, no = []) => shuffle(SIGHT).reduce((got, x) => (got.length < n && !no.includes(x) && [a, ...got].every(y => fair(y)(x)) ? [...got, x] : got), []);
+      // Words that would ALSO fit the sentence (I have one cat / I have the cat) are never wrong answers
+      const SENT_NO = { a: ['one', 'the'], the: ['a', 'one'], one: ['a', 'the'], two: ['the', 'a'], have: ['give', 'was'], give: ['have'], I: ['you', 'one', 'two'], you: ['one', 'two', 'the', 'what'], come: ['give'] };
       const a = pick(SIGHT);
       if (l === 3) {
         const sw = pick(SIGHT.filter(x => x.length > 1)); // spell the longer sight words
         return {
         type: 'build', word: sw, extra: sample('abdeilmnorstuw'.split('').filter(c => !sw.includes(c)), 1),
-        say: `Spell the sight word ${hear(sw)}. ${sw}.`, text: 'Spell the sight word you hear 👂', visual: '<div style="font-size:80px">👂</div>',
+        say: `Spell the sight word ${hear(sw)}. ${sw}. Tap the letters in order.`, text: 'Tap the letters to spell the sight word you hear 👂', visual: '<div style="font-size:80px">👂</div>',
         explain: `${sw} is a sight word. We learn it by heart: ${spaced(sw)}.`,
         };
       }
@@ -305,14 +309,14 @@ export const spellingSkills = [
       if (l === 2 && SIGHT_SENT[a] && Math.random() < 0.5) {
         const s = SIGHT_SENT[a];
         return {
-          say: 'Read the sentence. Which sight word goes in the blank?', readFirst: true,
+          say: 'Read the sentence. Tap the sight word that goes in the blank.', text: 'Tap the sight word that goes in the blank.', readFirst: true,
           visual: `<div class="sentence">${esc(s).replace('___', '<span style="color:#5b3fd1;border-bottom:5px solid #5b3fd1;padding:0 18px">?</span>')}</div>`,
-          options: shuffle([a, ...wrongFor(a, 2)]).map(x => ({ html: x, value: x })), answer: a,
+          options: shuffle([a, ...wrongFor(a, 2, SENT_NO[a])]).map(x => ({ html: x, value: x })), answer: a,
           explain: s.replace('___', a),
         };
       }
       return {
-        say: `Find the sight word: ${hear(a)}.`, text: 'Find the sight word you hear 👂',
+        say: `Tap the sight word: ${hear(a)}.`, text: 'Tap the sight word you hear 👂',
         options: shuffle([a, ...wrongFor(a, 3)]).map(x => ({ html: x, value: x })), answer: a,
         explain: `This is the sight word ${a}. Sight words are the blue words on your spelling list.`,
       };

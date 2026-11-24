@@ -86,7 +86,8 @@ export const bibleSkills = [
       const blanked = verse.replace(word, '___');
       const first = blanked.startsWith('___');
       return {
-        say: l < 3 ? `${first ? 'Fill in the missing word.' : 'Finish the verse.'} ${blanked.replace('___', 'blank')} ${ref}.` : 'Read the verse. Which word is missing?',
+        say: l < 3 ? `${blanked.replace('___', 'blank')} ${ref}. Tap the word that goes in the blank.` : 'Read the verse. Tap the word that goes in the blank.',
+        text: l < 3 ? 'Tap the word that goes in the blank.' : undefined,
         readFirst: l === 3,
         visual: `<div style="flex-basis:100%;display:flex;justify-content:center;align-items:center;gap:12px;font-size:22px;color:#7a70b0"><span style="background:#5b3fd1;color:#fff;border-radius:14px;padding:2px 14px;font-weight:700">${letter}${letter.toLowerCase()}</span>${ref}</div>`
           + `<div class="sentence" style="font-size:clamp(26px,4.4vw,42px)">${esc(blanked).replace('___', '<span style="color:#5b3fd1;border-bottom:5px solid #5b3fd1;padding:0 18px">?</span>')}</div>`,
@@ -101,13 +102,14 @@ export const bibleSkills = [
       const [letter, verse] = pickVerse(VERSES);
       const others = sample(VERSES.filter(v => v[0] !== letter && v[0] !== 'X'), 2);
       if (letter === 'X' || Math.random() < 0.5) return {
-        say: `Which verse is the ${letter} verse?`, readFirst: l > 1,
+        say: `Tap the verse for the letter ${letter}.`, readFirst: l > 1,
         visual: `<div class="word-big">${letter}${letter.toLowerCase()}</div>`,
         options: shuffle([verse, ...others.map(v => v[1])]).map(v => ({ html: `<span class="lbl" style="font-size:22px">${esc(v)}</span>`, value: v, say: v })), answer: verse,
         explain: `${letter} is for: ${verse}`,
       };
       return {
-        say: `${verse} Which letter is this verse for?`,
+        say: `${verse} Which letter does this verse start with? Tap that letter.`, text: 'Which letter does this verse start with? Tap that letter.',
+        visual: `<div class="sentence" style="font-size:clamp(24px,4vw,38px)">${esc(verse)}</div>`,
         options: shuffle([letter, ...others.map(v => v[0])]).map(x => ({ html: x + x.toLowerCase(), value: x })), answer: letter,
         explain: `${verse} This is the ${letter} verse.`,
       };
@@ -122,7 +124,7 @@ export const bibleSkills = [
       const others = shuffle(VERSES.filter(o => !alike(o, v)));
       const wrong = [others[0], others.find(o => !alike(o, others[0]))].map(o => o[4]);
       return {
-        say: `${verse} What does this verse mean?`, readFirst: l === 3,
+        say: l === 3 ? 'Read the verse. Tap what it means.' : `${verse} Tap what this verse means.`, text: 'What does this verse mean? Tap the answer.', readFirst: l === 3,
         visual: `<div class="sentence" style="font-size:clamp(24px,4vw,38px)">${esc(verse)}</div>`,
         options: shuffle([meaning, ...wrong]).map(m => ({ html: `<span class="lbl" style="font-size:22px">${esc(m)}</span>`, value: m, say: m })), answer: meaning,
         explain: `${verse} This means: ${meaning}`,
@@ -135,7 +137,7 @@ export const bibleSkills = [
       const [, verse, ref] = pickVerse(VERSES);
       const wrong = sample([...new Set(VERSES.map(v => v[2]).filter(r => r !== ref))], 2);
       return {
-        say: `Where in the Bible do we find: ${verse}`,
+        say: `${verse} Where is this verse in the Bible? Tap the right place.`, text: 'Where is this verse in the Bible? Tap the right place.',
         visual: `<div class="sentence" style="font-size:clamp(24px,4vw,38px)">${esc(verse)}</div>`,
         options: shuffle([ref, ...wrong]).map(r => ({ html: r, value: r, say: r })), answer: ref,
         explain: `${verse} That is ${ref}.`,
@@ -149,8 +151,8 @@ export const bibleSkills = [
       const [q, a, ...wrong] = pick(qs);
       return {
         // Level 1-2: Ollie reads the story. Level 3: she reads it herself (the whole story is on screen).
-        say: l < 3 ? `Listen to the story: ${title}. ${story} ... ${q}` : `Read the story: ${title}. Then answer the question.`,
-        text: q, readFirst: l === 3,
+        say: l < 3 ? `Listen to the story: ${title}. ${story} ... ${q} Tap the answer.` : `Read the story: ${title}. Then answer: ${q} Tap the answer.`,
+        text: `${q} Tap the answer.`, readFirst: l === 3,
         visual: `<div style="font-size:70px">${pic}</div><div class="sentence" style="font-size:clamp(20px,3.4vw,30px);text-align:left">${esc(story)}</div>`,
         options: shuffle([a, ...wrong]).map(o => ({ html: esc(o), value: o, say: o })), answer: a,
         explain: ((line) => (line.includes('says:') ? line : `The story says: ${line}`))(storyLine(story, q, a)),
@@ -165,7 +167,7 @@ export const bibleSkills = [
       const [letter, verse, ref] = pickVerse(VERSES);
       const others = sample(VERSES.filter(v => v[1] !== verse), 2).map(v => v[1]);
       return {
-        say: `Bible drill! Which verse is ${ref}?`, text: `Bible drill! Which verse is ${ref}?`, readFirst: l > 1,
+        say: `Bible drill! Tap the verse that is ${ref}.`, readFirst: l > 1,
         visual: `<div class="word-big" style="font-size:clamp(32px,6vw,58px)">📖 ${ref}</div>`,
         options: shuffle([verse, ...others]).map(v => ({ html: `<span class="lbl" style="font-size:22px">${esc(v)}</span>`, value: v, say: v })), answer: verse,
         explain: `${ref}: ${verse}`,
@@ -179,7 +181,7 @@ export const bibleSkills = [
       const [q, a, wrongs, reason] = pick(DRILLS);
       const wrong = sample(wrongs, 2);
       return {
-        say: q, readFirst: l === 3,
+        say: `${q} Tap the answer.`, readFirst: l === 3,
         visual: '<div style="font-size:90px">✝️</div>',
         options: shuffle([a, ...wrong]).map(x => ({ html: `<span class="lbl" style="font-size:22px">${esc(x)}</span>`, value: x, say: x })), answer: a,
         explain: `${a} ${reason}`,

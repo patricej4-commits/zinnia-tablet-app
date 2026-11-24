@@ -26,9 +26,9 @@ const STORIES = [
   { s: 'Daddy made breakfast. He made eggs and toast, and a cup of cocoa tea. Breakfast gives us energy for the day!',
     qs: [['Who made breakfast?', ['Daddy', 'Mummy', 'Grandma'], 'Daddy'], ['What drink did he make?', ['cocoa tea', 'juice', 'milk'], 'cocoa tea'], ['What does breakfast give us?', ['energy', 'sleep', 'toys'], 'energy']] },
   { s: 'A little bird sat on a branch. It sang a happy song. Then a cat came, and the bird flew up into the sky.',
-    qs: [['Where did the bird sit?', ['on a branch', 'on a car', 'on a hat'], 'on a branch'], ['What came along?', ['a cat', 'a dog', 'a cow'], 'a cat'], ['Where did the bird fly?', ['into the sky', 'into the sea', 'into a box'], 'into the sky']] },
+    qs: [['Where did the bird sit?', ['on a branch', 'on a car', 'on a hat'], 'on a branch'], ['What animal came along?', ['a cat', 'a dog', 'a cow'], 'a cat'], ['Where did the bird fly?', ['into the sky', 'into the sea', 'into a box'], 'into the sky']] },
   { s: 'On Sunday, Zinnia and Mummy baked a cake. They put six candles on top. It was for Grandpa\'s birthday!',
-    qs: [['What did they bake?', ['a cake', 'bread', 'cookies'], 'a cake'], ['How many candles?', ['six', 'two', 'ten'], 'six'], ['Whose birthday was it?', ["Grandpa's", "Mummy's", "Kai's"], "Grandpa's"]] },
+    qs: [['What did they bake?', ['a cake', 'bread', 'cookies'], 'a cake'], ['How many candles did they put on the cake?', ['six', 'two', 'ten'], 'six'], ['Whose birthday was it?', ["Grandpa's", "Mummy's", "Kai's"], "Grandpa's"]] },
 ];
 
 // [word, rhymes, non-rhymes] — every word here has a picture
@@ -65,7 +65,7 @@ export const listenSkills = [
     gen() {
       const words = sample(HEAR_PICS, 4);
       const w = words[0];
-      return { listenOnly: true, say: `Find the ${w}.`, options: shuffle(words).map(pic), answer: w, explain: `The word was ${w}. Here is the picture of ${w}.` };
+      return { listenOnly: true, say: `Tap the picture of the ${w}.`, options: shuffle(words).map(pic), answer: w, explain: `The word was ${w}. Here is the picture of ${w}.` };
     },
   },
   {
@@ -74,8 +74,10 @@ export const listenSkills = [
       const w = pick(FIRST_SOUND);
       const first = w[0];
       const letters = new Set([first]);
-      while (letters.size < 3) letters.add(pick('abcdefghijklmnoprstw'.split('')));
-      return { listenOnly: true, say: `What sound does ${w} start with? ${w}.`, visual: `<div style="font-size:110px">${picOf(w)}</div>`,
+      // c and k make the same sound, so they are never both offered.
+      const pool = 'abcdefghijklmnoprstw'.split('').filter(c => !(first === 'c' && c === 'k') && !(first === 'k' && c === 'c'));
+      while (letters.size < 3) letters.add(pick(pool));
+      return { listenOnly: true, say: `Look at the picture. ${w}. What sound does ${w} start with? Tap the letter.`, visual: `<div style="font-size:110px">${picOf(w)}</div>`,
         options: shuffle([...letters]).map(c => ({ html: c, value: c, say: c })), answer: first,
         explain: `${w} starts with ${first}.` };
     },
@@ -86,7 +88,7 @@ export const listenSkills = [
       const [w, rh, not] = pick(RHYMES);
       const good = pick(rh);
       const opts = [good, ...sample(not, 2)];
-      return { listenOnly: true, say: `Which one rhymes with ${w}? ${w}...`, options: shuffle(opts).map(pic), answer: good,
+      return { listenOnly: true, say: `Listen: ${w}. Tap the picture that rhymes with ${w}.`, options: shuffle(opts).map(pic), answer: good,
         explain: `${w} and ${good} rhyme. They end with the same sound!` };
     },
   },
@@ -95,7 +97,7 @@ export const listenSkills = [
     gen(l) {
       const st = pick(STORIES);
       const [q, opts, ans] = pick(st.qs);
-      return { listenOnly: true, maxReplays: l === 3 ? 1 : 2, say: `Listen to the story. ${st.s} ... ${q}`,
+      return { listenOnly: true, maxReplays: l === 3 ? 1 : 2, say: `Listen to the story. ${st.s} ... ${q} Tap the answer.`,
         options: shuffle(opts).map(o => ({ html: o, value: o, say: o })), answer: ans,
         explain: `The story said: ${st.s}` };
     },
@@ -108,7 +110,7 @@ export const listenSkills = [
       const n = rnd(2, l === 1 ? 4 : 6);
       const seq = shuffle([...Array(n).fill(word), ...Array(l === 1 ? 0 : rnd(1, 3)).fill(other)]);
       // Each sound is its own short sentence so the voice pauses between them
-      return { listenOnly: true, maxReplays: 1, say: `Listen and count! ... ${seq.map(x => `${x}!`).join(' ... ')} ... How many ${word}s did you hear?`,
+      return { listenOnly: true, maxReplays: 1, say: `Listen and count! ... ${seq.map(x => `${x}!`).join(' ... ')} ... How many times did I say ${word}? Tap the number.`,
         options: numOptions(n, 1, 9).map(o => ({ html: o.html, value: o.value })), answer: n,
         explain: `I said ${word} ${NUM_WORDS[n]} times.` };
     },

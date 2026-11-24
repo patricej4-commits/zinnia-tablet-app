@@ -129,12 +129,13 @@ export const phonicsSkills = [
       if (mode === 3) {
         // Which word has the short a / e / i / o / u sound?
         const SHORT = { a: ['cat', 'hat', 'bat', 'map', 'van', 'ant', 'bag', 'jam'], e: ['bed', 'hen', 'pen', 'net', 'jet', 'egg', 'web', 'ten'], i: ['pig', 'six', 'fish', 'ship', 'lid', 'pin', 'kid', 'milk'], o: ['dog', 'fox', 'pot', 'box', 'mop', 'log', 'sock', 'clock'], u: ['sun', 'bus', 'cup', 'bug', 'nut', 'duck', 'drum', 'mug'] };
+        const KEYW = { a: 'apple', e: 'egg', i: 'insect', o: 'octopus', u: 'umbrella' };
         const v = pick(VOWELS);
         const pool = w => SHORT[w].filter(x => img(x));
         const a = pick(pool(v));
         const wrong = sample(VOWELS.filter(x => x !== v), 2).map(x => pick(pool(x)));
         return {
-          say: `Which word has the short ${v} sound? ${v}... ${v}...`, text: `Which word has the short ${v} sound? 👂`,
+          say: `Tap the word with the short ${v} sound, like the ${v} in ${KEYW[v]}.`, text: `Tap the word with the short ${v} sound, like ${KEYW[v]} 👂`,
           options: shuffle([a, ...wrong]).map(w => ({ html: `<span class="pic">${img(w)}</span><span class="lbl">${w}</span>`, value: w, say: w })), answer: a,
           explain: `${a} has the short ${v} sound: ${a}.`,
         };
@@ -143,7 +144,7 @@ export const phonicsSkills = [
         const v = pick(VOWELS);
         const cons = sample('bcdfghjklmnprstvwz'.split(''), 3);
         return {
-          say: 'Which letter is a vowel?',
+          say: 'Tap the letter that is a vowel.',
           options: shuffle([v, ...cons]).map(c => ({ html: c, value: c, say: c })), answer: v,
           explain: VOWEL_LIST,
         };
@@ -153,7 +154,7 @@ export const phonicsSkills = [
         const c = isV ? pick(VOWELS) : pick('bcdfghjklmnpqrstvwxz'.split('')); // no y: it can be both
         const up = Math.random() < 0.5;
         return {
-          say: `Is ${c} a vowel or a consonant?`, visual: `<div class="word-big">${up ? c.toUpperCase() + ' ' : ''}${c}</div>`,
+          say: `Look at this letter: ${c}. Is it a vowel or a consonant? Tap one.`, text: 'Is this letter a vowel or a consonant?', visual: `<div class="word-big">${up ? c.toUpperCase() + ' ' : ''}${c}</div>`,
           options: [{ html: 'Vowel', value: 'v', say: 'vowel' }, { html: 'Consonant', value: 'c', say: 'consonant' }], cols: 'two',
           answer: isV ? 'v' : 'c',
           explain: isV ? `${c} is a vowel. ${VOWEL_LIST}` : `${c} is a consonant. ${VOWEL_LIST}`,
@@ -170,7 +171,7 @@ export const phonicsSkills = [
         if (ok.length >= 2) break;
       }
       return {
-        say: `Which short vowel is missing? ${w}.`, text: 'Which short vowel is missing? 👂', visual: wordCard(w, w.slice(0, i) + '_' + w.slice(i + 1)),
+        say: `Listen: ${w}. Tap the vowel that goes in the blank.`, text: 'Tap the missing vowel 👂', visual: wordCard(w, w.slice(0, i) + '_' + w.slice(i + 1)),
         options: VOWELS.filter(v => v === w[i] || ok.includes(v)).map(v => ({ html: v, value: v, say: v })), answer: w[i],
         explain: `${w} has the short ${w[i]} sound: ${w}.`,
       };
@@ -195,7 +196,7 @@ export const phonicsSkills = [
         const shown = esc(word.slice(0, at)) + '<span style="color:#ff5fa2">_</span>' + esc(word.slice(at + sound.length));
         const blend = BLENDS.has(sound);
         q = {
-          say: `Which letters are missing? ${word}.`, text: 'Which letters are missing? 👂',
+          say: `Listen: ${word}. Tap the letters that go in the blank.`, text: 'Tap the missing letters 👂',
           visual: wordCard(word, shown),
           options: shuffle([sound, ...sample(others, 2)]).map(s => ({ html: s, value: s, say: spaced(s) })), answer: sound,
           explain: blend ? blendNote(word, sound) : `${word} has the special sound ${spaced(sound)}.`,
@@ -220,7 +221,8 @@ export const phonicsSkills = [
         .map(s => (anyWord ? pick(chart[s]) : chart[s][0])).filter(w => !w.includes(sound) && !soundsLike(w, sound) && w !== key))], 2);
       const blend = BLENDS.has(sound);
       return {
-        say: blend ? `Which word has the blend sound ${spaced(sound)}?` : `Which word has the special sound ${spaced(sound)}?`,
+        say: blend ? `Look at the blend ${spaced(sound)}. Tap the word that has the ${spaced(sound)} blend.` : `Look at the special sound ${spaced(sound)}. Tap the word that has ${spaced(sound)} in it.`,
+        text: blend ? `Tap the word with the blend ${sound}` : `Tap the word with the special sound ${sound}`,
         visual: `<div class="word-big" style="border-radius:50%;padding:20px 34px;border:6px solid #ff5fa2">${sound}</div>`,
         readFirst: l > 1,
         options: shuffle([key, ...wrong]).map(w => ({ html: `${img(w) ? `<span class="pic">${img(w)}</span>` : ''}<span class="lbl">${w}</span>`, value: w })),
@@ -235,7 +237,7 @@ export const phonicsSkills = [
       const two = Math.random() < 0.5;
       const w = pick(two ? TWO_VOWEL : ONE_VOWEL);
       return {
-        say: 'Read the word. Is the vowel short or long?', readFirst: true,
+        say: 'Read the word. Does it have a short vowel or a long vowel? Tap one.', text: 'Is the vowel short or long?', readFirst: true,
         visual: wordCard(w, w),
         options: [{ html: '<span class="pic">˘</span><span class="lbl">Short (one vowel)</span>', value: 's' },
           { html: '<span class="pic">¯</span><span class="lbl">Long (two vowels)</span>', value: 'l' }],
@@ -253,7 +255,7 @@ export const phonicsSkills = [
       const two = Object.keys(marks).length === 2;
       return {
         type: 'mark', word: w, marks,
-        say: `Mark the vowels in ${w}. Tap a red letter.`,
+        say: `Mark the vowels in ${w}. Tap a red letter to change its mark. Then tap Check.`, text: `Mark the vowels in ${w}. Tap a red letter, then tap Check.`,
         hint: two ? 'Dash on the first. Slash on the second.' : 'One vowel gets a smile.',
         explain: wordRule(w) + (w.includes('qu') ? ' Do not mark it.' : ''),
       };
@@ -269,7 +271,7 @@ export const phonicsSkills = [
         const isK = Math.random() < 0.5;
         const w = pick(isK ? kWords : cWords);
         return {
-          say: `Does ${w} start with c or k?`, text: 'Does it start with c or k?', visual: wordCard(w, '_' + w.slice(1)),
+          say: `Listen: ${w}. Does ${w} start with c or k? Tap one.`, text: 'Does it start with c or k? Tap one 👂', visual: wordCard(w, '_' + w.slice(1)),
           options: [{ html: 'c', value: 'c', say: 'c' }, { html: 'k', value: 'k', say: 'k' }], cols: 'two', answer: isK ? 'k' : 'c',
           explain: 'K goes with i and e. C goes with a, o and u.',
         };
@@ -284,7 +286,7 @@ export const phonicsSkills = [
       // One box for the ending, so the number of blanks does not give the answer away
       const shown = w.slice(0, w.length - kind.length) + '_';
       return {
-        say: `How do we spell the end of ${w}? c k, k, or k e?`, text: 'How does this word end? ck, k or ke?', visual: wordCard(w, shown),
+        say: `Listen: ${w}. Tap the letters that end the word: c k, k, or k e?`, text: 'Tap the right ending: ck, k or ke? 👂', visual: wordCard(w, shown),
         options: ['ck', 'k', 'ke'].map(x => ({ html: x, value: x, say: spaced(x) })), answer: kind,
         explain: kind === 'ck' ? 'Short vowel? End with c k.' : kind === 'ke' ? 'Long vowel? End with k e.' : 'After a consonant or two vowels, just use k.',
       };
@@ -302,7 +304,7 @@ export const phonicsSkills = [
       const kind = pick(['ff', 'll', 'll', 'ss', 'ss', 'zz']);
       const w = pick(words[kind]);
       return {
-        say: `Finish the word: ${w}.`, text: 'Finish the word! ff, ll, ss or zz?', visual: wordCard(w, w.slice(0, -2) + '_ _'),
+        say: `Listen: ${w}. Tap the two letters that finish the word.`, text: 'Tap the letters that finish the word: ff, ll, ss or zz? 👂', visual: wordCard(w, w.slice(0, -2) + '_ _'),
         options: ['ff', 'll', 'ss', 'zz'].map(x => ({ html: x, value: x, say: spaced(x) })), answer: kind,
         explain: `Many short-vowel words that end in f, l, s or z double the last letter: bell, cuff, kiss, buzz. ${w} ends with ${spaced(kind)}.`,
       };
@@ -322,8 +324,8 @@ export const phonicsSkills = [
       const dictation = l === 3 && Math.random() < 0.5;
       return {
         type: 'build', word: w, parts, extra,
-        say: `Spell ${w}. ${w}.` + (l > 1 ? ' Listen for the special sounds!' : ''),
-        text: dictation ? 'Spelling test! Spell the word you hear 👂' : 'Spell the word you hear! 👂',
+        say: `Spell ${w}. ${w}. Tap the letters in order.` + (l > 1 ? ' Listen for the special sounds!' : ''),
+        text: dictation ? 'Spelling test! Tap the letters to spell the word you hear 👂' : 'Tap the letters to spell the word you hear 👂',
         visual: dictation || !img(w) ? '<div style="font-size:90px">👂</div>' : `<div style="font-size:110px">${img(w)}</div>`,
         explain: `${w} is spelled ${parts.map(p => spaced(p)).join(', ')}. ${w}!`,
       };
@@ -358,7 +360,7 @@ export const phonicsSkills = [
       const { w, i, gap, others } = best;
       const shown = w.slice(0, i) + '_'.repeat(missCount).split('').join(' ') + w.slice(i + missCount);
       return {
-        say: `Which letter${missCount > 1 ? 's are' : ' is'} missing? ${w}.`, text: `Which letter${missCount > 1 ? 's are' : ' is'} missing? 👂`,
+        say: `Listen: ${w}. Tap the letter${missCount > 1 ? 's' : ''} that go${missCount > 1 ? '' : 'es'} in the blank.`, text: `Tap the missing letter${missCount > 1 ? 's' : ''} 👂`,
         visual: wordCard(w, shown),
         options: shuffle([gap, ...others]).map(c => ({ html: c, value: c, say: spaced(c) })), answer: gap,
         explain: `Say it slowly: ${w}. It is spelled ${spaced(w)}.`,
@@ -377,14 +379,14 @@ export const phonicsSkills = [
         const c = blend[0];
         const opts = [blend, ...sample(VOWELS.filter(v => v !== blend[1]), 3).map(v => c + v)];
         return {
-          listenOnly: true, maxReplays: 3, say: `Find the blend: ${blend}. ${blend}.`,
+          listenOnly: true, maxReplays: 3, say: `Tap the blend you hear: ${blend}. ${blend}.`,
           options: shuffle(opts).map(b => ({ html: b, value: b })), answer: blend,
           explain: `${blend[0]} and ${blend[1]} blend together: ${blend}.`,
         };
       }
       const opts = [blend, ...sample(VOWELS.filter(v => v !== blend[1]), 2).map(v => blend[0] + v)];
       return {
-        say: `${w}. Which blend does ${w} start with?`, text: 'Which blend does it start with? 👂',
+        say: `Listen: ${w}. Tap the blend that starts ${w}.`, text: 'Tap the blend that starts the word 👂',
         visual: wordCard(w, '_ _' + w.slice(2)),
         options: shuffle(opts).map(b => ({ html: b, value: b, say: b })), answer: blend,
         explain: `Blend it first: ${blend}. Then add the end: ${blend}, ${w.slice(2)}... ${w}!`,
@@ -406,7 +408,7 @@ export const phonicsSkills = [
       let wrongs = sample(first, need);
       if (wrongs.length < need) wrongs = wrongs.concat(sample(fake(moreMisspell(w)).filter(x => !wrongs.includes(x)), need - wrongs.length));
       return {
-        say: `Which is the right way to spell ${w}? ${w}.`, text: 'Which is the right way to spell the word you hear? 👂', readFirst: true,
+        say: `Listen: ${w}. Tap the word that is spelled the right way.`, text: 'Tap the right spelling of the word you hear 👂', readFirst: true,
         visual: img(w) ? `<div style="font-size:100px">${img(w)}</div>` : '<div style="font-size:80px">👂</div>',
         options: shuffle([w, ...wrongs]).map(x => ({ html: x, value: x })), answer: w,
         explain: `${w} is spelled ${spaced(w)}.`,

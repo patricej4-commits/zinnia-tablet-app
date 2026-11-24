@@ -164,6 +164,7 @@ function choice(q, area, { onRight, onWrong, speak }) {
 function order(q, area, { onRight, onWrong }) {
   const row = h('<div class="order-row"></div>');
   const tiles = h('<div class="tiles"></div>');
+  const how = h('<div class="marklegend">👆 Tap the tiles in order. Tap the first one first.</div>');
   let idx = 0, locked = false;
   for (const v of q.items) {
     const t = h(`<button class="tile" style="width:auto;min-width:86px;padding:0 12px">${v}</button>`);
@@ -179,14 +180,14 @@ function order(q, area, { onRight, onWrong }) {
         t.animate([{ transform: 'translateX(-8px)' }, { transform: 'translateX(8px)' }, { transform: 'none' }], 300);
         const done = await onWrong(() => {
           row.innerHTML = q.answer.map(a => `<div class="slot filled" style="width:auto;min-width:86px;padding:0 12px">${a}</div>`).join('');
-          tiles.remove();
+          tiles.remove(); how.remove();
         });
         if (done) locked = true;
       }
     };
     tiles.append(t);
   }
-  area.append(row, tiles);
+  area.append(row, tiles, how);
 }
 
 // ---------- build a word from letter tiles ----------
@@ -231,7 +232,8 @@ function build(q, area, { onRight, onWrong, speak }) {
     tiles.append(t);
   });
   drawSlots();
-  area.append(slots, tiles);
+  const how = h(`<div class="marklegend">👆 Tap the ${q.parts ? 'tiles' : 'letters'} in order to make the word. Tap a box to take one out.</div>`);
+  area.append(slots, tiles, how);
 }
 
 // ---------- mark the vowels (short ˘ / long ¯ / silent /) ----------
@@ -241,7 +243,7 @@ function mark(q, area, { onRight, onWrong }) {
   const word = q.word;
   const state = word.split('').map(() => null);
   const box = h('<div class="markword"></div>');
-  const legend = h('<div class="marklegend"><span>Tap a red vowel:</span><span>˘ short</span><span>¯ long (says its name)</span><span><s>e</s> silent</span></div>');
+  const legend = h('<div class="marklegend"><span>Tap a red vowel to mark it. Tap it again to change the mark:</span><span>˘ short</span><span>¯ long (says its name)</span><span><s>e</s> silent</span></div>');
   let locked = false;
   const draw = () => {
     box.innerHTML = '';
@@ -387,7 +389,7 @@ function follow(q, area, { onRight, onWrong }) {
     };
     grid.append(cell);
   });
-  area.append(grid);
+  area.append(grid, h('<div class="marklegend">👆 Tap the shapes the owl tells you, in the same order.</div>'));
 }
 
 // ---------- number line: tap a number, or hop the frog ----------
@@ -433,8 +435,10 @@ function numline(q, area, { onRight, onWrong, speak }) {
     }
   }
   draw();
+  const how = h(`<div class="marklegend">👆 ${q.mode === 'hop' ? `Tap the next number to make the frog hop ${dir > 0 ? 'right' : 'left'}, one hop at a time.` : 'Tap the right number on the line.'}</div>`);
   area.append(wrap);
   if (sum) area.append(sum);
+  area.append(how);
 }
 
 // ---------- "Watch me do one first!" ----------
@@ -554,11 +558,11 @@ function column(q, area, { onRight, speak, noteMiss }) {
   function go() {
     draw();
     if (step === 'onesSum') {
-      const msg = `Add the ones: ${O} plus ${o}. Type the answer, then tap the tick.`;
+      const msg = `Add the ones: ${O} plus ${o}. Tap the numbers for the answer, then tap the green tick.`;
       say1.textContent = msg; speak(msg); padMulti(); return;
     }
     if (step === 'carry') {
-      const msg = `Now carry the 1 ten! Tap the ${T} in the tens to carry it over.`;
+      const msg = `Now carry the 1 ten! Tap the pink box in the tens to carry it over.`;
       say1.textContent = msg; speak(msg); ctl.innerHTML = ''; return;
     }
     if (step === 'decide') {
@@ -572,7 +576,7 @@ function column(q, area, { onRight, speak, noteMiss }) {
       pickBorrow.onclick = () => {
         if (!need) return miss(sub ? `${O} is bigger than ${o}, so we CAN take away. No need to borrow.` : `${O} plus ${o} is ${O + o}. That is less than 10, so there is nothing to carry.`);
         sfx.tap();
-        if (sub) { step = 'borrow'; draw(); const m = `Yes! ${O} is smaller than ${o}, so we borrow. Tap the ${T} in the tens to borrow 1 ten.`; say1.textContent = m; speak(m); ctl.innerHTML = ''; }
+        if (sub) { step = 'borrow'; draw(); const m = `Yes! ${O} is smaller than ${o}, so we borrow. Tap the pink ${T} in the tens to borrow 1 ten.`; say1.textContent = m; speak(m); ctl.innerHTML = ''; }
         else { step = 'onesSum'; go(); }
       };
       pickPlain.onclick = () => {
@@ -583,13 +587,13 @@ function column(q, area, { onRight, speak, noteMiss }) {
     }
     if (step === 'ones') {
       const msg = sub
-        ? (did ? `Now the ones: ${O + 10} take away ${o}. Type the answer.` : `Now the ones: ${O} take away ${o}. Type the answer.`)
-        : (need ? `${O + o} is 1 ten and ${(O + o) % 10} ones. We write only the ONES in the ones place. Type the ones digit of ${O + o}.` : `Now the ones: ${O} plus ${o}. Type the answer.`);
+        ? (did ? `Now the ones: ${O + 10} take away ${o}. Tap the answer.` : `Now the ones: ${O} take away ${o}. Tap the answer.`)
+        : (need ? `${O + o} is 1 ten and ${(O + o) % 10} ones. We write only the ONES in the ones place. Tap the ones digit of ${O + o}.` : `Now the ones: ${O} plus ${o}. Tap the answer.`);
       say1.textContent = msg; speak(msg); pad(); return;
     }
     if (step === 'tens') {
-      const msg = sub ? (did ? `Now the tens: ${T - 1} take away ${t}. Type the answer.` : `Now the tens: ${T} take away ${t}. Type the answer.`)
-        : (did ? `Now the tens: the 1 we carried, plus ${T}, plus ${t}. Type the answer.` : `Now the tens: ${T} plus ${t}. Type the answer.`);
+      const msg = sub ? (did ? `Now the tens: ${T - 1} take away ${t}. Tap the answer.` : `Now the tens: ${T} take away ${t}. Tap the answer.`)
+        : (did ? `Now the tens: the 1 we carried, plus ${T}, plus ${t}. Tap the answer.` : `Now the tens: ${T} plus ${t}. Tap the answer.`);
       say1.textContent = msg; speak(msg); pad(); return;
     }
   }
@@ -605,7 +609,7 @@ function column(q, area, { onRight, speak, noteMiss }) {
           if (ansTens === 0 && !(q.bot >= 10)) { setTimeout(done, 2600); return; }
           step = 'tens'; setTimeout(go, 2600); return;
         }
-        return miss(sub ? `Not quite. Count back: ${did ? O + 10 : O} take away ${o}. Try again!` : need ? `Only the ones digit! ${O + o} is 1 ten and ${(O + o) % 10} ones. Type the ones.` : `Not quite. ${O} plus ${o}... try again!`);
+        return miss(sub ? `Not quite. Count back: ${did ? O + 10 : O} take away ${o}. Try again!` : need ? `Only the ones digit! ${O + o} is 1 ten and ${(O + o) % 10} ones. Tap the ones.` : `Not quite. ${O} plus ${o}... try again!`);
       }
       sfx.correct(); gotOnes = n; stepMiss = 0;
       if (!sub && need) { step = 'carry'; go(); return; }

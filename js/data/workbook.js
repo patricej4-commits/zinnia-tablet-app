@@ -158,7 +158,7 @@ const RHYME_BOX = [
 ];
 // The rhyming part: the last vowel (or vowel team) and everything after it: book -> ook, lake -> ake, go -> o
 const rimeOf = w => { const m = w.match(/[aeiouy]+[^aeiouy]*e?$/); return m ? m[0] : w; };
-const RHYME_PIC = { coat: '🧥', goat: '🐐', boat: '⛵', cake: '🎂', snake: '🐍', bell: '🔔', cow: '🐮', clown: '🤡', boy: '👦', toy: '🧸', book: '📖', moon: '🌙', cat: '🐱', hat: '🎩', bat: '🏏', hen: '🐔', sun: '☀️', pig: '🐷', bed: '🛏️', bug: '🐛', mop: '🧹', ten: '🔟', pen: '🖊️', box: '📦', fox: '🦊', duck: '🦆', truck: '🚚', train: '🚆', plane: '✈️', tree: '🌳', bee: '🐝', brush: '🪮', rake: '🍂', lake: '🏞️', bus: '🚌' };
+const RHYME_PIC = { coat: '🧥', goat: '🐐', boat: '⛵', cake: '🎂', snake: '🐍', bell: '🔔', cow: '🐮', clown: '🤡', boy: '👦', toy: '🧸', book: '📖', moon: '🌙', cat: '🐱', hat: '🎩', bat: '🏏', hen: '🐔', sun: '☀️', pig: '🐷', bed: '🛏️', bug: '🐛', ten: '🔟', pen: '🖊️', box: '📦', fox: '🦊', duck: '🦆', truck: '🚚', train: '🚆', plane: '✈️', tree: '🌳', bee: '🐝', lake: '🏞️', bus: '🚌' };
 
 // ---- Capital letter and period (Lesson 30 and on: "Write each sentence correctly")
 const CAPS = [
@@ -181,7 +181,7 @@ export const workbookSkills = [
       const [p, w, look] = pick(PIC_WORDS);
       const opts = l === 1 ? [w, look[0]] : [w, ...look];
       return {
-        say: 'Look at the picture. Read the words. Which word matches the picture?', readFirst: true,
+        say: 'Look at the picture. Read the words. Tap the word that matches the picture.', readFirst: true,
         visual: big(p), options: shuffle(words(opts)), cols: opts.length === 2 ? 'two' : undefined, answer: w,
         explain: `This word is ${w}. Look at every letter: ${w.split('').join(', ')}.`,
       };
@@ -193,7 +193,8 @@ export const workbookSkills = [
       const [p, s, a, others] = pick(FINISH);
       const opts = l === 1 ? [a, others[0]] : [a, ...others];
       return {
-        say: l === 1 ? `Look at the picture. ${s.replace('___', 'blank')} Which word finishes the sentence?` : 'Look at the picture. Read the sentence. Which word finishes it?',
+        say: l === 1 ? `Look at the picture. Listen: ${s.replace('___', 'blank')} Tap the word that goes in the blank.` : 'Look at the picture. Read the sentence. Tap the word that goes in the blank.',
+        text: l === 1 ? 'Tap the word that goes in the blank.' : undefined,
         readFirst: l > 1,
         visual: `${big(p)}<div class="sentence">${esc(s).replace('___', blank)}</div>`,
         options: shuffle(words(opts)), cols: opts.length === 2 ? 'two' : undefined, answer: a,
@@ -215,7 +216,8 @@ export const workbookSkills = [
       const said = (() => { let k = -1; return st.lines[t.li].replace(/\{(\w+)\}/g, (m, w) => (++k === t.k ? 'blank' : w)); })();
       const opts = l === 1 ? [a, pick(st.bank.filter(b => b !== a))] : l === 2 ? [a, ...sample(st.bank.filter(b => b !== a), 2)] : st.bank;
       return {
-        say: l === 1 ? `Read the story. ${said} Which word from the word box goes in the blank?` : 'Read the story. Which word from the word box goes in the blank?',
+        say: l === 1 ? `Read the story. Listen: ${said} Tap the word from the word box that goes in the blank.` : 'Read the story. Tap the word from the word box that goes in the blank.',
+        text: 'Tap the word from the word box 📦 that goes in the blank.',
         readFirst: l > 1,
         visual: `<div style="font-size:56px">${st.pic}</div>
           <div style="border:3px dashed #5b3fd1;border-radius:14px;padding:6px 14px;font-size:26px;margin:4px 0">📦 ${st.bank.map(esc).join(' · ')}</div>
@@ -231,7 +233,7 @@ export const workbookSkills = [
       const [p, right, wrong] = pick(TELLS);
       const opts = l === 1 ? [right, wrong[0]] : [right, ...wrong];
       return {
-        say: 'Look at the picture. Read the sentences. Which sentence tells about the picture?', readFirst: true,
+        say: 'Look at the picture. Read the sentences. Tap the sentence that tells about the picture.', readFirst: true,
         visual: big(p), options: shuffle(opts.map(s => ({ html: `<span class="lbl">${esc(s)}</span>`, value: s }))), cols: 'two', answer: right,
         explain: `The picture shows: ${right}`,
       };
@@ -243,8 +245,8 @@ export const workbookSkills = [
       const [r, a, pic, others] = pick(RIDDLES);
       const opts = [[a, pic], ...others];
       return {
-        say: l === 1 ? `Here is a riddle. ${r.replace(/I am (a |the )?___\./, 'What am I?')}` : 'Read the riddle. What am I?',
-        text: l === 1 ? 'Finish the riddle!' : undefined, readFirst: l > 1,
+        say: l === 1 ? `Here is a riddle. ${r.replace(/I am (a |the )?___\./, 'What am I?')} Tap the answer.` : 'Read the riddle. What am I? Tap the picture that finishes the riddle.',
+        text: l === 1 ? 'What am I? Tap the answer.' : undefined, readFirst: l > 1,
         visual: `<div class="sentence" style="text-align:left">${esc(r).replace('___', blank)}</div>`,
         options: shuffle(opts.map(([w, e]) => ({ html: `<span class="pic">${e}</span>${l === 3 ? '' : `<span class="lbl">${w}</span>`}`, value: w, say: w }))), answer: a,
         explain: r.replace('___', a),
@@ -259,7 +261,7 @@ export const workbookSkills = [
         const [w, a] = sample(fam, 2);
         const opts = [a, odd];
         return {
-          say: `Which word rhymes with ${w}?`, text: `Which word rhymes with "${w}"?`,
+          say: `Tap the word that rhymes with ${w}.`, text: `Tap the word that rhymes with "${w}".`,
           visual: RHYME_PIC[w] ? big(RHYME_PIC[w]) : `<div class="word-big">${w}</div>`,
           options: shuffle(opts.map(x => ({ html: `${RHYME_PIC[x] ? `<span class="pic">${RHYME_PIC[x]}</span>` : ''}<span class="lbl">${x}</span>`, value: x, say: x }))), cols: 'two', answer: a,
           explain: `${w} and ${a} rhyme. They both end with "${rimeOf(a)}".`,
@@ -267,7 +269,7 @@ export const workbookSkills = [
       }
       const shown = shuffle([...sample(fam, Math.min(fam.length, l === 2 ? 2 : 3)), odd]);
       return {
-        say: l === 2 ? `Listen: ${shown.join(', ')}. Which word does NOT rhyme?` : 'Read the words in the box. Which word does NOT rhyme?',
+        say: l === 2 ? `Listen: ${shown.join(', ')}. Tap the word that does NOT rhyme.` : 'Read the words. Tap the word that does NOT rhyme.',
         readFirst: l === 3,
         options: shown.map(x => ({ html: `<span class="lbl" style="font-size:34px">${x}</span>`, value: x, say: x })), cols: 'two', answer: odd,
         explain: `${shown.filter(x => x !== odd).join(', ')} rhyme: they end with "${rimeOf(shown.find(x => x !== odd))}". ${odd} does not rhyme.`,
@@ -283,9 +285,9 @@ export const workbookSkills = [
         const wrong = [firstLow(s), s.slice(0, -1), lowerAll(s)];
         const opts = l === 1 ? [s, pick(wrong)] : [s, ...sample(wrong.filter(w => w !== s), 2)];
         return {
-          say: 'Which sentence is written correctly? Remember the capital letter and the period.', readFirst: true,
+          say: 'Read the sentences. Tap the one that is written correctly. Look for the capital letters and the period.', readFirst: true,
           options: shuffle([...new Set(opts)].map(x => ({ html: `<span class="lbl">${esc(x)}</span>`, value: x }))), cols: 'two', answer: s,
-          explain: `A sentence starts with a capital letter and ends with a period. ${s}`,
+          explain: `A sentence starts with a capital letter and ends with a period.${s.split(' ').slice(1).some(w => NAMES.includes(w.replace(/\.$/, ''))) ? ' Names, God and I always start with a capital letter too.' : ''} ${s}`,
         };
       }
       // Which word needs a capital letter? (first word, or a name in the middle)

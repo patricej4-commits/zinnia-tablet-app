@@ -34,7 +34,7 @@ const HEALTH = {
     ['What should I do when I feel tired?', 'stop and rest', ['keep playing hard', 'run faster'], 'Do not keep playing when you feel tired. When I get tired, I play quietly until my body feels rested.', '😮‍💨'],
     ['Why is sunshine good for me?', 'it helps my bones grow strong and hard', ['it makes me sleepy', 'it makes my hair long'], 'I play outside in the fresh air and sunshine. The sunshine helps my bones to grow strong and hard.', '☀️'],
     ['Why does my body need rest?', 'it works hard when I play and work', ['it is lazy', 'it is bored'], 'My body works hard when I play and work. It needs rest. Reading and quiet play are good ways to rest.', '📚'],
-    ['How many hours do I sleep each night?', 'ten to twelve hours', ['two hours', 'one hour'], 'I sleep from ten to twelve hours each night. The faster I am growing, the more sleep I need.', '😴'],
+    ['How many hours of sleep do I need each night?', 'ten to twelve hours', ['two hours', 'one hour'], 'I sleep from ten to twelve hours each night. The faster I am growing, the more sleep I need.', '😴'],
     ['When do I get my best rest?', 'at night while I am sleeping', ['while I run', 'while I eat'], 'I get my best rest at night while I am sleeping.', '🌙'],
     ['Which is a good sleeping habit?', 'go to bed at the same time each night', ['watch TV in bed all night', 'jump on the bed'], 'Good sleep habits: do something quiet before bed, go to bed early, at the same time each night, in a dark, quiet room.', '🛏️'],
     ['What is posture?', 'the way I sit, stand or walk', ['the food I eat', 'my favourite song'], 'My posture is the way I sit, stand or walk.', '🧍'],
@@ -56,7 +56,7 @@ const HEALTH = {
     ['How do I keep my hair neat?', 'keep it clean and combed', ['never wash it', 'never comb it'], 'Neat hair is always clean and combed. I brush it each morning and night, and shampoo it to keep it clean.', '🪮'],
     ['Why do I use only my own comb, towel and washcloth?', 'so germs do not spread', ['because I do not like sharing', 'to make them dirty'], 'I use only my own towel, washcloth, comb and brush, so germs do not spread from person to person.', '🧺'],
     ['Why are my eyes very important?', 'they keep me from danger and help me learn', ['they help me smell', 'they help me eat'], 'My eyes help keep me from danger. My eyes also help me to learn.', '👁️'],
-    ['What protects my eyes and ears?', 'my skull', ['my hair', 'my hat'], 'My skull protects my eyes and the most important parts of my ears. The skull is the bones that form the head.', '🧠'],
+    ['What protects my eyes and ears?', 'my skull', ['my hair', 'my hat'], 'My skull protects my eyes and the most important parts of my ears. The skull is the bones that form the head.', ''],
     ['Which part of my eye lets in light?', 'pupil', ['iris', 'eyebrow'], 'The pupil lets in light. The iris gives the eye its colour. Eyelashes keep out dirt.', '👁️'],
     ['What do my eyelashes do?', 'keep out dirt', ['give colour', 'help me hear'], 'Eyelashes keep out dirt. The parts of my eye work together to help me see.', '👁️'],
     ['Which is a good way to care for my eyes?', 'read in a place with plenty of light', ['rub my eyes hard', 'look at the sun'], 'Read in a place that has plenty of light. Do not rub your eyes. Do not look at the sun or other bright lights.', '💡'],
@@ -66,7 +66,7 @@ const HEALTH = {
     ['Which is a good way to care for my ears?', 'do not put things into my ears', ['listen to very loud music', 'put a pencil in my ear'], 'Keep your ears clean. Do not put things into your ears. Protect them from getting hit. Do not listen to loud music.', '👂'],
     ['What should I do if I keep getting earaches?', 'see a doctor', ['put a stick in my ear', 'ignore it'], 'See a doctor if you keep getting earaches.', '👂'],
     ['My nose helps me to smell and...', 'breathe', ['see', 'hear'], 'I smell and breathe with my nose.', '👃'],
-    ['If I smell gas, what should I do?', 'get fresh air', ['light a match', 'stay there'], 'If I smell gas, I know that I should get fresh air. My nose warns me of danger, like a fire.', '👃'],
+    ['If I smell gas, what should I do?', 'go out to fresh air and tell a grown-up', ['light a match', 'stay there'], 'If I smell gas, I know that I should get fresh air and tell a grown-up. My nose warns me of danger, like a fire.', '👃'],
     ['If food smells spoiled, what should I do?', 'not eat it', ['eat it fast', 'give it to a friend'], 'If I smell spoiled food, my nose warns me not to eat it.', '🤢'],
     ['What do the tiny hairs in my nose do?', 'keep dust and germs out of my body', ['help me taste', 'make me sneeze all day'], 'Tiny hairs in my nostrils keep most of the dust and germs in the air from getting inside my body.', '👃'],
     ['Why do I cover my mouth when I cough or sneeze?', 'so my cold does not spread', ['to be funny', 'to hide my teeth'], 'Cover your mouth when you cough, and your mouth and nose when you sneeze. Good habits keep my cold from spreading.', '🤧'],
@@ -110,7 +110,7 @@ export const healthSkills = Object.keys(HEALTH).map(id => ({
   gen(l) {
     const [q, a, wrong, why, pic] = pick(HEALTH[id]);
     return {
-      say: q, readFirst: l === 3,
+      say: q.endsWith('..."') ? `${q} Tap the words that finish the verse.` : q.endsWith('...') ? `${q} Tap the answer that finishes the sentence.` : `${q} Tap the answer.`, readFirst: l === 3,
       visual: pic ? `<div style="font-size:100px">${pic}</div>` : '',
       options: shuffle([a, ...(l === 1 ? wrong.slice(0, 1) : wrong)]).map(x => ({ html: `<span class="lbl">${x}</span>`, value: x, say: x })),
       cols: l === 1 ? 'two' : '', answer: a,
