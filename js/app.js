@@ -5,6 +5,7 @@ import { pick, shuffle, esc, rnd } from './util.js';
 import { WORLDS, ALL_SKILLS } from './worlds.js';
 import { reminderFor } from './data/rules.js';
 import { funZone, STICKER_PAGES, ALL_STICKERS } from './fun.js';
+import { chipGame } from './chips.js';
 import { EXAMS, examReadiness, examSkills, daysUntil, nextExam, examNeed, skillReadiness, mocksFor } from './exam.js';
 
 const app = document.getElementById('app');
@@ -499,6 +500,9 @@ function map(greet) {
   const fz = h(`<button class="big-btn adventure-btn" style="background:linear-gradient(#ff9ccf,#ff6fae);color:#fff"><span style="font-size:40px">🎀</span> Fun Zone: shop, dress up & salon <small style="font-size:.6em">(🎟️ ${tk} ticket${tk === 1 ? '' : 's'})</small></button>`);
   fz.onclick = () => { sfx.tap(); openFunZone(); };
   s.append(fz);
+  const cg = h(`<button class="big-btn adventure-btn" style="background:linear-gradient(#ffb347,#ff7f11);color:#fff"><span style="font-size:40px">🌶️</span> Chip Challenge <small style="font-size:.6em">(play with a grown-up)</small></button>`);
+  cg.onclick = () => { sfx.tap(); openChips(); };
+  s.append(cg);
 
   // ----- 📊 Exam readiness meter (every upcoming exam) -----
   const upcoming = EXAMS.filter(e => e.date && daysUntil(e.date) >= 0);
@@ -1024,11 +1028,12 @@ function breakScreen(st) {
       <div class="cd" style="font-size:22px;font-weight:700;margin-top:8px"></div>
     </div>
     <div class="go" style="margin-top:14px"></div>
-    <div style="margin-top:20px;display:flex;gap:10px"><button class="icon-btn" data-a="prog" style="font-size:18px">📈 How am I doing?</button><button class="icon-btn" data-a="parent" style="font-size:18px">👪 Grown-ups</button></div>
+    <div style="margin-top:20px;display:flex;gap:10px;flex-wrap:wrap;justify-content:center"><button class="icon-btn" data-a="chips" style="font-size:18px">🌶️ Chip Challenge</button><button class="icon-btn" data-a="prog" style="font-size:18px">📈 How am I doing?</button><button class="icon-btn" data-a="parent" style="font-size:18px">👪 Grown-ups</button></div>
   </div>`);
   app.append(s);
   s.querySelector('[data-a=parent]').onclick = parentGate;
   s.querySelector('[data-a=prog]').onclick = () => { breakShown = false; progressScreen(); };
+  s.querySelector('[data-a=chips]').onclick = () => { breakShown = false; sfx.tap(); openChips(); };
   say(msg);
   if (allDone) return;
   const cd = s.querySelector('.cd'), go = s.querySelector('.go');
@@ -1167,6 +1172,12 @@ function stickerBook() {
   }
   app.append(s);
   say(`You have ${store.stickers.length} stickers! ${STICKERS.length - store.stickers.filter(x => STICKERS.includes(x)).length} more to find. Play more to win more!`);
+}
+
+// 🌶️ Chip Challenge with a grown-up: any time, and it does not use up sitting time
+function openChips() {
+  timing = false; onMap = false; stopSpeaking();
+  chipGame({ app, h, say, sfx, store, save, back: () => map(false), confetti, name });
 }
 
 function openFunZone() {

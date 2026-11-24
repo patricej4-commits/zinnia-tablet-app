@@ -297,3 +297,20 @@ button { font-family: inherit; color: inherit; border: none; cursor: pointer; }
 .bottle span::before { content: ''; position: absolute; top: -16px; left: 12px; width: 12px; height: 16px; background: #333; border-radius: 3px; }
 .bottle.on span { outline: 4px solid #ff6fae; outline-offset: 3px; }
 .handbox .nail { cursor: pointer; transform-box: fill-box; transform-origin: center; }
+
+/* Chip Challenge */
+.chipgrid { display: grid; gap: 10px; width: min(96vw, 640px); }
+.chipgrid.g12 { grid-template-columns: repeat(4, 1fr); } .chipgrid.g16 { grid-template-columns: repeat(4, 1fr); } .chipgrid.g20 { grid-template-columns: repeat(5, 1fr); }
+.chip { position: relative; aspect-ratio: 5 / 4; background: #fff8e1; border: 0; border-radius: 20px; box-shadow: 0 5px 0 rgba(0,0,0,.1); cursor: pointer; padding: 6px;
+  display: flex; align-items: center; justify-content: center; font-size: 40px; }
+.chip .chipimg { width: 100%; height: 100%; }
+.chip .pepper { position: absolute; font-size: 34px; display: none; }
+.chip.trap { background: #ffd6d6; } .chip.trap .pepper { display: block; }
+.chip.sel { outline: 5px solid #ff6fae; animation: wobble .5s infinite; }
+@keyframes wobble { 25% { transform: rotate(-4deg); } 75% { transform: rotate(4deg); } }
+.chip.gone { background: rgba(255,255,255,.25); box-shadow: none; cursor: default; }
+.chip .mark { position: absolute; bottom: 2px; right: 4px; font-size: 22px; }
+.chipscore { display: flex; gap: 14px; }
+.chipscore > div { background: #fff; border-radius: 18px; padding: 8px 18px; font-size: 22px; text-align: center; opacity: .6; }
+.chipscore > div.on { opacity: 1; outline: 4px solid #ff7f11; }
+.pill.on { background: #ff7f11; color: #fff; }

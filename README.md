@@ -163,3 +163,9 @@ Anything not finished yesterday (topics, a redo area's missed topics, exam pract
 - Fun Zone is hands-on (no words to press): drag things into the shop basket and coins onto the counter; drag clothes onto the doll;
   in the salon rub shampoo into her hair (bubbles), rinse, blow-dry and comb (sparkles, shiny hair), drag bows anywhere on her hair,
   pick hairstyles from little pictures, and paint each nail on a big hand.
+
+## 🌶️ Chip Challenge (two players, pass and play)
+Zinnia and a grown-up each secretly hide 1–3 hot chips in a grid of 12, 16 or 20 chips (a "look away!" screen between turns).
+Take turns: tap a chip to point at it, tap again to eat it. Safe = crunch; hot chip = lose a life (your own count too; a chip both
+picked is a double hot chip). Out of lives = lose; the board then shows where every hot chip was. Wins are counted.
+Open it from the map or the break screen any time; it does not use sitting time.
