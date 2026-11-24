@@ -88,6 +88,11 @@ export function runQuestion(q, root) {
       sfx.correct();
       await speak(q.praise || pick(PRAISE));
       if (q.after) await speak(q.after);
+      // 💡 Why it is right: shown, and read out when asked (so she learns the reason, not just the answer)
+      if (q.why) {
+        area.append(h(`<div class="teach why">💡 <b>${q.whyLabel || 'Why?'}</b> ${esc(q.why)}</div>`));
+        if (q.whySay) await speak(q.why); else await new Promise(r => setTimeout(r, 2200));
+      }
       setTimeout(() => finish(true), 250);
     };
     const onWrong = async (showAnswer) => {

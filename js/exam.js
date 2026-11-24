@@ -4,11 +4,11 @@ import { ALL_SKILLS } from './worlds.js';
 
 // From the Grade 1B Christmas term revision guide. skills: id prefixes or exact ids.
 export const EXAMS = [
-  { date: '2026-12-02', name: 'Phonics', emoji: '🦁', skills: ['p-vowels', 'p-sounds', 'p-keyword', 'p-onetwo', 'p-mark', 'p-ck', 'p-floss', 'l-rhyme', 'l-first-sound', 'p-rhyme'] },
+  { date: '2026-12-02', name: 'Phonics', emoji: '🦁', skills: ['p-vowels', 'p-sounds', 'p-keyword', 'p-onetwo', 'p-mark', 'p-ck', 'p-floss', 'l-rhyme', 'l-first-sound', 'p-rhyme', 'p-why'] },
   { date: '2026-12-02', name: 'Spelling', emoji: '🐝', skills: ['s-', 'p-spell', 'p-missing', 'p-blend', 'p-rightspell'] },
   { date: '2026-12-03', name: 'English Grammar', emoji: '🏰', skills: ['g-'] },
   { date: '2026-12-03', name: 'Music', emoji: '🎼', skills: ['w-music'] },
-  { date: '2026-12-04', name: 'Integrated Studies', emoji: '🌎', skills: ['w-body', 'w-food', 'w-groups', 'w-habits', 'w-senses', 'w-plants', 'w-family', 'w-animals', 'w-foodmore', 'w-care'] },
+  { date: '2026-12-04', name: 'Integrated Studies', emoji: '🌎', skills: ['w-body', 'w-food', 'w-groups', 'w-habits', 'w-senses', 'w-plants', 'w-family', 'w-animals', 'w-foodmore', 'w-care', 'w-hgrow', 'w-hbody', 'w-hhome'] },
   { date: '2026-12-07', name: 'Mathematics', emoji: '🐒', skills: ['m-'] },
   { date: '2026-12-08', name: 'Bible', emoji: '📖', skills: ['b-'] },
   { date: '2026-12-08', name: 'Information Technology', emoji: '💻', skills: ['w-computer', 'w-steps'] },

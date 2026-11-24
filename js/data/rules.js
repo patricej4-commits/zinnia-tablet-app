@@ -21,6 +21,27 @@ export const RULES = {
   abc: { word: 'ABC order', short: '', def: 'For ABC order, look at the first letter of each word. The letter that comes first in the alphabet goes first.', eg: 'ant, bat, cat' },
   endmark: { word: 'end marks', short: '', def: 'A telling sentence ends with a period. An asking sentence ends with a question mark. A sentence with strong feeling ends with an exclamation mark.', eg: '. ? !' },
   vowels: { word: 'vowels', short: '', def: 'The vowels are a, e, i, o and u. All the other letters are consonants.', eg: 'a e i o u' },
+  // ---- Phonics & spelling principles
+  special: { word: 'special sounds', def: 'Special sounds are letters that work together to make one sound, like s h in ship and c k in duck.', eg: '' },
+  onetwo: { word: 'one and two vowels', def: 'One vowel in a word? It says its short sound (cat). Two vowels? The first vowel says its name and the second is silent (cake).', eg: '' },
+  ck: { word: 'c, k, ck, ke', def: 'K comes before i and e; c comes before a, o and u. At the end: a short vowel gets c k (back); a long vowel gets k and a silent e (bake).', eg: '' },
+  floss: { word: 'double endings', def: 'L, f, s (and z) often walk together at the end of a short-vowel word: bell, cuff, kiss, buzz.', eg: '' },
+  blend: { word: 'blends', def: 'Blend the consonant and the vowel together first (b-a, ba), then add the ending (bat).', eg: '' },
+  soundout: { word: 'spelling', def: 'To spell, say the word slowly. Listen for every sound, and write a letter or special sound for each one.', eg: '' },
+  rhyme: { word: 'rhyming', def: 'Words rhyme when they end with the same vowel and consonant sound.', eg: 'cluck, duck; peep, deep' },
+  sight: { word: 'sight words', def: 'Sight words are words we learn by heart, because we cannot always sound them out.', eg: 'the, said, come' },
+  // ---- Reading
+  findans: { word: 'answering questions', def: 'To answer a question, look back in the story. Who asks for a person. Where asks for a place. When asks for a time. Why asks for a reason.', eg: '' },
+  makesense: { word: 'finishing a sentence', def: 'Read the whole sentence with each word. Pick the word that makes sense and matches the picture.', eg: '' },
+  // ---- More maths principles
+  bond: { word: 'number bonds', def: 'A number bond shows two parts that make a whole. Part plus part equals the whole. The whole take away one part leaves the other part.', eg: '3 + 4 = 7' },
+  tens: { word: 'tens and ones', def: 'A teen number is 1 ten and some ones: 14 is 1 ten and 4 ones. The digit on the left shows the tens; the digit on the right shows the ones.', eg: '' },
+  compare: { word: 'more and less', def: 'Greater than means bigger. Less than means smaller. The open mouth of > or < always faces the bigger number. = means the same as.', eg: '7 > 3' },
+  clock: { word: 'telling time', def: 'The short hand tells the hour. The long hand tells the minutes. When the long hand points to 12, it is o\'clock.', eg: '' },
+  counting: { word: 'counting', def: 'Touch and count each thing one time only. The last number you say tells how many there are.', eg: '' },
+  order: { word: 'ordinal numbers', def: 'Ordinal numbers tell the order or position: first, second, third, fourth, fifth.', eg: '1st, 2nd, 3rd' },
+  pattern: { word: 'patterns', def: 'A pattern repeats, or grows by the same amount each time. Find the part that repeats, then continue it.', eg: '2, 4, 6, 8' },
+  verse: { word: 'Bible verses', def: 'The Bible is God\'s Word, and it is true. We learn verses by heart so we can remember what God says.', eg: '' },
   // ---- Maths steps
   add: { word: 'adding', say: 'Remember: start with the bigger number, then count on.', def: 'Adding: 1. Put the bigger number in your head. 2. Count on the smaller number. 3. The last number you say is the answer.', eg: '5 + 3: 5... 6, 7, 8' },
   colAdd: { word: 'adding in columns', say: 'Remember the steps: start with the ones. Then the tens. Write the answer under the line.', def: 'Adding in columns: 1. Start with the ones. Add the ones. 2. Then add the tens. 3. Write the answer under the line.', eg: '' },
@@ -37,8 +58,16 @@ export const RULE_FOR = {
   'g-endmark': 'endmark', 'g-possessive': 'possessive', 'g-helping': 'helping', 'g-abc': 'abc', 'g-opposites': 'opposite', 'p-vowels': 'vowels',
   'g-parts': 'mix', 'g-find': 'mix', 'g-use': 'mix', 'g-build': 'sentence',
   'm-add': 'add', 'm-sub': 'sub', 'm-nl-hop': 'nline', 'm-story': 'mathsStory',
+  'p-sounds': 'special', 'p-keyword': 'special', 'p-onetwo': 'onetwo', 'p-mark': 'onetwo', 'p-ck': 'ck', 'p-floss': 'floss', 'p-blend': 'blend',
+  'p-spell': 'soundout', 'p-missing': 'soundout', 'p-rightspell': 'soundout', 'p-rhyme': 'rhyme', 's-rhyme': 'rhyme', 'l-rhyme': 'rhyme',
+  's-sight': 'sight', 'r-sight': 'sight', 'r-story': 'findans', 'l-story': 'findans', 'r-finish': 'makesense', 'r-wordbank': 'makesense', 's-sentence': 'makesense',
+  'm-bond': 'bond', 'm-tens': 'tens', 'm-compare': 'compare', 'm-symbols': 'compare', 'm-nl-compare': 'compare', 'm-time': 'clock', 'm-digital': 'clock',
+  'm-count': 'counting', 'm-oneone': 'counting', 'm-ordinal': 'order', 'm-skip': 'pattern', 'm-pattern': 'pattern',
+  'm-nl-read': 'nline', 'm-nl-tap': 'nline', 'm-nl-build': 'nline', 'b-verse': 'verse', 'b-letter': 'verse',
 };
 export function reminderFor(skillId, q) {
+  // Spelling list words: the rule of that list
+  if (q.rule) return { key: 'list:' + q.rule.slice(0, 20), text: 'Spelling rule: ' + q.rule, say: 'Remember the rule: ' + q.rule };
   let k = RULE_FOR[skillId];
   if (!k) return null;
   const col = /class="vert"/.test(q.visual || '');
@@ -68,6 +97,21 @@ const DESC = {
   sentence: 'A complete thought with a capital letter and an end mark', possessive: "A noun with 's to show something belongs to it",
   helping: 'A verb that helps the main verb',
 };
+// "Why" questions about the grammar rules
+const GRAMMAR_WHY = [
+  ['Why does Jamaica start with a capital letter?', 'It is a special name (a proper noun)', ['It is an action word', 'It is a small word']],
+  ['Why does a sentence start with a capital letter?', 'To show where a new sentence begins', ['To make it long', 'Because it is a verb']],
+  ['Why do we put a period at the end of a sentence?', 'To show the sentence is finished', ['To start the sentence', 'To make a question']],
+  ['Why do we say "an apple" and not "a apple"?', 'Apple starts with a vowel sound', ['Apple is red', 'Apple is a verb']],
+  ['Why do we say "cats" when there are three cats?', 'S means more than one', ['S means one', 'S is a verb']],
+  ['Why is "run" a verb?', 'It is an action word, something we do', ['It is a name', 'It describes a noun']],
+  ['Why is "dog" a noun?', 'It names an animal', ['It is an action', 'It describes something']],
+  ['Why is "red" an adjective?', 'It describes a noun', ['It names a place', 'It is an action']],
+  ['Why do we use "she" instead of saying "Maya" again?', 'A pronoun takes the place of a noun', ['She is a verb', 'Maya is wrong']],
+  ['Why do we write "Tom\'s hat"?', "The 's shows the hat belongs to Tom", ['There are many Toms', 'Tom is an action']],
+  ['Why does a question end with a question mark?', 'It is an asking sentence', ['It is a telling sentence', 'It is a name']],
+  ['Why do we say "they are" and not "they is"?', 'Are is for more than one', ['Is is for more than one', 'They is a name']],
+];
 const clashKeys = (a, b) => (a === 'noun' && ['common', 'proper'].includes(b)) || (b === 'noun' && ['common', 'proper'].includes(a));
 export const grammarRuleSkills = [
   {
@@ -77,7 +121,15 @@ export const grammarRuleSkills = [
       const k = pick(l === 3 ? keys : keys.concat(CORE)); // the big four come up most
       const r = RULES[k];
       const others = sample(keys.filter(x => x !== k && !clashKeys(k, x)), l === 1 ? 2 : 3);
-      const mode = l === 1 ? pick([0, 1, 2]) : pick([0, 1, 2, 2]);
+      const mode = l === 1 ? pick([0, 1, 2]) : pick([0, 1, 2, 2, 3]);
+      if (mode === 3) {
+        const [wq, wa, ww] = pick(GRAMMAR_WHY);
+        return {
+          say: wq, readFirst: l === 3,
+          options: shuffle([wa, ...ww]).map(x => ({ html: `<span class="lbl" style="font-size:24px">${x}</span>`, value: x, say: x })), answer: wa,
+          explain: `${wa}.`,
+        };
+      }
       if (mode === 0) return {
         // What is a noun? -> pick what it means
         say: `What is a ${r.word}?`, text: `What is a ${r.word}?`, readFirst: l > 1,
@@ -122,6 +174,14 @@ const STEP_QS = [
   ['In 15, which digit is in the ones place?', '5', ['1', '15']],
   ['In 17, which digit is in the tens place?', '1', ['7', '17']],
   ['To take away 3 from 8 with counters, what do we do?', 'Cross out 3 and count what is left', ['Add 3 more', 'Count all 8']],
+  ['Why does the bigger number go on top when we take away?', 'We cannot take away more than we have', ['It looks nicer', 'The teacher likes it']],
+  ['Why do we line up the ones under the ones and the tens under the tens?', 'So we add and take away the right places', ['So it looks long', 'So we can skip the ones']],
+  ['Why do we start counting on from the bigger number?', 'It is faster: fewer numbers to count', ['It is slower', 'Because it is the answer']],
+  ['Why does adding give us more?', 'We are putting more things together', ['We are taking things away', 'Nothing changes']],
+  ['Why does take away give us less?', 'Some things are taken away', ['We are adding more', 'Nothing changes']],
+  ['In a number bond, the whole is 9 and one part is 4. Why is the other part 5?', 'Because 4 and 5 make 9', ['Because 9 and 4 make 5', 'Because 5 is bigger']],
+  ['Why is 14 the same as 1 ten and 4 ones?', 'The 1 is in the tens place and the 4 is in the ones place', ['Because 1 and 4 make 5', 'Because 14 is small']],
+  ['Why do we touch each thing when we count?', 'So we count each thing only one time', ['So it gets dirty', 'So we can skip some']],
 ];
 const ORDER_STEPS = [
   { name: 'take away in columns', steps: ['Big number on top', 'Take away the ones', 'Take away the tens', 'Write the answer'] },
@@ -145,6 +205,34 @@ export const mathStepSkills = [
         say: qq, readFirst: l === 3,
         options: shuffle([a, ...wrong]).map(x => ({ html: `<span class="lbl" style="font-size:24px">${x}</span>`, value: x, say: x })), answer: a,
         explain: `${a}. ${/column|ones|tens|line|top|check/i.test(qq) ? RULES.colSub.def : /add|\+/i.test(qq) ? RULES.add.def : RULES.sub.def}`,
+      };
+    },
+  },
+];
+
+// ---- Sound Safari: "Why is it spelled that way?" (the reason behind the phonics rules)
+const WHY_SPELL = [
+  [['back', 'duck', 'sock', 'kick', 'neck', 'truck', 'clock', 'snack'], w => `Why does "${w}" end with c k?`, 'The vowel is short', ['The vowel is long', 'It starts with c']],
+  [['bake', 'cake', 'like', 'snake', 'joke', 'hike', 'smoke', 'rake'], w => `Why does "${w}" end with k e?`, 'The vowel is long', ['The vowel is short', 'It has no vowel']],
+  [['kite', 'kid', 'keep', 'king', 'kiss', 'kick'], w => `Why does "${w}" start with k?`, 'K comes before i and e', ['K comes before a, o and u', 'K is a vowel']],
+  [['cat', 'cup', 'cot', 'cub', 'cone', 'cake', 'cut'], w => `Why does "${w}" start with c?`, 'C comes before a, o and u', ['C comes before i and e', 'C is a vowel']],
+  [['bell', 'doll', 'hill', 'cuff', 'puff', 'kiss', 'mess', 'buzz', 'well', 'stuff'], w => `Why does "${w}" end with two of the same letter?`, 'It is a short-vowel word ending in l, f, s or z', ['It is a long-vowel word', 'It has two vowels']],
+  [['cake', 'goat', 'kite', 'boat', 'bean', 'game', 'ride', 'rain', 'feet'], w => `Why does the first vowel in "${w}" say its name?`, 'There are two vowels; the second one is silent', ['There is only one vowel', 'It ends with ck']],
+  [['cat', 'pig', 'sun', 'bed', 'hop', 'net', 'cub', 'fish'], w => `Why does "${w}" have a short vowel sound?`, 'It has only one vowel', ['It has two vowels', 'It ends with e']],
+  [['go', 'no', 'so', 'me', 'he', 'be', 'my', 'cry', 'fly'], w => `Why does the last letter in "${w}" say its long sound?`, 'It is the only vowel, at the end of the word', ['There are two vowels', 'It ends with ck']],
+  [['ship', 'shell', 'fish', 'this', 'thin', 'chair', 'night', 'moon'], w => `In "${w}", why do we write two (or three) letters for one sound?`, 'They are a special sound: letters that work together', ['We spelled it wrong', 'Every sound needs two letters']],
+];
+export const phonicsWhySkills = [
+  {
+    id: 'p-why', name: 'Why is it spelled that way?', emoji: '🤔',
+    gen(l) {
+      const [words, ask, right, wrong] = pick(l === 1 ? WHY_SPELL.slice(0, 5) : WHY_SPELL);
+      const w = pick(words);
+      return {
+        say: ask(w), text: ask(w), visual: `<div class="word-big">${w}</div>`,
+        options: shuffle([right, ...(l === 1 ? wrong.slice(0, 1) : wrong)]).map(x => ({ html: `<span class="lbl" style="font-size:24px">${x}</span>`, value: x, say: x })),
+        cols: 'two', answer: right,
+        explain: `${right}. That is why ${w} is spelled ${w.split('').join(' ')}.`,
       };
     },
   },

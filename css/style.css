@@ -253,3 +253,4 @@ button { font-family: inherit; color: inherit; border: none; cursor: pointer; }
 
 .remind { background: #eef7ff; border: 2px dashed #5b8def; border-radius: 16px; padding: 6px 14px; max-width: 760px; text-align: left;
   font-size: clamp(15px, 2.2vw, 20px); color: #23407a; line-height: 1.35; }
+.teach.why { background: #e9fbe9; border-color: #2ec27e; }

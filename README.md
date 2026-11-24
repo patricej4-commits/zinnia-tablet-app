@@ -132,3 +132,12 @@ the rule and can spell words the teacher picks that are not on the list.
 - Every adding / take away question shows the numbered steps; for column sums Ollie says the steps every time.
 - New topics: "What is a…?" (Word Castle) and "Steps for adding & take away" (Number Jungle), plus a "📌 Quick check"
   from them woven into every 4th question of grammar and maths games.
+
+## Principles: what things are and WHY
+- 📌 Rules on screen in every area: phonics (special sounds, one/two vowels, c/k/ck/ke, ll/ff/ss, blends, rhymes),
+  spelling (the rule of the word's list), reading (how to find answers), maths (bonds, tens & ones, < >, clocks, counting, patterns), Bible.
+- 💡 After a RIGHT answer the reason is shown too ("Why? ..."), and read out every other time.
+- New topics: "Why is it spelled that way?" (Sound Safari), "why" questions in "What is a…?" and maths steps.
+- Health, Safety & Manners 1 (Abeka, pages 2–37): 3 My World topics with every habit's reason — growing, habits, the 5 food
+  groups, breakfast, snacks, exercise, sunshine, rest, sleep, posture, skin, germs, nails, hair, eyes, ears, nose, teeth,
+  clothes, home and chores, with the book's Bible verses. Counted for Integrated Studies.

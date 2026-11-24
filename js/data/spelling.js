@@ -116,7 +116,7 @@ export const spellingSkills = [
       const extra = sample(pool.filter(c => !parts.includes(c) && c !== w), l === 1 ? 1 : 2);
       const test = l === 3; // spelling-test style: no picture
       return {
-        type: 'build', word: w, parts, extra,
+        type: 'build', word: w, parts, extra, rule: list.rule,
         say: isNew ? `A new word! Use your list ${n} rule. Spell ${w}. ${w}.` : `Spelling list ${n}. Spell ${w}. ${w}.`,
         text: isNew ? `🆕 New word! Use the list ${n} rule: spell the word you hear 👂` : `Spelling list ${n}: spell the word you hear 👂`,
         visual: test || !picOf(w) ? '<div style="font-size:80px">👂</div>' : pic(w),
@@ -135,7 +135,7 @@ export const spellingSkills = [
       return {
         say: `${isNew ? 'A new word! ' : ''}Fill in the missing letters. ${w}.`, text: `${isNew ? '🆕 New word! ' : ''}Fill in the missing letters 👂`,
         visual: `<div style="display:flex;align-items:center;gap:12px;justify-content:center">${pic(w)}<div class="word-big">${esc(shown)}</div></div>`,
-        options: shuffle(opts).map(s => ({ html: s, value: s, say: s.split('').join(' ') })), answer: found.s,
+        options: shuffle(opts).map(s => ({ html: s, value: s, say: s.split('').join(' ') })), answer: found.s, rule: list.rule,
         explain: `${w} is spelled ${w.split('').join(' ')}. List ${n}: ${list.rule}${newNote(isNew, n)}`,
       };
     },

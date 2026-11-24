@@ -643,7 +643,7 @@ async function play({ title, skills, mixed, length, mission, world, examPractice
     const g = [...ids].some(id => id.startsWith('g-')), m = [...ids].some(id => id.startsWith('m-'));
     return checkSkills.filter(sk => (sk.id === 'g-whatis' ? g : m));
   };
-  const remindCount = {}; let lastWrongRule = null;
+  const remindCount = {}; let lastWrongRule = null; let whyCount = 0;
 
   const timesAsked = {};    // topic -> questions asked this game (max 2 each, so it does not repeat)
   const gameMisses = {};    // topic -> misses this game
@@ -708,6 +708,13 @@ async function play({ title, skills, mixed, length, mission, world, examPractice
       q.remind = rem.text;
       const n = (remindCount[rem.key] = (remindCount[rem.key] || 0) + 1);
       if (n === 1 || n % 3 === 0 || lastWrongRule === rem.key || /^col/.test(rem.key)) q.remindSay = rem.say;
+    }
+    // 💡 After a right answer, show WHY (rule-based topics, My World, health and "why" topics); read it out every other time
+    if (!mock && q.explain && (rem || q.whyAlways || /^(w-|p-why|g-whatis|m-steps)/.test(sk.id))) {
+      q.why = q.why || q.explain;
+      q.whyLabel = q.whyAlways || /^(w-|p-why|g-whatis|m-steps)/.test(sk.id) || /because|means|so |to keep|rule/i.test(q.why) ? 'Why?' : 'Remember:';
+      whyCount++;
+      q.whySay = whyCount % 2 === 1;
     }
     if (mode === 'exam') {
       const d = daysUntil(weaveExam.exam.date);

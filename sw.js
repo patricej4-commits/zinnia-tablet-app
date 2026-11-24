@@ -1,10 +1,10 @@
 // Offline support: serve from cache, refresh in the background so updates arrive next launch.
-const CACHE = 'zinnia-v29';
+const CACHE = 'zinnia-v30';
 const FILES = [
   './', './index.html', './manifest.webmanifest', './css/style.css',
   './js/app.js', './js/games.js', './js/speech.js', './js/store.js', './js/util.js', './js/visuals.js', './js/worlds.js',
   './js/data/maths.js', './js/data/phonics.js', './js/data/grammar.js', './js/data/listening.js', './js/data/reading.js',
-  './js/data/myworld.js', './js/data/bible.js', './js/data/spelling.js', './js/data/workbook.js', './js/data/rules.js', './js/exam.js', './js/data/pictures.js',
+  './js/data/myworld.js', './js/data/bible.js', './js/data/spelling.js', './js/data/workbook.js', './js/data/rules.js', './js/data/health.js', './js/exam.js', './js/data/pictures.js',
   './icons/icon.svg', './icons/icon-192.png', './icons/icon-512.png',
 ];
 
