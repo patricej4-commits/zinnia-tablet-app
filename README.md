@@ -148,3 +148,8 @@ the rule and can spell words the teacher picks that are not on the list.
 - Memory: a missed question comes back 3–4 questions later in the same game, then on later days (after 1, 3, 7, 14 days) until she
   gets it right first time each time. Parent Zone shows the memory list.
 - Challenge: at the top spelling level, challenge questions use 🌟 stretch words (sunset, picnic, rainbow, toothbrush...) built from her rules.
+
+## Roll-over
+Anything not finished yesterday (topics, a redo area's missed topics, exam practice questions) is added to today as
+"📦 Yesterday's unfinished work", done first, on top of today's plan. Only one day's worth carries (no snowballing);
+25+ carried topics adds one extra sitting. Switch off in the Parent Zone.

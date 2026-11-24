@@ -1,5 +1,5 @@
 // Offline support: serve from cache, refresh in the background so updates arrive next launch.
-const CACHE = 'zinnia-v32';
+const CACHE = 'zinnia-v33';
 const FILES = [
   './', './index.html', './manifest.webmanifest', './css/style.css',
   './js/app.js', './js/games.js', './js/speech.js', './js/store.js', './js/util.js', './js/visuals.js', './js/worlds.js',

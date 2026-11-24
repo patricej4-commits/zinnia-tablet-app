@@ -69,7 +69,7 @@ function curSitting() {
 }
 function sittingState() {
   if (!sitLimit()) return { ok: true };
-  const a = sittings(), per = basePer() + autoExtra();
+  const a = sittings(), per = basePer() + autoExtra() + carryExtra();
   const cur = curSitting();
   if (cur) return { ok: true, cur, left: sitLimit() - cur.secs, n: a.length, per };
   if (a.length >= per) return { ok: false, why: 'done', n: a.length, per };
@@ -179,7 +179,38 @@ const dayRec = (d = today()) => (store.daily[d] ||= { secs: 0, right: 0, total: 
 const missionMode = () => store.settings.dailyPerWorld ?? 'all';
 const coversAll = () => missionMode() === 'all';
 const perWorld = () => (Number(missionMode()) === 0 && !coversAll() ? 0 : 1); // mission on?
-const topicDoneToday = (sk, d = today()) => (store.daily[d]?.skills?.[sk.id] || 0) > 0;
+const topicDoneToday = (sk, d = today()) => (store.daily[d]?.skills?.[sk.id] || 0) - (store.daily[d]?.carryDone?.[sk.id] || 0) > 0;
+
+// ---------- Roll-over: what was not finished yesterday is added to today ----------
+// Worked out once each day from yesterday: topics not done (including yesterday's own carried work)
+// and exam practice questions left. Only ONE day's worth carries, so it never snowballs.
+function carryInfo() {
+  const dr = dayRec();
+  if (dr.carry) return dr.carry;
+  const empty = { topics: [], exam: {} };
+  if (store.settings.rollover === false || perWorld() === 0) return empty;
+  const y = new Date(); y.setDate(y.getDate() - 1);
+  const yk = dayKey(y), yr = store.daily[yk];
+  const playedBefore = Object.keys(store.daily).some(k => k <= yk && (store.daily[k].total || store.daily[k].skills));
+  if (!playedBefore) { dr.carry = { ...empty, from: yk }; save(); return dr.carry; }
+  const yCarry = yr?.carry?.topics || [];
+  const doneY = id => (yr?.skills?.[id] || 0);
+  const needY = id => (coversAll() ? 1 : 0) + (yCarry.includes(id) ? 1 : 0);
+  let topics = ALL_SKILLS.filter(sk => doneY(sk.id) < needY(sk.id)).map(sk => sk.id);
+  // a redo area left unfinished yesterday: its missed topics come too
+  for (const w of WORLDS) if (yr?.areas?.[w.id] === 'retry') for (const id of yr.missed?.[w.id] || []) if (!topics.includes(id)) topics.push(id);
+  const exam = {};
+  for (const it of yr?.examGoal?.items || []) {
+    const e = EXAMS.find(x => x.name === it.name);
+    const left = it.n - (yr.examDoneBy?.[it.name] || 0);
+    if (e && left > 0 && daysUntil(e.date) >= 0) exam[it.name] = Math.min(15, left);
+  }
+  dr.carry = { from: yk, topics, exam, missedDay: !yr };
+  save();
+  return dr.carry;
+}
+const carryLeft = () => carryInfo().topics.filter(id => !(dayRec().carryDone?.[id] > 0));
+const carryExtra = () => (carryInfo().topics.length >= 25 ? 1 : 0); // a big roll-over gets one more sitting
 const worldDoneToday = (w, d = today()) => (coversAll() ? w.skills.filter(sk => topicDoneToday(sk, d)).length : store.daily[d]?.worlds?.[w.id] || 0);
 const areaTarget = w => (coversAll() ? w.skills.length : Number(missionMode()));
 // An area is 'retry' when she got most of a round wrong: she must redo it before moving on.
@@ -270,6 +301,12 @@ function examGoal() {
   // keep within the day's total, at least 2 questions per exam that made the list
   while (items.reduce((a, x) => a + x.n, 0) > total + 6) { const big = items.reduce((m, x) => (x.n > m.n ? x : m)); big.n--; }
   items.forEach(x => (x.n = Math.max(2, x.n)));
+  // + exam practice left over from yesterday
+  for (const [name, n] of Object.entries(carryInfo().exam || {})) {
+    const it = items.find(x => x.name === name);
+    if (it) { it.n += n; it.carried = n; } else { const e = EXAMS.find(x => x.name === name); if (e) items.push({ name, date: e.date, n, carried: n }); }
+  }
+  items.sort((a, b) => a.date.localeCompare(b.date));
   dr.examGoal = { n: items.reduce((a, x) => a + x.n, 0), items };
   save();
   return dr.examGoal;
@@ -279,9 +316,11 @@ const examDoneToday = () => dayRec().examDone || 0;
 const examLeftFor = it => Math.max(0, it.n - examDoneFor(it.name));
 const examLeft = () => { const g = examGoal(); return g ? g.items.reduce((a, it) => a + examLeftFor(it), 0) : 0; };
 const nextExamItem = () => examGoal()?.items.find(it => examLeftFor(it) > 0);
-function planDone() { return !!store.daily[today()]?.planDone || (missionDone() && !retryWorld() && examLeft() === 0); }
+function planDone() { return !!store.daily[today()]?.planDone || (missionDone() && !retryWorld() && examLeft() === 0 && carryLeft().length === 0); }
 function nextStep() {
   const rw = retryWorld();
+  const cl = carryLeft();
+  if (!rw && cl.length) return { kind: 'carry', label: `📦 Yesterday's unfinished work (${cl.length} left)`, say: `First, let's finish yesterday's work. ${cl.length} topics are waiting for you!` };
   if (rw) return { kind: 'retry', w: rw, label: `🔁 Practise again: ${rw.emo} ${rw.name}`, say: `Let's practise ${rw.name} again before we move on. I will help you!` };
   if (inExtraSitting()) return { kind: 'hard', label: '💪 Extra practice: the tricky things', say: 'Let\'s practise the things that were tricky today. This extra time will make you stronger. I will help you!' };
   if (!missionDone()) { const w = nextMissionWorld(); return { kind: 'mission', w, label: `▶ ${w.emo} ${w.name}`, say: `Let's do ${w.name}!` }; }
@@ -313,6 +352,7 @@ function playMock(exam) {
 function playStep() {
   const st = nextStep();
   if (!st) return map(false);
+  if (st.kind === 'carry') { const cl = carryLeft().map(id => ALL_SKILLS.find(sk => sk.id === id)).filter(Boolean); return play({ title: "Yesterday's unfinished work", skills: cl, coverAll: true, length: Math.min(8, cl.length), carry: true }); }
   if (st.kind === 'hard') return play({ title: 'Extra practice: the tricky things', skills: hardTopics(), mixed: true, length: store.settings.sessionLength, hard: true });
   if (st.kind === 'exam') return play({ title: 'Exam Practice: ' + st.e.name, skills: examSkills(st.e), mixed: true, length: Math.max(2, Math.min(store.settings.sessionLength + 2, examLeftFor(st.it))), examPractice: st.e.name });
   playMission();
@@ -438,6 +478,7 @@ function map(greet) {
     <div class="mchips">${WORLDS.map(w => `<span class="mchip ${missionLeft(w) === 0 ? 'ok' : ''}">${w.emo} ${areaStatus(w) === 'retry' ? '🔁 again' : missionLeft(w) === 0 ? '✅' : `${worldDoneToday(w)}/${areaTarget(w)}`}</span>`).join('')}</div>` : ''}
     ${g ? `<div style="font-size:18px;margin-bottom:4px"><b>${perWorld() > 0 ? '2.' : '1.'}</b> 📝 Exam practice ${examLeft() === 0 ? '✅' : ''}</div>
     <div class="mchips">${g.items.map(it => { const e = EXAMS.find(x => x.name === it.name); return `<span class="mchip ${examLeftFor(it) === 0 ? 'ok' : ''}">${e.emoji} ${esc(it.name)} ${examLeftFor(it) === 0 ? '✅' : `${Math.min(examDoneFor(it.name), it.n)}/${it.n}`}</span>`; }).join('')}</div>` : ''}
+    ${carryInfo().topics.length ? `<div style="font-size:18px;margin-bottom:6px;background:#fff3d6;border-radius:12px;padding:6px 10px">📦 <b>Yesterday's unfinished work:</b> ${carryInfo().topics.length - carryLeft().length} of ${carryInfo().topics.length} topics done ${carryLeft().length ? '' : '✅'}${Object.keys(carryInfo().exam).length ? ` · plus ${Object.values(carryInfo().exam).reduce((a, b) => a + b, 0)} exam practice questions added below` : ''}</div>` : ''}
     <div style="font-size:18px;margin-bottom:10px"><b>${(perWorld() > 0 ? 1 : 0) + (g ? 1 : 0) + 1}.</b> 🗺️ Explore anything ${locked ? '🔒' : '🔓'}</div>
     ${inExtraSitting() ? `<div style="font-size:18px;margin-bottom:10px;background:#fff3d6;border-radius:12px;padding:6px 10px">💪 <b>Extra sitting:</b> today was tricky, so this time is for practising the tricky things.</div>` : ''}
   </div>`);
@@ -616,7 +657,7 @@ function pickTopics(skills, n) {
   return out;
 }
 
-async function play({ title, skills, mixed, length, mission, world, examPractice, coverAll, mock, hard }) {
+async function play({ title, skills, mixed, length, mission, world, examPractice, coverAll, mock, hard, carry }) {
   onMap = false;
   stopSpeaking();
   if (!gate()) return;
@@ -793,6 +834,7 @@ async function play({ title, skills, mixed, length, mission, world, examPractice
     dr.worlds[WORLD_OF[sk.id]] = (dr.worlds[WORLD_OF[sk.id]] || 0) + 1;
     logAnswer(q, sk, res);
     if (hard) dr.hardDone = (dr.hardDone || 0) + 1;
+    if (carry && mode !== 'exam' && mode !== 'check' && mode !== 'again' && mode !== 'review' && carryInfo().topics.includes(sk.id)) { dr.carryDone ||= {}; dr.carryDone[sk.id] = (dr.carryDone[sk.id] || 0) + 1; }
     if (examPractice || mode === 'exam') {
       dr.examDone = (dr.examDone || 0) + 1;
       const en = mode === 'exam' ? weaveExam.exam.name : typeof examPractice === 'string' ? examPractice : EXAMS.find(e => examSkills(e).includes(sk))?.name;
@@ -1217,6 +1259,8 @@ function parentZone() {
       <div class="prow">Each sitting <select data-k="sittingMinutes">${[0, 15, 20, 25, 30].map(n => `<option value="${n}" ${n == set.sittingMinutes ? 'selected' : ''}>${n ? n + ' minutes' : 'No limit'}</option>`).join('')}</select>
         Sittings a day <select data-k="sittingsPerDay">${[2, 3, 4, 5, 6, 8].map(n => `<option ${n == set.sittingsPerDay ? 'selected' : ''}>${n}</option>`).join('')}</select>
         Break between <select data-k="breakMinutes">${[0, 15, 30, 45, 60, 90].map(n => `<option value="${n}" ${n == set.breakMinutes ? 'selected' : ''}>${n ? n + ' min' : 'No break'}</option>`).join('')}</select></div>
+      <div class="prow"><label><input type="checkbox" data-k="rollover" ${set.rollover !== false ? 'checked' : ''}> Roll over: anything not finished yesterday is added to today (done first). Only one day's worth carries over; 25+ topics adds an extra sitting.</label>
+        <br><small>Today: ${(() => { const c = carryInfo(); return c.topics.length || Object.keys(c.exam).length ? `${c.topics.length} topics (${carryLeft().length} still to do)${Object.keys(c.exam).length ? ', exam practice: ' + Object.entries(c.exam).map(([k, v]) => k + ' +' + v).join(', ') : ''}${c.missedDay ? ' · she did not play yesterday' : ''}` : 'nothing carried over'; })()}</small></div>
       <div class="prow"><label><input type="checkbox" data-k="extendOnStruggle" ${set.extendOnStruggle !== false ? 'checked' : ''}> Longer day when she struggles: after 20+ answers, under 70% right first time adds 1 extra sitting, under 50% adds 2. The extra time is spent on the topics she got wrong today.</label>
         <br><small>Today so far: ${(() => { const t = todayFirstTry(); return t.n ? `${Math.round(t.pct * 100)}% right first time (${t.n} answers)` : 'no answers yet'; })()}${autoExtra() ? ` · <b>+${autoExtra()} extra sitting${autoExtra() > 1 ? 's' : ''} added</b>${dayRec().hardDone ? ` · ${dayRec().hardDone} tricky-topic questions done` : ''}` : ''}</small></div>
       <div class="prow">🔁 <b>Memory list</b> (things she got wrong; they come back until she gets them right several times over 2 weeks):
