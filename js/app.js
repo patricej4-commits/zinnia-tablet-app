@@ -59,7 +59,7 @@ function toast(text) {
   setTimeout(() => t.remove(), 2200);
 }
 
-// ---------- Sittings: 30-minute sessions, a break between, up to 5 a day ----------
+// ---------- Sittings: 40-minute sessions, a break between, up to 5 a day ----------
 let timing = false;   // true while she is in the game (not on the start, break or grown-up screens)
 let breakShown = false;
 function startClock() {}   // time is counted by the sitting ticker below
@@ -1305,7 +1305,7 @@ function parentZone() {
       <div class="prow">Exam practice each day (after the mission) <select data-k="examPerDay">${['auto', 0, 10, 15, 20, 25].map(n => `<option value="${n}" ${String(n) === String(set.examPerDay ?? 'auto') ? 'selected' : ''}>${n === 'auto' ? 'Automatic (recommended)' : n ? n + ' questions' : 'Off'}</option>`).join('')}</select></div>
       <div class="prow">Questions per game <select data-k="sessionLength">${[5, 8, 10, 12, 15].map(n => `<option ${n == set.sessionLength ? 'selected' : ''}>${n}</option>`).join('')}</select></div>
       <div class="prow"><label><input type="checkbox" data-k="extraNumberLines" ${set.extraNumberLines ? 'checked' : ''}> Extra number line practice in every Today's Adventure</label></div>
-      <div class="prow">Each sitting <select data-k="sittingMinutes">${[0, 15, 20, 25, 30].map(n => `<option value="${n}" ${n == set.sittingMinutes ? 'selected' : ''}>${n ? n + ' minutes' : 'No limit'}</option>`).join('')}</select>
+      <div class="prow">Each sitting <select data-k="sittingMinutes">${[0, 15, 20, 25, 30, 40, 45].map(n => `<option value="${n}" ${n == set.sittingMinutes ? 'selected' : ''}>${n ? n + ' minutes' : 'No limit'}</option>`).join('')}</select>
         Sittings a day <select data-k="sittingsPerDay">${[2, 3, 4, 5, 6, 8].map(n => `<option ${n == set.sittingsPerDay ? 'selected' : ''}>${n}</option>`).join('')}</select>
         Break between <select data-k="breakMinutes">${[0, 15, 30, 45, 60, 90].map(n => `<option value="${n}" ${n == set.breakMinutes ? 'selected' : ''}>${n ? n + ' min' : 'No break'}</option>`).join('')}</select></div>
       <div class="prow"><label><input type="checkbox" data-k="rollover" ${set.rollover !== false ? 'checked' : ''}> Roll over: anything not finished yesterday is added to today (done first). Only one day's worth carries over; 25+ topics adds an extra sitting.</label>
