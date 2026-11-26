@@ -66,15 +66,35 @@ function startClock() {}   // time is counted by the sitting ticker below
 function stopClock() {}
 const sitLimit = () => (store.settings.sittingMinutes || 0) * 60;
 const sittings = () => (dayRec().sittings ||= []);
+// A sitting's own limit: the normal length + any extra minutes added because she was struggling
+const limOf = c => sitLimit() + (c?.ext || 0) * 60;
 function curSitting() {
   const a = sittings(), s = a[a.length - 1];
-  return s && !s.done && s.secs < sitLimit() ? s : null;
+  return s && !s.done && s.secs < limOf(s) ? s : null;
 }
+// ---------- Longer sitting when she is struggling ----------
+// When the sitting is nearly over and she got a lot wrong in it (first try), the sitting is
+// stretched once: under 70% right → +10 minutes, under 50% → +15 minutes. The extra time is
+// spent practising the things she found tricky.
+const SIT_STRUGGLE = { min: 8, one: 0.7, two: 0.5, add1: 10, add2: 15 };
+function maybeExtendSitting(c) {
+  if (!c || c.ext || store.settings.extendOnStruggle === false || !sitLimit()) return;
+  if (c.secs < sitLimit() - 60) return;              // decide in the last minute of the normal time
+  const n = c.n || 0, pct = n ? (c.ok || 0) / n : 1;
+  if (n < SIT_STRUGGLE.min || pct >= SIT_STRUGGLE.one) return;
+  c.ext = pct < SIT_STRUGGLE.two ? SIT_STRUGGLE.add2 : SIT_STRUGGLE.add1;
+  c.extFrom = c.secs;
+  const text = `Some things were tricky in this sitting, ${name()}. Let's practise them for ${minsWord(c.ext)} more, then it's break time. Practice makes you stronger!`;
+  bigToast(`💪 ${text}`);
+  sfx.pop();
+  if (onMap) say(text); else pendingCue = text;
+}
+const inExtendedTime = () => { const c = curSitting(); return !!(c?.ext && c.secs >= sitLimit()); };
 function sittingState() {
   if (!sitLimit()) return { ok: true };
   const a = sittings(), per = basePer() + autoExtra() + carryExtra();
   const cur = curSitting();
-  if (cur) return { ok: true, cur, left: sitLimit() - cur.secs, n: a.length, per };
+  if (cur) return { ok: true, cur, left: limOf(cur) - cur.secs, n: a.length, per };
   if (a.length >= per) return { ok: false, why: 'done', n: a.length, per };
   const last = a[a.length - 1];
   const until = last ? last.end + (store.settings.breakMinutes || 0) * 60000 : 0;
@@ -134,7 +154,7 @@ setInterval(() => {
   if (document.hidden || !timing) return;
   addTime(10);
   const c = curSitting();
-  if (c) { c.secs += 10; c.end = Date.now(); if (c.secs >= sitLimit()) c.done = true; checkBreakCues(c); save(); }
+  if (c) { c.secs += 10; c.end = Date.now(); maybeExtendSitting(c); if (c.secs >= limOf(c)) c.done = true; checkBreakCues(c); save(); }
   document.querySelectorAll('.sitpill').forEach(el => (el.textContent = sitPillText()));
   // Time is up while she is on the map or a menu: straight to the break screen
   if (sitLimit() && !curSitting() && onMap && !breakShown) breakScreen(sittingState());
@@ -148,14 +168,14 @@ const minsWord = m => `${m} minute${m === 1 ? '' : 's'}`;
 // (or straight away on the map), so Ollie never talks over a question.
 let pendingCue = null;
 function checkBreakCues(c) {
-  const lim = sitLimit();
-  if (!lim) return;
+  const lim = limOf(c);
+  if (!sitLimit()) return;
   c.cues ||= [];
   const played = Math.round(c.secs / 60), left = Math.max(0, Math.round((lim - c.secs) / 60));
   const cues = [
-    ['half', lim / 2, `You've been playing for ${minsWord(played)}. Great job! ${minsWord(left)} more until your break.`],
-    ['five', lim - 300, `You've been playing for ${minsWord(played)}. ${minsWord(left)} left, then it's break time!`],
-    ['one', lim - 60, `You've been playing for ${minsWord(played)}. Almost break time! Let's finish this one.`],
+    ['half', c.ext ? 0 : lim / 2, `You've been playing for ${minsWord(played)}. Great job! ${minsWord(left)} more until your break.`],
+    [c.ext ? 'five+' : 'five', lim - 300, `You've been playing for ${minsWord(played)}. ${minsWord(left)} left, then it's break time!`],
+    [c.ext ? 'one+' : 'one', lim - 60, `You've been playing for ${minsWord(played)}. Almost break time! Let's finish this one.`],
   ];
   for (const [id, at, text] of cues) {
     if (at <= 0 || c.secs < at || c.cues.includes(id)) continue;
@@ -246,6 +266,8 @@ function answerOf(q) {
 }
 function logAnswer(q, sk, res) {
   store.log ||= {};
+  const cs = curSitting();
+  if (cs) { cs.n = (cs.n || 0) + 1; if (res.correct && res.firstTry) cs.ok = (cs.ok || 0) + 1; }
   const d = today();
   (store.log[d] ||= []).push({
     t: (() => { const d = new Date(); return `${clock12(d)} ${d.getHours() < 12 ? 'am' : 'pm'}`; })(), w: WORLD_OF[sk.id], s: sk.id,
@@ -329,7 +351,7 @@ function nextStep() {
   const cl = carryLeft();
   if (!rw && cl.length) return { kind: 'carry', label: `📦 Yesterday's unfinished work (${cl.length} left)`, say: `First, let's finish yesterday's work. ${cl.length} topics are waiting for you!` };
   if (rw) return { kind: 'retry', w: rw, label: `🔁 Practise again: ${rw.emo} ${rw.name}`, say: `Let's practise ${rw.name} again before we move on. I will help you!` };
-  if (inExtraSitting()) return { kind: 'hard', label: '💪 Extra practice: the tricky things', say: 'Let\'s practise the things that were tricky today. This extra time will make you stronger. I will help you!' };
+  if (inExtraSitting() || inExtendedTime()) return { kind: 'hard', label: '💪 Extra practice: the tricky things', say: 'Let\'s practise the things that were tricky today. This extra time will make you stronger. I will help you!' };
   if (!missionDone()) { const w = nextMissionWorld(); return { kind: 'mission', w, label: `▶ ${w.emo} ${w.name}`, say: `Let's do ${w.name}!` }; }
   const it = nextExamItem();
   if (it) {
@@ -990,11 +1012,11 @@ function results({ stars, earned, bestCombo, grew, missionComplete, retryArea, p
     if (timeUp) {
       // The sitting's time is up: everything is saved, time for a break
       const st = sittingState();
-      after.append(h(`<div class="bubble">⏰ You've been playing for ${store.settings.sittingMinutes} minutes. Time to take a break! Your work is saved.</div>`));
+      after.append(h(`<div class="bubble">⏰ You've been playing for ${Math.round((sittings().at(-1)?.secs || sitLimit()) / 60)} minutes. Time to take a break! Your work is saved.</div>`));
       const ok = h('<button class="big-btn green">😴 OK, break time</button>');
       ok.onclick = () => { sfx.tap(); breakScreen(st); };
       after.append(ok);
-      setTimeout(() => say(`Great work! You've been playing for ${store.settings.sittingMinutes} minutes. Time to take a break. Your work is saved!`), grew ? 5000 : 2400);
+      setTimeout(() => say(`Great work! You've been playing for ${Math.round((sittings().at(-1)?.secs || sitLimit()) / 60)} minutes. Time to take a break. Your work is saved!`), grew ? 5000 : 2400);
       return;
     }
     // Lead her straight to the next step of today's plan
@@ -1310,7 +1332,7 @@ function parentZone() {
         Break between <select data-k="breakMinutes">${[0, 15, 30, 45, 60, 90].map(n => `<option value="${n}" ${n == set.breakMinutes ? 'selected' : ''}>${n ? n + ' min' : 'No break'}</option>`).join('')}</select></div>
       <div class="prow"><label><input type="checkbox" data-k="rollover" ${set.rollover !== false ? 'checked' : ''}> Roll over: anything not finished yesterday is added to today (done first). Only one day's worth carries over; 25+ topics adds an extra sitting.</label>
         <br><small>Today: ${(() => { const c = carryInfo(); return c.topics.length || Object.keys(c.exam).length ? `${c.topics.length} topics (${carryLeft().length} still to do)${Object.keys(c.exam).length ? ', exam practice: ' + Object.entries(c.exam).map(([k, v]) => k + ' +' + v).join(', ') : ''}${c.missedDay ? ' · she did not play yesterday' : ''}` : 'nothing carried over'; })()}</small></div>
-      <div class="prow"><label><input type="checkbox" data-k="extendOnStruggle" ${set.extendOnStruggle !== false ? 'checked' : ''}> Longer day when she struggles: after 20+ answers, under 70% right first time adds 1 extra sitting, under 50% adds 2. The extra time is spent on the topics she got wrong today.</label>
+      <div class="prow"><label><input type="checkbox" data-k="extendOnStruggle" ${set.extendOnStruggle !== false ? 'checked' : ''}> Longer sittings and a longer day when she struggles: if she gets under 70% right first time in a sitting, that sitting is stretched by 10 minutes (15 minutes if under 50%). Over the whole day (20+ answers), under 70% adds 1 extra sitting, under 50% adds 2. The extra time is spent on the topics she got wrong.</label>
         <br><small>Today so far: ${(() => { const t = todayFirstTry(); return t.n ? `${Math.round(t.pct * 100)}% right first time (${t.n} answers)` : 'no answers yet'; })()}${autoExtra() ? ` · <b>+${autoExtra()} extra sitting${autoExtra() > 1 ? 's' : ''} added</b>${dayRec().hardDone ? ` · ${dayRec().hardDone} tricky-topic questions done` : ''}` : ''}</small></div>
       <div class="prow">🔁 <b>Memory list</b> (things she got wrong; they come back until she gets them right several times over 2 weeks):
         ${(() => { const r = Object.values(store.review || {}); if (!r.length) return 'empty'; const due = r.filter(x => x.due <= Date.now()).length;

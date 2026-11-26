@@ -24,7 +24,7 @@ const defaults = () => ({
     sittingsPerDay: 5,    // up to 5 sittings a day
     breakMinutes: 30,     // a break of at least 30 minutes between sittings
     rollover: true,          // unfinished work from yesterday is added to today
-    extendOnStruggle: true, // a lot wrong today → extra sitting(s) on the topics she found hard
+    extendOnStruggle: true, // a lot wrong → a longer sitting, and extra sitting(s), on the topics she found hard
     extraNumberLines: true, // she finds number lines hard: practise them in every adventure
   },
 });
@@ -38,14 +38,14 @@ function load() {
     const out = { ...base, ...d, settings: { ...base.settings, ...(d.settings || {}) } };
     // One-time update: sittings changed from 20 to 30 minutes (a sitting already finished today stays finished)
     if (!out.settings.sit30) {
-      if (out.settings.sittingMinutes === 20) out.settings.sittingMinutes = 30;
-      for (const day of Object.values(out.daily || {})) for (const s of day.sittings || []) if (s.secs >= 1190) s.done = true;
+      if (out.settings.sittingMinutes === 20) { out.settings.sittingMinutes = 30;
+        for (const day of Object.values(out.daily || {})) for (const s of day.sittings || []) if (s.secs >= 1190) s.done = true; }
       out.settings.sit30 = true;
     }
     // One-time update: sittings changed from 30 to 40 minutes (a sitting already finished today stays finished)
     if (!out.settings.sit40) {
-      if (out.settings.sittingMinutes === 30) out.settings.sittingMinutes = 40;
-      for (const day of Object.values(out.daily || {})) for (const s of day.sittings || []) if (s.secs >= 1790) s.done = true;
+      if (out.settings.sittingMinutes === 30) { out.settings.sittingMinutes = 40;
+        for (const day of Object.values(out.daily || {})) for (const s of day.sittings || []) if (s.secs >= 1790) s.done = true; }
       out.settings.sit40 = true;
     }
     return out;

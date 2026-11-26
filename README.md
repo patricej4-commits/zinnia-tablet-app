@@ -108,6 +108,7 @@ On the map (📈 button) and in the Parent Zone: a chart of her score every day 
 
 ## Sittings (time on the tablet)
 Default: **5 sittings of 40 minutes a day, with at least 30 minutes break between them.** A timer shows the minutes left and which sitting it is. When time is up she finishes the question she is on, sees her results, and goes to the break screen (work saved). During a break the game is locked; when the break is over a "Start sitting" button appears. After the last sitting the game is done for the day. Parent Zone: change sitting length, number of sittings and break length, or give one extra sitting now.
+- **Longer sitting when she struggles:** near the end of a sitting, if she got under 70% right first time in it (8+ answers), the sitting is stretched by 10 minutes (15 if under 50%), once per sitting. Ollie tells her why, and the extra time goes on the things she found tricky. Turn off in the Parent Zone (same switch as the longer day).
 - **Break cues:** "You've been playing for 20 minutes…" at halfway, "…5 minutes left" and "Almost break time!" with 1 minute left (shown on screen at once, spoken before the next question so Ollie never talks over a question). At the end: "You've been playing for 40 minutes. Time to take a break!" with break ideas and today's total minutes.
 
 ## Longer day when she struggles
